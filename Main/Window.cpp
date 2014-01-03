@@ -16,7 +16,6 @@
 #include <QRect>
 #include <QSvgWidget>
 
-#include "Window.h"
 #include "Storage/StorageTreeEditorDialog.h"
 #include "System/SystemScriptSymbol.h"
 #include "Configuration/Configuration.h"
@@ -28,6 +27,8 @@
 #include "XPORT/XportConnection.h"
 #include "TMTC/TMTCMessage.h"
 #include "Multiplex/Multiplex.h"
+#include "Window.h"
+
 
 Q_DECLARE_METATYPE(Window*)
 
@@ -45,7 +46,7 @@ Window* Window::instance;
 /*
  */
 Window::Window(QScriptEngine* script)
-    : QMainWindow(vnul)
+    : QMainWindow(vnul), configureOpen(false), init_program(0)
 {
     Window::instance = this;
 
@@ -89,77 +90,42 @@ Window::Window(QScriptEngine* script)
     GraphicsBody* body = new GraphicsBody(this);
 
     this->setCentralWidget(body);
-
-    /*****************************************************************
-     * Temporary
-     *
-     * Some script would add a terminal into the "body" widget,
-     * initialize devices and connect the database and terminal.
-     * 
-     * The database is the solitary sink - slot for each connection,
-     * and the solitary sink - slot for the terminal input.
+    /*
+     * System initialization
      */
-    HCDB* hcdb = configuration->getHCDB();
-    if (hcdb->isUp()){
+    this->init_program = new Init(configuration);
 
-        Devices* devices = hcdb->getDevices();
-        if (devices){
-            QList<QObject*> device_list = devices->children();
-            if (0 < device_list.count()){
+    if (this->init_program->run()){
 
-                Multiplex* multiplex = new Multiplex(configuration);
+        qDebug() << "Multiplex configured";
 
-                Device* device = static_cast<Device*>(device_list.at(0));
+        /*****************************************************************
+         * Temporary
+         *
+         * Some script would add a terminal into the "body" widget...
+         */
+        Multiplex* multiplex = this->init_program->getMultiplex();
 
-                XportConnection* connection = new XportConnection(device);
+        Terminal* terminal = new Terminal();
 
-                Terminal* terminal = new Terminal();
+        body->add(terminal);
 
-                body->add(terminal);
-
-                if (QObject::connect(connection,SIGNAL(received(const SystemDeviceIdentifier*,const TMTCMessage*)),multiplex,SLOT(receivedFromDevice(const SystemDeviceIdentifier*,const TMTCMessage*))) &&
-                    QObject::connect(multiplex,SIGNAL(sendToDevice(const SystemDeviceIdentifier*,const TMTCMessage*)),connection,SLOT(send(const SystemDeviceIdentifier*,const TMTCMessage*)))
-                    )
-                {
-                    qDebug() << "Window/Terminal: device & multiplex configured (duplex)";
-
-                    if (QObject::connect(terminal,SIGNAL(send(const SystemDeviceIdentifier*,const TMTCMessage*)),multiplex,SLOT(receivedFromUser(const SystemDeviceIdentifier*,const TMTCMessage*))) &&
-                        QObject::connect(multiplex,SIGNAL(sendToUser(const SystemDeviceIdentifier*,const TMTCMessage*)),terminal,SLOT(received(const SystemDeviceIdentifier*,const TMTCMessage*)))
-                        )
-                    {
-
-                        connection->start();
-
-                        qDebug() << "Window/Terminal: terminal & multiplex configured (duplex)";
-                    }
-                    else {
-
-                        delete connection;
-
-                        delete multiplex;
-
-                        qDebug() << "Window/Terminal: terminal & multiplex configuration (duplex) failed";
-                    }
-                }
-                else {
-
-                    delete connection;
-
-                    delete multiplex;
-
-                    qDebug() << "Window/Terminal: device & multiplex configuration (duplex) failed";
-                }
-            }
-            else {
-                qDebug() << "Window/Terminal: HCDB device not configured";
-            }
+        /*
+         */
+        if (QObject::connect(terminal,SIGNAL(send(const SystemDeviceIdentifier*,const TMTCMessage*)),multiplex,SLOT(receivedFromUser(const SystemDeviceIdentifier*,const TMTCMessage*))) &&
+            QObject::connect(multiplex,SIGNAL(sendToUser(const SystemDeviceIdentifier*,const TMTCMessage*)),terminal,SLOT(received(const SystemDeviceIdentifier*,const TMTCMessage*)))
+            )
+        {
+            qDebug() << "Window/Terminal: terminal & multiplex configured (duplex)";
         }
         else {
-            qDebug() << "Window/Terminal: HCDB devices not found";
+
+            qDebug() << "Window/Terminal: terminal & multiplex configuration (duplex) failed";
         }
     }
     else {
-        qDebug() << "Window/Terminal: HCDB is down";
+
+        qDebug() << "Multiplex not configured";
     }
     /*
      * Normal default process 
@@ -183,10 +149,19 @@ Window::Window(QScriptEngine* script)
 /*
  */
 Window::~Window(){
+
+    if (this->init_program){
+
+        Init* init = this->init_program;
+
+        this->init_program = 0;
+
+        delete init;
+    }
 }
 void Window::run(){
 
-    if (Configuration::Instance()->getHCDB()->isUp()){
+    if (this->init_program->isUp()){
 
         initConfigurationScriptable(this);
 
@@ -220,7 +195,11 @@ void Window::removeMenu(const QString& title){
         }
     }
 }
-Configuration* Window::getConfiguration(){
+Init* Window::getInit() const {
+
+    return this->init_program;
+}
+Configuration* Window::getConfiguration() const {
 
     return Configuration::Instance();
 }

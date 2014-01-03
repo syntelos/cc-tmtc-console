@@ -64,6 +64,22 @@ HCDB* Configuration::getHCDB() const {
 
     return hcdb;
 }
+bool Configuration::hasMultiplex() const {
+
+    return (0 != this->getMultiplex());
+}
+Multiplex* Configuration::getMultiplex() const {
+    const QObjectList& children = this->children();
+    const int count = children.size();
+    int cc;
+    for (cc = 0; cc < count; cc++){
+        Multiplex* multiplex = dynamic_cast<Multiplex*>(children.at(cc));
+        if (multiplex){
+            return multiplex;
+        }
+    }
+    return 0;
+}
 QScriptEngine* Configuration::getScriptEngine() const {
 
     return engine;

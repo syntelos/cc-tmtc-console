@@ -11,6 +11,7 @@
 #include "Devices.h"
 #include "Configuration.h"
 #include "ConfigurationError.h"
+#include "XPORT/XportConnection.h"
 
 #define XPORT_SUFFIX 10001
 
@@ -157,6 +158,23 @@ const SystemDeviceConnection* Device::getSystemDeviceConnection() const {
         }
     }
     return 0;
+}
+const SystemDeviceConnection* Device::createSystemDeviceConnection(){
+    const SystemDeviceConnection* test = this->getSystemDeviceConnection();
+    if (test)
+        return test;
+    else {
+        /*
+         * [TODO] library
+         */
+        return new XportConnection(this);
+    }
+}
+void Device::shutdownSystemDeviceConnection(){
+    SystemDeviceConnection* test = const_cast<SystemDeviceConnection*>(this->getSystemDeviceConnection());
+    if (test){
+        test->shutdown();
+    }
 }
 const QString* Device::getConnectionIdentifier() const {
 

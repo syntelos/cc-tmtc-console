@@ -17,6 +17,7 @@
 #include "Configuration/Configuration.h"
 #include "Configuration/ConfigurationScriptable.h"
 #include "Null.h"
+#include "Init.h"
 
 /*!
  * Scriptable "window".
@@ -33,13 +34,17 @@ class Window : public QMainWindow,
 
     bool configureOpen;
 
+    Init* init_program;
+
     static Window* instance;
 
  public:
     Window(QScriptEngine* engine);
     ~Window();
 
-    Configuration* getConfiguration();
+    Configuration* getConfiguration() const ;
+
+    Init* getInit() const ;
 
     QMenu* addMenu(const QString& title);
 

@@ -78,8 +78,16 @@ class Device : public StorageListItem, public SystemDevice {
      * The caller is responsible for the returned heap allocation.
      */
     virtual const SystemDeviceIdentifier* getSystemDeviceIdentifier() const;
-
+    /*!
+     * Return an existing connection, may be null.
+     */
     virtual const SystemDeviceConnection* getSystemDeviceConnection() const;
+    /*!
+     * Get or create a connection, may be null on a library failure.
+     */
+    const SystemDeviceConnection* createSystemDeviceConnection();
+
+    void shutdownSystemDeviceConnection();
     /*!
      * Connection address/port identifier string
      */

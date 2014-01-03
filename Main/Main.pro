@@ -12,15 +12,17 @@ CONFIG  += staticlib
 CONFIG  += debug
 
 SOURCES += Window.cpp \
+           Init.cpp \
            Main.cpp
 
-HEADERS += Window.h
+HEADERS += Window.h \
+           Init.h
 
 unix { 
-    LIBS += -L../XPORT
-    LIBS += -lXPORT
     LIBS += -L../Configuration
     LIBS += -lConfiguration
+    LIBS += -L../XPORT
+    LIBS += -lXPORT
     LIBS += -L../Storage
     LIBS += -lStorage
     LIBS += -L../Multiplex
@@ -42,10 +44,10 @@ win32 {
     RC_FILE = windows.rc
     CONFIG(debug)
     { 
-        LIBS += -L../XPORT/debug
-        OTHER_FILES += ../XPORT/debug/libXPORT.a
         LIBS += -L../Configuration/debug
         OTHER_FILES += ../Configuration/debug/libConfiguration.a
+        LIBS += -L../XPORT/debug
+        OTHER_FILES += ../XPORT/debug/libXPORT.a
         LIBS += -L../Storage/debug
         OTHER_FILES += ../Storage/debug/libStorage.a
         LIBS += -L../Multiplex/debug
@@ -65,10 +67,10 @@ win32 {
     }
     CONFIG(release)
     { 
-        LIBS += -L../XPORT/release
-        OTHER_FILES += ../XPORT/release/libXPORT.a
         LIBS += -L../Configuration/release
         OTHER_FILES += ../Configuration/release/libConfiguration.a
+        LIBS += -L../XPORT/release
+        OTHER_FILES += ../XPORT/release/libXPORT.a
         LIBS += -L../Storage/release
         OTHER_FILES += ../Storage/release/libStorage.a
         LIBS += -L../Multiplex/release
@@ -87,8 +89,8 @@ win32 {
         LIBS += -L../System/release
     }
 
-    LIBS += -lXPORT
     LIBS += -lConfiguration
+    LIBS += -lXPORT
     LIBS += -lStorage
     LIBS += -lMultiplex
     LIBS += -lTerminal

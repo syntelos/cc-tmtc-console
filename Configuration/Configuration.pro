@@ -1,6 +1,7 @@
 TARGET   = Configuration
 TEMPLATE = lib
 
+QT      += network
 QT      += sql
 QT      += script
 

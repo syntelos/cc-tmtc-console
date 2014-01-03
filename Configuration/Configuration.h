@@ -19,6 +19,7 @@
 #include "ObjectTree/ObjectTreeModel.h"
 #include "Storage/StorageTreeEditor.h"
 #include "System/SystemScriptable.h"
+#include "Multiplex/Multiplex.h"
 #include "Null.h"
 
 /*!
@@ -65,6 +66,15 @@ class Configuration : public ObjectTreeModel,
     /*!
      */
     HCDB* getHCDB() const;
+    /*!
+     * When true, devices have been configured by the Main/Init
+     * program.
+     */
+    bool hasMultiplex() const;
+    /*!
+     * Returns null when not found.
+     */
+    Multiplex* getMultiplex() const;
     /*!
      */
     QScriptEngine* getScriptEngine() const;
