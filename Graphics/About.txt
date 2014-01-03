@@ -1,0 +1,3 @@
+
+Graphics branch and leaf define an event distribution scheme for a hierarchical scene graph.
+

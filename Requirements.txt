@@ -1,0 +1,83 @@
+
+
+OBJECTIVE
+
+The console product collects and distributes the telemetry and
+telecommand capabilities of connected instruments, and provides time
+series, visualization, and work station process capabilities.
+
+Defined elements of the product may be replaced or extended for the
+integration of instruments, the configuration of the work station user
+interface, or the development of work station data processing and
+storage capabilities.
+
+
+CONFIGURATION SUBSYSTEM
+
+ * End user control of connected devices
+ * End user control of system extension libraries
+
+
+DATA SUBSYSTEM
+
+ * End user control of live and historical data sets
+ * Data import, export, and visualization for live and historical data sub/sets
+
+
+VISUAL INTERACTION SUBSYSTEM
+
+ * End user re/definition of visual work station display area
+ * Terminal command line interaction with instruments and data
+ * Data plot visualization for live and historical data sub/sets
+
+
+INTERNETWORKING SUBSYSTEM
+
+ * (WAN) XMPP gateway for TMTC pipelines, and SMTP event executions.
+ * (LAN) HTTP service for a TMTC pipeline
+
+
+EXTENSION REQUIREMENTS
+
+ * Create visual interactive components
+ * Create data network interactive components
+
+
+SYSTEM THEORY
+
+Desktop and network interaction processes execute in a systemic
+environment that provides devices, data, and visualization.
+
+End user scripting needs to occur once, periodically, or within
+process pipelines to execute on the system environment.  
+
+
+INTERACTION PIPELINE
+
+The console (TMTC) database subsystem acts as a central hub for TMTC
+processing.  
+
+The "store" pipeline flows from a TMTC instrument device into the
+database.  Store pipelines are very simple.  A configured device is
+connected to a live database when it is online.
+
+The "fetch" pipeline flows from an end user, through the database, to
+the instrument device.  Fetch pipelines are interpreted for retrieval
+expressions by the database, and terminate with the database when a
+satisfactory response is known.  The database will forward fetch
+messages to the instrument device as necessary to complete its
+knowledge of the state of the instrument device.
+
+
+VISUALIZATION PIPELINE
+
+The database subsystem provides functions for selecting live and
+historical data ranges into visualization buffers.
+
+A visualization buffer is a collection of vector graphics data
+structures defined for an output display area in pixel dimensions.  A
+visualization buffer is constructed by a process of initialization,
+and copied into a pipeline for data selection, scaling, and rendering.
+The buffer initialization stage may be defined by script for a
+complete definition of appearance in a scalable vector frame.
+

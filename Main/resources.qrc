@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/Main">
+        <file>img/digivac.png</file>
+    </qresource>
+</RCC>

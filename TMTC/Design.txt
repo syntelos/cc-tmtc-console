@@ -1,0 +1,7 @@
+                                                -*-outline-*-
+
+* The TMTC Name+Value interface defines an {N,V} pair, but the software architecture for various formatting syntaces is not consolidating the data base requirement
+** Better to have extensibility for formatting of any data pair for any I/O syntax, if the data base requirement is based on {N,V} hierarchies
+*** Name and Value types employ string_rep, cstring_rep, and qbytearray_rep
+*** The TMTCNameValue class is concrete, accepting NV I/O formatters which are also available via convenience types 
+*** Likewise the TMTCMessage class is concrete, accepting MSG I/O formatters which are also available via conveniences types

@@ -1,0 +1,29 @@
+                                    -*-outline-*-
+
+* devices
+** use scripting to initialize devices from configuration
+
+* database
+** use signals and slots to connect devices with time series in the data store
+** load files into a time series in the data store
+
+* system window
+** review contextual menu from Qt
+
+* Requirements view
+
+** Starting points
+*** Configuration and Device scripting
+*** TCP/IP TMTC (201)
+*** Terminal
+
+** Interaction pipeline
+*** Database
+*** Terminal
+*** XMPP pipeline
+*** HTTP service
+
+** Visualization pipeline
+*** Graph
+*** GUI controls
+

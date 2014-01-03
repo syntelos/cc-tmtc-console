@@ -1,0 +1,182 @@
+
+DESIGN OBJECTIVES
+
+This project is reproducing extensive previous development effort into
+this application domain to produce a Minimum Viable Product (MVP)
+under the rubric "2.0 Beta".  The application is very well understood
+as the replication of the "DigiVac ReAct Console 1.0", subject to an
+architectural model inherited from the Qt platform, and adapting the
+feature set requirements to the strengths of the Qt platform and the
+expectations of principal (demand) customers including "MFG" and
+"CR-Bard".
+
+The relevant architectural features of the Qt platform include Signals
+& Slots, Scripting, SQL database integration, RS232 serial
+communications, native execution, and the C++ language.
+
+Some relevant architectural developments forseen for "DigiVac ReAct
+Console 2.0" include visual work space customization based on a few
+common product components such as the Terminal, Graph, and Controls.
+
+The principal customer demand is for a process control workstation for
+recording production processes measured by a DigiVac instrument.  In
+our experience with these relationships, we have learned that a
+process control workstation deviates from the "DigiVac ReAct Console
+1.0" by only a few points.  These can be wrapped up into "the
+customization of the visual work space in terms of Terminal, Graph,
+and Control components", for "Control components" that may include
+customer unique process control and completion features.
+
+CONFIGURATION
+
+The configuration subsystem maintains console user configuration
+parameters in a pair of SQL databases.  Other tools may manage these
+configuration resources.  The first (CCDB) identifies the second, and
+the second (HCDB) contains the console workstation (host)
+configuration data.
+
+The Console Configuration DataBase (CCDB) contains values required to
+connect to any database supported with an appropriate driver for the
+Host Configuration DataBase (HCDB).
+
+  [1] CCDB (TMTC Network Node) (QObject)
+      Host UUID
+      Host HCDB Configuration
+
+  [N] Library (Extension) (QObject)
+      Ref(Host UUID)
+      Library UUID
+      Library File Identifier
+      Library Language Class Name
+      Library Connection Class Name
+
+  [N] Device (TMTC Leaf Node) (QObject)
+      Ref(Host UUID)
+      Ref(Library UUID)
+      Connection Identifier String
+
+LIBRARY
+
+The library abstraction permits extensibility to unknown instrument -
+devices that can be supported with the TMTC "register" model.
+
+LIBRARY - CONNECTION
+
+The Connection class has the following requirements.
+
+  * Configure from a System Device Identifier string
+  * Interact with the device in the TMTC Message model
+  * Provide a Qt/Signal for distributing "received" messages
+  * Provide a Qt/Slot for delivering "sent" messages
+
+LIBRARY - LANGUAGE
+
+The Language class has the following requirements.
+
+  * Ordered set of Name identifiers (Name QVariant Class)
+  * For each {N}, an ordered set of Meta identifiers (Meta QVariant Class[es])
+  * A default Meta identifier (e.g. "VALUE") for all {N}
+  * For each {N,M}, a value type in the range QVariant / QMetaType Type.
+  * Provide a method that returns value Type for TMTCName in O(1) to O(log n) [avg]
+
+UUIDs
+
+The host UUID is a solution to LAN and WAN configuration problems.  It
+is defined in the CCDB, and could be called the CCDB UUID in that it's
+not based on a hardware identifier like an Ethernet MAC or Processor
+ID.  When the CCDB changes, this critical reference into the HCDB may
+be lost and the entire configuration will be lost.
+
+The library UUID is defined within the library that defines device
+interoperation.  The builtin DVCUP interoperation has a UUID that is
+defined within this package.
+
+SCRIPTING
+
+The SCRIPT table of the HCDB associates Qt/Signals to script functions
+for runtime binding.  The protocol for this table follows the import
+and export of content to and from the file source reference.  In this
+way, the table establishes a sharing and control resource that
+insulates the runtime from file changes, and provides a network
+resource for sharing (workstation replication) features.
+
+A network sharing reference is the combination of a Host UUID and the
+signal symbol "Class::Method".  This symbol is defined and used by the
+SystemScriptSymbol interface.  Scripting is supported by the
+SystemScriptable (symbolic exports) and ConfigurationScriptable
+(runtime binding) classes.
+
+SYSTEM
+
+The system theory is implemented using the Qt Signals and Slots
+architecture.  This permits both static and dynamic pipelines to be
+constructed among components.  Dynamic pipelines are constructed in
+script, and static pipelines are constructed in C++.
+
+The "Window::init" signal is intended to permit a script to build a
+complete workstation with or without the use of the system
+configuration.
+
+In conception, two kinds of pipelines are required: interaction and
+visualization.  In implementation, these are rather less distinct in
+the primary required components: Terminal and Graph.  However, the
+Terminal is relatively more interactive and the Graph is relatively
+more visual.  
+
+The pipeline abstraction is useful for the analysis of data flow
+requirements.  The Terminal is able to attach directly to a Device
+Connection, while the Graph is not.  The Graph requires a time series
+data set.
+
+Supporting multiple devices with a Terminal and multiple Graph plots
+implies a device proxy and time series data set component.  Multiple
+Graph plots should be able to display any available data efficiently.
+A Terminal requires the ability to enable and disable the frequent
+telemetry messages without interrupting the data set collection
+required by Graph plots.  The Multiplex component has been shown to
+solve these problems.
+
+TERMINAL
+
+The Terminal is a visual interactive text and keyboard component that
+connects directly to a single Device Connection, or more
+conventionally to the Multiplex.  In connecting directly to a Device
+Connection, the Terminal interacts directly with the Instrument
+Device without the intermediary proxy behavior of the Multiplex.
+
+The Terminal presents TMTC messages received in its "output" panel,
+and accepts and displays keyboard input in a single line "input" panel
+shown below the output panel -- like a conventional computer command
+line.
+
+In connecting to the Multiplex, the Terminal enables or disables
+automatic telemetry messages via the register named simply "M".  With
+the expression "M=A" the telemetry mode is set to display automatic
+messages, and with the expression "M=M" the telemetry mode silences
+automatic message display to output.  This register syntax and
+semantics is identical to that of the DigiVac Model 201 DVCUP protocol
+register.  As mentioned, the Multiplex proxies this behavior such that
+the Terminal may behave identically when connected directly or
+indirectly with an Instrument Device.
+
+MULTIPLEX
+
+The Multiplex attaches its signals and slots between Device
+Connections and components including the Terminal and Graph.  The
+Terminal may receive copies of received TMTC Messages, while the Graph
+only needs to know when to activate is plot proceedure.
+
+The Multiplex provides update, query and select methods for Device,
+Terminal, and Graph usage (respectively).  The Device and Terminal
+connect to their update and query methods as Qt/Slots.  The Graph,
+conversely, responds to a Multiplex signal by selecting the dataset it
+requires.
+
+GRAPH/PLOT
+
+The Graph component presents one or more plot lines on a two
+dimensional grid labelled for horizontal time and vertical units.  It
+works on any selection from the Multiplex, historical or current.  It
+must be capable of fast display for live telemetry feeds.
+
+
