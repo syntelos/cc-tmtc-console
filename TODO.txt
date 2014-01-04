@@ -1,29 +1,30 @@
                                     -*-outline-*-
 
-* devices
-** use scripting to initialize devices from configuration
+* Main/Init
+** replace "init" with scripting
 
-* database
-** use signals and slots to connect devices with time series in the data store
-** load files into a time series in the data store
+* Multiplex
+** Review (special) update & query (dysfunctional) 
 
-* system window
-** review contextual menu from Qt
+** Arch (opt) rdbms with graphics domain buffer
+*** CCDB
+**** Configure HCDB
+**** Configure TSDB
+*** TSDB -- create and maintain device specific tables
 
-* Requirements view
+** Load log files
 
-** Starting points
-*** Configuration and Device scripting
-*** TCP/IP TMTC (201)
-*** Terminal
+* Main/Window
+** review "Window::run" and "Window::configure" logic for system reinitialization following reconfiguration
 
-** Interaction pipeline
-*** Database
-*** Terminal
-*** XMPP pipeline
-*** HTTP service
+* Graph
+** Print
+** Export
 
-** Visualization pipeline
-*** Graph
-*** GUI controls
+* Data 
+** Print
+** Export
 
+* Log
+** File
+** Line printer
