@@ -1,0 +1,148 @@
+
+LICENSE
+
+The License (RID + LKY) requires the sales activity of issuing a
+license, and the configuration activity of copying the license.  These
+processes occur in a variety of communications situations.
+
+After basic integrity, the first requirement for the license protocol
+is the identification of illegitimate use as multiple use of a license
+key.  The problem is approached with a node fingerprinting component
+to the license protocol.
+
+
+LICENSE - LKY
+
+Choices for the LKY scheme include SLLP and RSA.  
+
+The SLLP scheme is subject to interference when an eavesdropper cracks
+a snooped shared secret and uses it or sells it.  Cracking SLLP is
+relatively easy.  
+
+In practice, it's not easy for the license protocol to differentiate
+the original owner of the license from an illegitimate possession of
+the key.  The license protocol would identify all instances of the key
+as suspect, thereby interfering with the legitimate possession of the
+license key.
+
+The RSA scheme has a more reasonable resistence to this interference.
+An eavesdropper's effort to crack a snooped key is far more difficult.
+
+
+LICENSE - ISSUE
+
+Enter qualified identity information for customer and reseller to
+establish the random number that serves as the LKY shared secret.
+
+
+LICENSE - INSTALL
+
+Copy license information into application to activate configuration.
+
+
+LICENSE - FINGERPRINT
+
+Node fingerprinting provides assurance against illegitimate use of
+license keys.
+
+The fingerprint is a list of configuration (connectivity) parameters
+(e.g. connected device identifiers) which are hashed.
+
+The fingerprint protocol updates the server with a change to the node
+configuration.
+
+The fingerprint update includes old and new hash values, which are
+both validated and logged.
+
+The license protocol includes the fingerprint, which can be accepted
+or rejected.  This permits the license protocol to differentiate a
+first from a second temporal use of a license key.  The assumption
+that first use (installation and configuration) indicates proper
+possession should be fair and adequate to the privacy and integrity
+requirements of the license key scheme.
+
+
+LICENSE - CLIENT - VALIDATED ACCESS CONTROL POLICY
+
+Client tolerates validation failures for thirty days
+
+This permits normal problems to arise without excessive frustration,
+and extraordinary problems to be solved through the issue of new
+license keys (RID + LKY).
+
+
+LICENSE - CLIENT - LICENSE VALIDATION POLICY
+
+Client confirms license package format for the RID and LKY (offline).
+
+
+COMMUNICATION - XMPP
+
+With credentials, all application services would be available via XMPP.
+
+COMMUNICATION - XMPP - LICENSE ISSUE
+
+A known reseller is configured for license fee transactions.
+
+    Q    "license Customer"
+    S    (transact fee against user identity)
+    P    "license Customer <RID + LKY>"
+
+COMMUNICATION - XMPP - LICENSE VALIDATION
+
+ Stateful validation protocol 
+
+ Client requests nonce from Server
+
+    Q    "validate <rid> <fp>"
+    S    (generate and store node validation nonce)
+    P    "validate <rid> <nonce>"
+
+ Client proves <RID + LKY> knowledge with hash
+
+    C    (compute hash)
+    Q    "validate <rid> <hash>"
+
+ Server validates hash and replies
+
+    S    (validate hash)
+ {
+    P    "validate <rid> OK"
+
+    P    "validate <rid> ER"
+ }
+
+ Client employs Server validation for Configuration Access Control
+
+
+COMMUNICATION - HTTP
+
+When XMPP is not available (missing credentials), the LKY process may
+be employed via HTTP.
+
+COMMUNICATION - HTTP - LICENSE VALIDATION
+
+ Stateful validation protocol 
+
+ Client requests nonce from Server
+
+    Q    "GET /validate/<rid>?f=<fp>"
+    S    (generate and store node validation nonce)
+    P    200
+    P    "<nonce>"
+
+ Client proves <RID + LKY> knowledge with hash
+
+    C    (compute hash)
+    Q    "POST /validate/<rid>?f=<fp>&h=<hash>"
+
+ Server validates hash and echos or not
+
+    S    (validate hash)
+ {
+    P    200
+
+    P    401
+ }
+
+ Client employs Server validation for Configuration Access Control
