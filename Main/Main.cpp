@@ -12,6 +12,10 @@
 
 int main(int argc, char *argv[])
 {
+    QCoreApplication::setOrganizationName("Syntelos Software");
+    QCoreApplication::setOrganizationDomain("syntelos.com");
+    QCoreApplication::setApplicationName("TMTC Console");
+
     QApplication a(argc, argv);
     try {
         QScriptEngine* script = new QScriptEngine();

@@ -107,4 +107,5 @@ class Window : public QMainWindow,
     Q_DISABLE_COPY(Window)
 };
 
+Q_DECLARE_METATYPE(Window*)
 #endif

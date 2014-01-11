@@ -106,4 +106,5 @@ class Scripts : public StorageList<Script*> {
     Q_DISABLE_COPY(Scripts)
 };
 
+Q_DECLARE_METATYPE(Scripts*)
 #endif

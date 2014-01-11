@@ -15,8 +15,15 @@ TMTCNameValue::TMTCNameValue(const TMTCName& name, const QVariant& value)
     : QByteArray(), name(name), value(value)
 {
     append(name.toByteArray());
-    append('=');
-    append(value.toByteArray());
+
+    if (value.isNull()){
+
+        append('?');
+    }
+    else {
+        append('=');
+        append(value.toByteArray());
+    }
 }
 /*!
  * Parse {N=V}, {N?} and {N} as {N,V} and {N}.

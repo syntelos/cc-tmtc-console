@@ -15,7 +15,6 @@
 
 #define XPORT_SUFFIX 10001
 
-Q_DECLARE_METATYPE(Device*)
 
 QScriptValue deviceToScriptValue(QScriptEngine *engine, Device* const &in){
     return engine->newQObject(in);

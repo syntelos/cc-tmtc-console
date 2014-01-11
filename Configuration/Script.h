@@ -151,4 +151,5 @@ class Script : public StorageListItem, public ObjectTreeImportExport {
     Q_DISABLE_COPY(Script)
 };
 
+Q_DECLARE_METATYPE(Script*)
 #endif

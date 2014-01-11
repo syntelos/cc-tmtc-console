@@ -115,4 +115,5 @@ class HCDB : public ObjectTreeNode,
     Q_DISABLE_COPY(HCDB)
 };
 
+Q_DECLARE_METATYPE(HCDB*)
 #endif

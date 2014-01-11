@@ -6,7 +6,6 @@
 
 #include "SystemDeviceIdentifier.h"
 
-Q_DECLARE_METATYPE(SystemDeviceIdentifier);
 
 const int SystemDeviceIdentifier::InitMetaTypeId = qRegisterMetaType<SystemDeviceIdentifier>("SystemDeviceIdentifier");
 
@@ -147,9 +146,31 @@ quint16 SystemDeviceIdentifier::getSuffix() const {
     return this->suffix;
 }
 QString SystemDeviceIdentifier::toString() const {
-    QString re("%1:%2");
-    re.arg(prefix).arg(suffix);
-    return re;
+    if (0 != suffix){
+        QString re("%1:%2");
+        re.arg(prefix).arg(suffix);
+        return re;
+    }
+    else
+        return prefix;
+}
+QString SystemDeviceIdentifier::toString(const QString& fext) const {
+    QString prefix(this->prefix);
+    prefix.replace(".","_");
+    if (0 < fext.length()){
+        if (0 != suffix){
+            QString re("%1_%2.%3");
+            re.arg(prefix).arg(this->suffix).arg(fext);
+            return re;
+        }
+        else {
+            QString re("%1.%2");
+            re.arg(prefix).arg(fext);
+            return re;
+        }
+    }
+    else
+        return prefix;
 }
 QStringList SystemDeviceIdentifier::toStringList() const {
     return toString().split(':',QString::SkipEmptyParts);

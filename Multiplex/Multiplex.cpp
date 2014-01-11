@@ -6,7 +6,6 @@
 
 #include "TMTC/TMTCNameValue.h"
 #include "Multiplex.h"
-#include "MultiplexDeviceHistory.h"
 #include "MultiplexTable.h"
 
 Multiplex::Multiplex(QObject* parent)
@@ -22,14 +21,14 @@ bool Multiplex::update(const SystemDeviceIdentifier* id, const TMTCMessage* m){
 
         if (sid.isValid() || sid.isSpecial()){
 
-            MultiplexDeviceHistory* history = 0;
+            MultiplexTable* history = 0;
 
             if (this->state.contains(sid)){
 
                 history = this->state[sid];
             }
             else {
-                history = new MultiplexDeviceHistory(sid);
+                history = new MultiplexTable(sid);
                 this->state[sid] = history;
             }
             /*
@@ -38,7 +37,9 @@ bool Multiplex::update(const SystemDeviceIdentifier* id, const TMTCMessage* m){
              * set have "desktop" semantics: they cannot be proxied to
              * an Instrument Device (Connection).
              */
-            return history->update(m);
+            history->update(*m);
+
+            return true;
         }
     }
     return false;
@@ -50,9 +51,9 @@ TMTCMessage* Multiplex::query(const SystemDeviceIdentifier* id, const TMTCMessag
 
         if (sid.isValid() && this->state.contains(sid)){
 
-            MultiplexDeviceHistory* history = this->state[sid];
+            MultiplexTable* history = this->state[sid];
 
-            return history->query(m);
+            return history->query(*m);
         }
         else if (sid.isSpecial()){
 
@@ -64,14 +65,14 @@ TMTCMessage* Multiplex::query(const SystemDeviceIdentifier* id, const TMTCMessag
                  */
                 const SystemDeviceIdentifier& sid = *id;
 
-                MultiplexDeviceHistory* special = 0;
+                MultiplexTable* special = 0;
 
                 if (this->state.contains(sid)){
 
                     special = this->state[sid];
                 }
                 else {
-                    special = new MultiplexDeviceHistory(sid);
+                    special = new MultiplexTable(sid);
                     this->state[sid] = special;
                 }
 
@@ -89,7 +90,7 @@ TMTCMessage* Multiplex::query(const SystemDeviceIdentifier* id, const TMTCMessag
                      * Query
                      */
                     const TMTCName& n = nvp->getName();
-                    const QVariant& v = special->query(n);
+                    QVariant v = special->query(n);
 
                     if (v.isValid()){
                         /*
@@ -106,7 +107,7 @@ TMTCMessage* Multiplex::query(const SystemDeviceIdentifier* id, const TMTCMessag
                 QList<SystemDeviceIdentifier> dk = state.keys();
                 QList<SystemDeviceIdentifier>::const_iterator dp, dz;
                 for (dp = dk.constBegin(), dz = dk.constEnd(); dp != dz; ++dp){
-                    MultiplexDeviceHistory* history = state[*dp];
+                    MultiplexTable* history = state[*dp];
 
                     QList<TMTCNameValue*>::const_iterator p, z;
                     for (p = m->constBegin(), z = m->constEnd(); p != z; ++p){
@@ -115,7 +116,7 @@ TMTCMessage* Multiplex::query(const SystemDeviceIdentifier* id, const TMTCMessag
                         if (nvp->hasNotValue()){
 
                             const TMTCName& n = nvp->getName();
-                            const QVariant& v = history->query(n);
+                            QVariant v = history->query(n);
 
                             if (v.isValid()){
 
@@ -131,17 +132,17 @@ TMTCMessage* Multiplex::query(const SystemDeviceIdentifier* id, const TMTCMessag
     }
     return 0;
 }
-const QVariant& Multiplex::query(const SystemDeviceIdentifier& d, const TMTCName& n){
+QVariant Multiplex::query(const SystemDeviceIdentifier& d, const TMTCName& n){
 
     if (d.isValid() && this->state.contains(d)){
 
-        MultiplexDeviceHistory* history = this->state[d];
+        MultiplexTable* history = this->state[d];
 
         return history->query(n);
     }
     else {
-
-        return MultiplexTable::Nil;
+        QVariant nil;
+        return nil;
     }
 }
 void Multiplex::select(int count, MultiplexSelect** query, const QRectF& window){
@@ -156,7 +157,7 @@ void Multiplex::select(int count, MultiplexSelect** query, const QRectF& window)
 
             if (sid.isValid() && this->state.contains(sid)){
 
-                MultiplexDeviceHistory* history = this->state[sid];
+                MultiplexTable* history = this->state[sid];
 
                 history->select(select);
             }

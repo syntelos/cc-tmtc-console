@@ -180,4 +180,5 @@ class CCDB : public StorageModel,
     Q_DISABLE_COPY(CCDB)
 };
 
+Q_DECLARE_METATYPE(CCDB*)
 #endif

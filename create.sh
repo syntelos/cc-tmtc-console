@@ -29,7 +29,6 @@ EOF
 ${class}::${class}()
 {
 }
-#endif
 EOF
     ls -l $source $header
     git add $source $header

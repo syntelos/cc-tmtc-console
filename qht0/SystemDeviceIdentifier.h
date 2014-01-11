@@ -104,4 +104,5 @@ class SystemDeviceIdentifier : public QVariant {
 
 uint qHash ( const SystemDeviceIdentifier&);
 
+Q_DECLARE_METATYPE(SystemDeviceIdentifier);
 #endif

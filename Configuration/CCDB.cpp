@@ -21,7 +21,6 @@
 #include "CCDB.h"
 #include "Null.h"
 
-Q_DECLARE_METATYPE(CCDB*)
 
 QScriptValue ccdbToScriptValue(QScriptEngine *engine, CCDB* const &in){
     return engine->newQObject(in);

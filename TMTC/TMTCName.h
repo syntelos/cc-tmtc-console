@@ -99,4 +99,5 @@ class TMTCName : public QVariant {
 
 uint qHash ( const TMTCName&);
 
+Q_DECLARE_METATYPE(TMTCName);
 #endif

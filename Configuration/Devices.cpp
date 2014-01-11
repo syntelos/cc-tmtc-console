@@ -12,7 +12,6 @@
 #include "Configuration.h"
 #include "ConfigurationError.h"
 
-Q_DECLARE_METATYPE(Devices*)
 
 QScriptValue devicesToScriptValue(QScriptEngine *engine, Devices* const &in){
     return engine->newQObject(in);

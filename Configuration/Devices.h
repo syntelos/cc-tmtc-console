@@ -80,4 +80,5 @@ class Devices : public StorageList<Device*> {
     Q_DISABLE_COPY(Devices)
 };
 
+Q_DECLARE_METATYPE(Devices*)
 #endif

@@ -72,8 +72,13 @@ class SystemDeviceIdentifier : public QVariant {
      */
     quint16 getSuffix() const;
     /*!
+     * Normal form
      */
     QString toString() const;
+    /*!
+     * Filename form
+     */
+    QString toString(const QString& fext) const ;
 
     QStringList toStringList() const;
     /*!
@@ -104,4 +109,5 @@ class SystemDeviceIdentifier : public QVariant {
 
 uint qHash ( const SystemDeviceIdentifier&);
 
+Q_DECLARE_METATYPE(SystemDeviceIdentifier);
 #endif

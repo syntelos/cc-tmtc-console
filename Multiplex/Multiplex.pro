@@ -10,15 +10,22 @@ INCLUDEPATH += ../
 
 
 SOURCES += Multiplex.cpp \
-           MultiplexDevices.cpp \
-           MultiplexDeviceHistory.cpp \
+           MultiplexIndex.cpp \
+           MultiplexObject.cpp \
            MultiplexRecord.cpp \
+           MultiplexRecordIterator.cpp \
            MultiplexSelect.cpp \
-           MultiplexTable.cpp
+           MultiplexTable.cpp \
+           MultiplexTableIterator.cpp \
+           MultiplexTables.cpp
+
 
 HEADERS += Multiplex.h \
-           MultiplexDevices.h \
-           MultiplexDeviceHistory.h \
+           MultiplexIndex.h \
+           MultiplexObject.h \
            MultiplexRecord.h \
+           MultiplexRecordIterator.h \
            MultiplexSelect.h \
-           MultiplexTable.h
+           MultiplexTable.h \
+           MultiplexTableIterator.h \
+           MultiplexTables.h

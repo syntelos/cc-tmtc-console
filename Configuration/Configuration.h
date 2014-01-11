@@ -92,4 +92,5 @@ class Configuration : public ObjectTreeModel,
     Q_DISABLE_COPY(Configuration)
 };
 
+Q_DECLARE_METATYPE(Configuration*)
 #endif

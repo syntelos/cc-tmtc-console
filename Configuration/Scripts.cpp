@@ -13,7 +13,6 @@
 #include "ConfigurationError.h"
 
 
-Q_DECLARE_METATYPE(Scripts*)
 
 QScriptValue scriptsToScriptValue(QScriptEngine *engine, Scripts* const &in){
     return engine->newQObject(in);

@@ -112,4 +112,5 @@ class Device : public StorageListItem, public SystemDevice {
     Q_DISABLE_COPY(Device)
 };
 
+Q_DECLARE_METATYPE(Device*)
 #endif

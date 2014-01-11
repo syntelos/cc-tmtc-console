@@ -5,7 +5,6 @@
 
 #include "TMTCName.h"
 
-Q_DECLARE_METATYPE(TMTCName);
 
 int TMTCName::InitMetaTypeId = qRegisterMetaType<TMTCName>();
 

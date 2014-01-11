@@ -6,7 +6,6 @@
 
 #include "SystemDeviceIdentifier.h"
 
-Q_DECLARE_METATYPE(SystemDeviceIdentifier);
 
 const int SystemDeviceIdentifier::InitMetaTypeId = qRegisterMetaType<SystemDeviceIdentifier>("SystemDeviceIdentifier");
 

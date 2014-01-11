@@ -7,7 +7,6 @@
 #include "Configuration.h"
 #include "HCDB.h"
 
-Q_DECLARE_METATYPE(HCDB*)
 
 QScriptValue hcdbToScriptValue(QScriptEngine *engine, HCDB* const &in){
     return engine->newQObject(in);

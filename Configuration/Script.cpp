@@ -24,7 +24,6 @@
 #include "ConfigurationError.h"
 #include "CodeEditor/CodeEditor.h"
 
-Q_DECLARE_METATYPE(Script*)
 
 QScriptValue scriptToScriptValue(QScriptEngine *engine, Script* const &in){
     return engine->newQObject(in);

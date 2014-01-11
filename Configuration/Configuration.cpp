@@ -8,7 +8,6 @@
 #include "Scripts.h"
 #include "Script.h"
 
-Q_DECLARE_METATYPE(Configuration*)
 
 QScriptValue configurationToScriptValue(QScriptEngine *engine, Configuration* const &in){
     return engine->newQObject(in);

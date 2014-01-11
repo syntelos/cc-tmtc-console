@@ -130,4 +130,5 @@ class Library : public StorageListItem {
     Q_DISABLE_COPY(Library)
 };
 
+Q_DECLARE_METATYPE(Library*)
 #endif

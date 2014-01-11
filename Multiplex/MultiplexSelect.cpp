@@ -16,7 +16,7 @@ MultiplexSelect::MultiplexSelect(const qint64 start, const qint64 end,
 }
 MultiplexSelect::~MultiplexSelect(){
 }
-bool MultiplexSelect::intersects(MultiplexTable& table) const {
+bool MultiplexSelect::intersects(MultiplexObject& table) const {
 
     if (table.contains(this->name)){
 
@@ -28,16 +28,16 @@ bool MultiplexSelect::intersects(MultiplexTable& table) const {
         return false;
     }
 }
-void MultiplexSelect::append(MultiplexTable& table){
+void MultiplexSelect::append(MultiplexObject& table){
 
     if (this->intersects(table)){
 
-        QVariant* value = table[this->name];
+        QVariant value = table[this->name];
 
         qreal x = (qreal)(table.getTime()-this->start);
 
         bool ok;
-        qreal y = value->toReal(&ok);
+        qreal y = value.toReal(&ok);
         if (ok){
 
             if (x < local_min_x){
@@ -71,7 +71,7 @@ void MultiplexSelect::append(MultiplexTable& table){
         }
     }
 }
-MultiplexSelect& MultiplexSelect::operator+=(MultiplexTable& table){
+MultiplexSelect& MultiplexSelect::operator+=(MultiplexObject& table){
 
     this->append(table);
 

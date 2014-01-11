@@ -11,7 +11,6 @@
 #include "Configuration.h"
 #include "ConfigurationError.h"
 
-Q_DECLARE_METATYPE(Library*)
 
 QScriptValue libraryToScriptValue(QScriptEngine *engine, Library* const &in){
     return engine->newQObject(in);

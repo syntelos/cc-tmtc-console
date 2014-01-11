@@ -30,7 +30,6 @@
 #include "Window.h"
 
 
-Q_DECLARE_METATYPE(Window*)
 
 QScriptValue windowToScriptValue(QScriptEngine *engine, Window* const &in){
     return engine->newQObject(in);

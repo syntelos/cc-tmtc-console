@@ -5,6 +5,7 @@
 #define _CONSOLE_MULTIPLEX_MultiplexRecord_H
 
 #include <Qt>
+#include <QVariant>
 
 namespace MX {
 
@@ -28,43 +29,22 @@ struct MultiplexFieldB {
      * Constructor
      */
     void init(const quint8 value);
+
+    void init(const MultiplexFieldB& copy);
     /*!
      * Confirm integrity and value
      */
-    bool validate(const quint8 value);
+    bool validate(const quint8 value) const;
     /*!
      * Perform integrity check
      */
-    bool check();
-
-    void print();
-};
-/*!
- *
- */
-struct MultiplexFieldF {
- private:
-    MultiplexFieldF();
-    MultiplexFieldF(MultiplexFieldF&);
-    ~MultiplexFieldF();
-
- public:
-    volatile char fs;
-    volatile qreal value;
+    bool check() const;
     /*!
-     * Constructor
+     * With integrity, return the non zero (byte) length of this
+     * record (for address arithmetic).
      */
-    void init(const qreal value);
-    /*!
-     * Confirm integrity and value
-     */
-    bool validate(const qreal value);
-    /*!
-     * Perform integrity check
-     */
-    bool check();
+    int length() const;
 
-    void print();
 };
 /*!
  * 
@@ -82,16 +62,79 @@ struct MultiplexFieldL {
      * Constructor
      */
     void init(const qint64 value);
+
+    void init(const MultiplexFieldL& copy);
     /*!
      * Confirm integrity and value
      */
-    bool validate(const qint64 value);
+    bool validate(const qint64 value) const;
     /*!
      * Perform integrity check
      */
-    bool check();
+    bool check() const;
+    /*!
+     * With integrity, return the non zero (byte) length of this
+     * record (for address arithmetic).
+     */
+    int length() const;
 
-    void print();
+};
+/*!
+ *
+ */
+struct MultiplexFieldV {
+ private:
+    MultiplexFieldV();
+    MultiplexFieldV(MultiplexFieldV&);
+    ~MultiplexFieldV();
+
+ public:
+    enum ValueAlloc {
+        DefaultAlloc = 8,
+        StorageLimit = 255
+    };
+
+    volatile char fs;
+    volatile quint8 alloc;
+    volatile quint8 storage;
+    volatile quint8 value[];
+    /*!
+     * This call has no effect when the argument byte array is too
+     * long.  Return false for an argument that is ignored.
+     *
+     * This proceedure depends on (uses) the value of 'alloc' defined
+     * by 'init(const QVariant&)'
+     */
+    bool setValue(const QVariant& value);
+    /*!
+     */
+    QVariant getValue() const;
+    /*!
+     * Constructor
+     *
+     * This proceedure defines the value of 'alloc' used by
+     * 'setValue(const QVariant&)'
+     */
+    bool init(const QVariant& value);
+    /*!
+     * This proceedure defines the value of 'alloc' required by
+     * 'setValue'
+     */
+    void init(const MultiplexFieldV& copy);
+    /*!
+     * Confirm integrity and value
+     */
+    bool validate(const QVariant& value) const;
+    /*!
+     * Perform integrity check
+     */
+    bool check() const;
+    /*!
+     * With integrity, return the non zero (byte) length of this
+     * record (for address arithmetic).
+     */
+    int length() const;
+
 };
 /*!
  *
@@ -103,36 +146,35 @@ struct MultiplexRecord {
     volatile char rs;
     MultiplexFieldL time;
     MultiplexFieldB count;
-    MultiplexFieldF data[];
-    /*!
-     * Constructor
-     */
-    void init(const quint8 count);
-    /*!
-     * Perform limited integrity check
-     */
-    bool test();
-    /*!
-     * Perform extended integrity check
-     */
-    bool check();
-    /*!
-     * Perform extended integrity check including value of field count
-     */
-    bool check(const quint8 count);
-    /*!
-     * Data debug print to stdout.
-     */
-    void print();
+    MultiplexFieldV data[];
 
-    static int SizeOf(int count);
+    qint64 getTime() const;
+
+    quint8 getFieldCount() const;
+    /*!
+     * Cleaning constructor
+     */
+    void init();
+    /*!
+     * Copy constructor
+     */
+    void init(const MultiplexRecord& copy);
+    /*!
+     * Perform integrity check of base record: GS, RS, time and count.
+     */
+    bool check() const;
+    /*!
+     * With integrity, return the non zero (byte) length of this
+     * record (for address arithmetic).
+     */
+    int length() const;
 
 };
 
 namespace MX {
 
     enum FieldSizes {
-        FieldSizeB = sizeof(MultiplexFieldB), FieldSizeF = sizeof(MultiplexFieldF), FieldSizeL = sizeof(MultiplexFieldL), RecordBase =  sizeof(MultiplexRecord)
+        FieldSizeB = sizeof(MultiplexFieldB), FieldSizeV = sizeof(MultiplexFieldV), FieldSizeL = sizeof(MultiplexFieldL), RecordBase =  sizeof(MultiplexRecord)
     };
 };
 #endif

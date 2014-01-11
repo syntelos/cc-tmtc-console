@@ -12,7 +12,7 @@
 
 #include "System/SystemDeviceIdentifier.h"
 #include "TMTC/TMTCName.h"
-#include "MultiplexTable.h"
+#include "MultiplexObject.h"
 
 /*!
  * A visual selection result is a plot path.
@@ -84,12 +84,12 @@ class MultiplexSelect : public QPainterPath {
     /*!
      * Called by 'append' to test for intersection with this selection.
      */
-    bool intersects(MultiplexTable&) const ;
+    bool intersects(MultiplexObject&) const ;
     /*!
      * If this selection 'contains' the argument, then append the
      * coordinate into a normalized domain for the path.
      */
-    void append(MultiplexTable&);
+    void append(MultiplexObject&);
     /**
      * After the path result has been constructed, the application of
      * this proceedure is required to prepare the path result for
@@ -103,7 +103,7 @@ class MultiplexSelect : public QPainterPath {
      */
     void visualization(const QRectF& window, qreal sx, qreal sy);
 
-    MultiplexSelect& operator+=(MultiplexTable& table);
+    MultiplexSelect& operator+=(MultiplexObject& table);
 
 };
 #endif

@@ -10,7 +10,7 @@
 #include "System/SystemDeviceIdentifier.h"
 #include "TMTC/TMTCMessage.h"
 #include "TMTC/TMTCName.h"
-#include "MultiplexDevices.h"
+#include "MultiplexTables.h"
 #include "MultiplexSelect.h"
 
 /*!
@@ -19,7 +19,7 @@
 class Multiplex : public QObject {
     Q_OBJECT
 
-    MultiplexDevices state;
+    MultiplexTables state;
 
  public:
     Multiplex(QObject* parent = 0);
@@ -39,7 +39,7 @@ class Multiplex : public QObject {
      * If the returned value is not a "null qvariant", then the const
      * may be lowered.
      */
-    const QVariant& query(const SystemDeviceIdentifier&, const TMTCName&);
+    QVariant query(const SystemDeviceIdentifier&, const TMTCName&);
     /*!
      * Plot selector builds the requested set of path structures with
      * visualization into the requested window.

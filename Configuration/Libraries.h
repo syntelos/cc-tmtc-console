@@ -80,4 +80,5 @@ class Libraries : public StorageList<Library*> {
     Q_DISABLE_COPY(Libraries)
 };
 
+Q_DECLARE_METATYPE(Libraries*)
 #endif
