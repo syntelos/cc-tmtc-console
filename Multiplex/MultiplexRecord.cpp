@@ -6,11 +6,11 @@
 #include "MultiplexRecord.h"
 #include "MultiplexRecordIterator.h"
 
-inline qint64 MultiplexRecord::getTime() const {
+qint64 MultiplexRecord::getTime() const {
 
     return time.value;
 }
-inline quint8 MultiplexRecord::getFieldCount() const {
+quint8 MultiplexRecord::getFieldCount() const {
 
     return count.value;
 }
@@ -34,7 +34,7 @@ void MultiplexRecord::init(const MultiplexRecord& copy){
         tgt.next().init(src.next());
     }
 }
-inline bool MultiplexRecord::check() const {
+bool MultiplexRecord::check() const {
     return (MX::GS == gs && MX::RS == rs &&
             time.check() && count.check());
 }
@@ -67,10 +67,10 @@ void MultiplexFieldL::init(const MultiplexFieldL& copy){
     this->fs = MX::FS;
     this->value = copy.value;
 }
-inline bool MultiplexFieldL::validate(const qint64 value) const {
+bool MultiplexFieldL::validate(const qint64 value) const {
     return (MX::FS == this->fs && value == this->value);
 }
-inline bool MultiplexFieldL::check() const {
+bool MultiplexFieldL::check() const {
     return (MX::FS == this->fs);
 }
 int MultiplexFieldL::length() const {
@@ -232,7 +232,7 @@ bool MultiplexFieldV::validate(const QVariant& value) const {
         return false;
     }
 }
-inline bool MultiplexFieldV::check() const {
+bool MultiplexFieldV::check() const {
     return (MX::FS == this->fs);
 }
 int MultiplexFieldV::length() const {
@@ -255,10 +255,10 @@ void MultiplexFieldB::init(const MultiplexFieldB& copy){
     this->fs = MX::FS;
     this->value = copy.value;
 }
-inline bool MultiplexFieldB::validate(const quint8 value) const {
+bool MultiplexFieldB::validate(const quint8 value) const {
     return (MX::FS == this->fs && value == this->value);
 }
-inline bool MultiplexFieldB::check() const {
+bool MultiplexFieldB::check() const {
     return (MX::FS == this->fs);
 }
 int MultiplexFieldB::length() const {

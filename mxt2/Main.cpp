@@ -56,12 +56,36 @@ const static char* TEST_MSGS[] = {
 };
 const static int TEST_MSGS_COUNT = 40;
 
+const static QByteArray SID("192.168.2.2:0");
+
 
 int main(int argc, char** argv){
 
-    int cc;
-    for (cc = 0; cc < TEST_MSGS_COUNT; cc++){
-        std::cout << TEST_MSGS[cc] << std::endl;
+    SystemDeviceIdentifier sid(SID);
+
+    MultiplexTable table(sid);
+
+    const char* table_name = qPrintable(sid.toString("table"));
+
+    if (table.open()){
+
+        std::cerr << argv[0] << ": successfully opened table " <<  table_name << std::endl;
+
+        int cc;
+        for (cc = 0; cc < TEST_MSGS_COUNT; cc++){
+
+            TMTCMessage m;
+
+            table.update(m);
+        }
+
+        table.close();
+
+        return 0;
     }
-    return 0;
+    else {
+
+        std::cerr << argv[0] << ": error opening table " <<  table_name << std::endl;
+        return 1;
+    }
 }
