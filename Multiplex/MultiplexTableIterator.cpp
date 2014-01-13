@@ -1,85 +1,66 @@
 /*
  * Copyright 2014 John Pritchard, Syntelos.  All rights reserved.
  */
+#include <QDebug>
 
 #include "MultiplexTableIterator.h"
 
-MultiplexTableIterator::MultiplexTableIterator(void* d, void* p, quint64 z)
-    : start(d), end(d+z), record_previous(0), record_next(p)
+MultiplexTableIterator::MultiplexTableIterator(quintptr d, quintptr p, qptrdiff z)
+    : start(d), end(d+z), record_prev(0), record_next(p)
 {
-    const quintptr adr_start = (quintptr)d;
-    const quintptr adr_next = (quintptr)p;
+    if (p){
+        /*
+         * First node search
+         * 
+         * The record allocation algorithm permits the first node to
+         * be overwritten unpredictably such that the iteration of
+         * existing nodes must accomodate (the inexactitude) with a
+         * (this) "first node search" proceedure.
+         */
+        const quintptr adr_start = (quintptr)start;
+        const quintptr adr_end = (quintptr)end;
+        const quintptr adr_next = (quintptr)p;
 
-    quintptr adr_cursor = (quintptr)p;
-    /*
-     * Walk back to previous node (record_previous), if possible.
-     */
-    if (0 != adr_cursor){
-        MultiplexRecord* rec_next = reinterpret_cast<MultiplexRecord*>(adr_cursor);
-        if (rec_next->check()){
+        quintptr adr_cursor = adr_next;
 
-            adr_cursor -= MX::RecordBase;
+        while (true){
 
-            bool check_wrap_toend = true;
-
-            while (adr_start < adr_cursor){
+            if ((adr_cursor + MX::RecordBase) < adr_end){
 
                 MultiplexRecord* r = reinterpret_cast<MultiplexRecord*>(adr_cursor);
 
                 if (r->check()){
                     /*
-                     * If p was "first" then any previous node
-                     * would be "last" and there is no previous
-                     * node for this proceedure.
+                     * If 'p' was correct, fall into here and break search.
                      */
-                    if (r->getTime() < rec_next->getTime()){
-                        /*
-                         * RECORD_PREVIOUS is only defined (non zero) when "record check"
-                         * passes
-                         */
-                        record_previous = r;
-                    }
-                    else {
-                        check_wrap_toend = false;
-                    }
+                    record_next = adr_cursor;
 
                     break;
                 }
                 else {
-                    adr_cursor--;
-                }
-            }
+                    /*
+                     * If 'p' was incorrect, perform corrective search.
+                     */
+                    adr_cursor++;
 
-            /*
-             * Wrap around (to end)
-             */
-            if (0 == record_previous && check_wrap_toend){
-
-                adr_cursor = (quintptr)end;
-
-                adr_cursor -= MX::RecordBase;
-
-                while (adr_next < adr_cursor){
-                    MultiplexRecord* r = reinterpret_cast<MultiplexRecord*>(adr_cursor);
-
-                    if (r->check()){
+                    if (adr_cursor == adr_next){
                         /*
-                         * Test wrap validity
+                         * Terminal case: table scan complete
+                         * 
+                         * Weird user corner case?  Table is too small
+                         * to hold a record?
                          */
-                        if (r->getTime() < rec_next->getTime()){
-                            /*
-                             * RECORD_PREVIOUS is only defined (non zero) when "record check"
-                             * passes
-                             */
-                            record_previous = r;
-                        }
+                        record_next = 0;
 
                         break;
                     }
-                    else {
-                        adr_cursor--;
-                    }
                 }
+            }
+            else {
+                /*
+                 * Wrap
+                 */
+                adr_cursor = adr_start;
             }
         }
     }
@@ -87,27 +68,9 @@ MultiplexTableIterator::MultiplexTableIterator(void* d, void* p, quint64 z)
 MultiplexTableIterator::~MultiplexTableIterator()
 {
 }
-bool MultiplexTableIterator::hasPrevious(){
-    /*
-     * RECORD_PREVIOUS is only defined (non zero) when "record check"
-     * passes
-     */
-    return (0 != record_previous);
-}
-bool MultiplexTableIterator::hasCurrent(){
-    if (0 != record_next){
-
-        MultiplexRecord* n = reinterpret_cast<MultiplexRecord*>(record_next);
-        /*
-         * Validate RECORD_NEXT
-         */
-        return (n->check());
-    }
-    else
-        return false;
-}
 bool MultiplexTableIterator::hasNext(){
-    if (0 != record_next){
+
+    if (0 != record_next && (record_next + MX::RecordBase) < end){
 
         MultiplexRecord* n = reinterpret_cast<MultiplexRecord*>(record_next);
         /*
@@ -115,36 +78,41 @@ bool MultiplexTableIterator::hasNext(){
          */
         if (n->check()){
 
-            if (record_previous){
+            if (record_prev){
                 /*
-                 * RECORD_PREVIOUS is only defined (non zero) when "record check"
+                 * RECORD_PREV is only defined (non zero) when "record check"
                  * passes
                  */
-                MultiplexRecord* p = reinterpret_cast<MultiplexRecord*>(record_previous);
+                MultiplexRecord* p = reinterpret_cast<MultiplexRecord*>(record_prev);
                 /*
-                 * Halt at (last < first)
+                 * Halt at (last.t < first.t)
                  */
-                return (p->getTime() < n->getTime());
+                if (p->getTime() < n->getTime()){
+                    qDebug().nospace() << "MultiplexTableIterator.hasNext [p -> n]";
+                    return true;
+                }
+                else {
+                    qDebug().nospace() << "MultiplexTableIterator.hasNext [~p -> ~n]";
+                    return false;
+                }
             }
             else {
-
+                qDebug().nospace() << "MultiplexTableIterator.hasNext [n]";
                 return true;
             }
         }
+        else {
+            qDebug().nospace() << "MultiplexTableIterator.hasNext [~n.check]";
+        }
+    }
+    else {
+        qDebug().nospace() << "MultiplexTableIterator.hasNext [~record_next]";
     }
     return false;
 }
-MultiplexRecord* MultiplexTableIterator::previous(){
-
-    return reinterpret_cast<MultiplexRecord*>(record_previous);
-}
-MultiplexRecord* MultiplexTableIterator::current(){
-
-    return reinterpret_cast<MultiplexRecord*>(record_next);
-}
 MultiplexRecord* MultiplexTableIterator::next(){
 
-    if (0 != record_next){
+    if (0 != record_next && (record_next + MX::RecordBase) < end){
 
         MultiplexRecord* re = reinterpret_cast<MultiplexRecord*>(record_next);
 
@@ -152,10 +120,10 @@ MultiplexRecord* MultiplexTableIterator::next(){
 
             int object_size = re->length();
             /*
-             * RECORD_PREVIOUS is only defined (non zero) when "record check"
+             * RECORD_PREV is only defined (non zero) when "record check"
              * passes
              */
-            record_previous = record_next;
+            record_prev = record_next;
             /*
              * RECORD_NEXT is defined optimistically (speculatively)
              */
@@ -167,16 +135,6 @@ MultiplexRecord* MultiplexTableIterator::next(){
                  */
                 record_next = start;
             }
-            /*
-             * This corner case is unreachable
-             * 
-            else if (record_next->check() && (record_next + record_next->length()) > end){
-                 *
-                 * Wrap around
-                 *
-                record_next = start;
-            }
-             */
 
             return re;
         }

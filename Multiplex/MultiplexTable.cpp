@@ -8,20 +8,22 @@
 #include "TMTC/TMTCNameValue.h"
 #include "MultiplexTable.h"
 #include "MultiplexTableIterator.h"
+#include "MultiplexTableCreator.h"
 #include "MultiplexRecordIterator.h"
 
 MultiplexTable::MultiplexTable(const SystemDeviceIdentifier& id)
-    : id(id), index(id),
-      overhead_temporal(1), overhead_spatial(9), 
-      user_record_count(3600), record_count(3610), 
-      file(id.toString("table")), data(0), first(0), last(0)
+    : id(id), index(id), file(id.toString("table")), data(0)
 {
     index.read();
 }
 MultiplexTable::~MultiplexTable(){
-}
-bool MultiplexTable::isReady(){
-    return (0 != record_count);
+    if (0 != data){
+        {
+            unsigned char* data = (unsigned char*)this->data;
+            file.unmap(data);
+        }
+        data = 0;
+    }
 }
 bool MultiplexTable::isOpen(){
     return (0 != data);
@@ -32,20 +34,15 @@ bool MultiplexTable::open(){
      * 
      * RECORD: define data, first, and last.
      */
-    if (0 == data && 0 != record_count){
-        /*
-         * Basic initialization of MultiplexIndex
-         */
-        if (index.maxObjectSize(MX::RecordBase)){
-
-            index.write();
-        }
-
-        int object_size = index.getObjectSize();
+    if (0 == data){
 
         if (file.open(QIODevice::ReadWrite)){
+
             {
-                const int required_size = (record_count * object_size);
+                const quint32 object_size = index.getObjectSize();
+                const quint32 record_count = index.getRecordCount();
+
+                const qint64 required_size = (record_count * object_size);
                 /*
                  * Expand table file size using object size
                  */
@@ -54,77 +51,15 @@ bool MultiplexTable::open(){
                     file.seek(0);
                 }
             }
-            data = file.map(0,file.size());
+
+            data = reinterpret_cast<quintptr>(file.map(0,file.size()));
 
             file.close();
 
-            if (data){
-                /*
-                 * Scan table for 'first' and 'last'
-                 */
-                void* end = (data + file.size());
-
-                void *rp, *rl = data, *rf = data;
-
-                qint64 pt, lt = 0;
-
-
-                for (rp = data; rp < end; rp += object_size){
-
-                    MultiplexRecord* p = record(rp);
-
-                    if (p->check()){
-                        /*
-                         * Found record 'p' at 'rp'
-                         */
-                        pt = p->getTime();
-
-                        if (pt > lt){
-                            /*
-                             * In order {l,p}, including initial
-                             */
-                            rl = rp;
-                            /*
-                             * Define first, initially
-                             */
-                            if (data == rf){
-                                rf = rp;
-                            }
-                        }
-                        else if (0 != pt){
-                            /*
-                             * Out of order {l,p}
-                             * 
-                             * Define 'first' as 'p'
-                             */
-                            rf = rp;
-                            /*
-                             * Exit scan
-                             */
-                            last = rl;
-                            first = rf;
-                            break;
-                        }
-                        else {
-                            /*
-                             * Record 'p' has 'time' zero
-                             */
-                            last = rl;
-                            first = rf;
-                            break;
-                        }
-                    }
-                    else {
-                        /*
-                         * Terminate scan at table frontier
-                         */
-                        last = rl;
-                        first = rf;
-                        break;
-                    }
-                }
-                return true;
-            }
+            return (0 != data);
+        }
+        else {
+            qDebug().nospace() << "MultiplexTable " << file.fileName() << " failed to open file";
         }
     }
     return false;
@@ -136,8 +71,6 @@ void MultiplexTable::close(){
             file.unmap(data);
         }
         data = 0;
-        first = 0;
-        last = 0;
     }
 }
 void MultiplexTable::reopen(){
@@ -146,9 +79,10 @@ void MultiplexTable::reopen(){
      * 
      * A reduction of (close; open) to preserve (data, first, last)
      */
-    const int object_size = index.getObjectSize();
+    const quint32 object_size = index.getObjectSize();
+    const quint32 record_count = index.getRecordCount();
 
-    const int required_size = (record_count * object_size);
+    const qint64 required_size = (record_count * object_size);
 
     if (required_size > file.size()){
 
@@ -162,124 +96,139 @@ void MultiplexTable::reopen(){
             file.resize(required_size);
             file.seek(0);
 
-            data = file.map(0,file.size());
+            data = reinterpret_cast<quintptr>(file.map(0,file.size()));
 
             file.close();
-
-            if (!data){
-                data = 0;
-                first = 0;
-                last = 0;
-            }
         }
         else {
             data = 0;
-            first = 0;
-            last = 0;
         }
     }
 }
 inline MultiplexRecord* MultiplexTable::recordFirst(){
-    return reinterpret_cast<MultiplexRecord*>(first);
+
+    if (0 != data){
+
+        quintptr first = data + index.getFirst();
+
+        return reinterpret_cast<MultiplexRecord*>(first);
+    }
+    else
+        return 0;
 }
 inline MultiplexRecord* MultiplexTable::recordLast(){
-    return reinterpret_cast<MultiplexRecord*>(last);
+
+    if (0 != data){
+
+        quintptr last = data + index.getLast();
+
+        return reinterpret_cast<MultiplexRecord*>(last);
+    }
+    else
+        return 0;
 }
-inline MultiplexRecord* MultiplexTable::record(void* p){
+inline MultiplexRecord* MultiplexTable::record(quintptr p){
     return reinterpret_cast<MultiplexRecord*>(p);
 }
 MultiplexRecord* MultiplexTable::recordNew(){
 
-    MultiplexTableIterator table(data,last,file.size());
-    /*
-     * Increment data series
-     * 
-     * Validate current node in order with (any) previous node
-     */
-    if (table.hasNext()){
-        /*
-         * Call 'table.previous' before 'table.next'
-         */
-        MultiplexRecord* p = table.previous();
-        MultiplexRecord* n = table.current();
+    MultiplexTableCreator table(data,(data + index.getLast()),file.size());
 
-        if (p){
+    while (table.hasNext()){
+
+        qptrdiff ofs_last = table.offset();
+        qptrdiff idx_last = index.getLast();
+
+        if (ofs_last != idx_last){
+
+            MultiplexRecord* prev = table.previous();
+            MultiplexRecord* next = table.next();
+
+            if (prev){
+                /*
+                 * Copy current data set
+                 */
+                next->init(*prev);
+
+                qDebug().nospace() << "MultiplexTable.recordNew [new; copy]";
+            }
+            else {
+                /*
+                 * Clear object
+                 */
+                next->init();
+
+                qDebug().nospace() << "MultiplexTable.recordNew [new; init]";
+            }
+
             /*
-             * Copy current data set
+             * index.first
              */
-            n->init(*p);
+            if (table.hasNext()){
+
+                qptrdiff ofs_first = table.offset();
+
+                MultiplexRecord* first = table.next();
+
+                if (first->check() && first->getTime() < next->getTime()){
+
+                    index.setFirst(ofs_first);
+                }
+            }
+
+            /*
+             * index
+             */
+            index.setLast(ofs_last);
+
+            index.write();
+
+            return next;
         }
         else {
-            /*
-             * Clear object
-             */
-            n->init();
+            table.next();
         }
-        return n;
     }
-    else {
-        /*
-         * Table is closed
-         */
-        return 0;
-    }
+
+    qDebug().nospace() << "MultiplexTable.recordNew [bug]";
+    /*
+     */
+    return 0;
 }
 
 quint32 MultiplexTable::getOverheadTemporal(){
 
-    return overhead_temporal;
+    return index.getCountTemporal();
 }
 void MultiplexTable::setOverheadTemporal(quint32 count){
 
-    if (0 < count){
-
-        overhead_temporal = count;
-
-        record_count = (user_record_count + overhead_temporal + overhead_spatial);
-    }
+    index.setCountTemporal(count);
 }
 quint32 MultiplexTable::getOverheadSpatial(){
 
-    return overhead_spatial;
+    return index.getCountSpatial();
 }
 void MultiplexTable::setOverheadSpatial(quint32 count){
 
-    if (0 < count){
-
-        overhead_spatial = count;
-
-        record_count = (user_record_count + overhead_temporal + overhead_spatial);
-    }
+    index.setCountSpatial(count);
 }
 quint32 MultiplexTable::getRecordCount(){
 
-    return user_record_count;
+    return index.getCountUser();
 }
 void MultiplexTable::setRecordCount(quint32 count){
 
-    if (0 < count){
-
-        user_record_count = count;
-
-        record_count = (user_record_count + overhead_temporal + overhead_spatial);
-    }
-    else {
-
-        user_record_count = 0;
-
-        record_count = 0;
-
-        close();
-    }
+    index.setCountUser(count);
 }
 TMTCMessage* MultiplexTable::query(const TMTCMessage& m){
 
     TMTCMessage* re = new TMTCMessage();
 
     MultiplexRecord* r = recordLast();
-
     if (r){
+
         const int count = m.size();
+
         MultiplexRecordIterator object(*r);
 
         int cc;
@@ -332,7 +281,7 @@ void MultiplexTable::update(const TMTCMessage& m){
 
     const int count = m.size();
 
-    if (0 < count && 256 > count){
+    if (256 > count){
 
         MultiplexRecord* r = recordNew();
     
@@ -442,7 +391,7 @@ void MultiplexTable::update(const TMTCNameValue& nvp){
 }
 void MultiplexTable::select(MultiplexSelect& s){
 
-    MultiplexTableIterator table(data,last,file.size());
+    MultiplexTableIterator table(data,(data + index.getFirst()),file.size());
 
     while (table.hasNext()){
 

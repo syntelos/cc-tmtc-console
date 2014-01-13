@@ -39,11 +39,13 @@ struct MultiplexFieldB {
      * Perform integrity check
      */
     bool check() const;
+
+    bool zero() const;
     /*!
      * With integrity, return the non zero (byte) length of this
      * record (for address arithmetic).
      */
-    int length() const;
+    qptrdiff length() const;
 
 };
 /*!
@@ -72,11 +74,13 @@ struct MultiplexFieldL {
      * Perform integrity check
      */
     bool check() const;
+
+    bool zero() const;
     /*!
      * With integrity, return the non zero (byte) length of this
      * record (for address arithmetic).
      */
-    int length() const;
+    qptrdiff length() const;
 
 };
 /*!
@@ -129,11 +133,13 @@ struct MultiplexFieldV {
      * Perform integrity check
      */
     bool check() const;
+
+    bool zero() const;
     /*!
      * With integrity, return the non zero (byte) length of this
      * record (for address arithmetic).
      */
-    int length() const;
+    qptrdiff length() const;
 
 };
 /*!
@@ -147,10 +153,18 @@ struct MultiplexRecord {
     MultiplexFieldL time;
     MultiplexFieldB count;
     MultiplexFieldV data[];
-
+    /*!
+     * Convenience for time value
+     */
     qint64 getTime() const;
-
+    /*!
+     * Convenience for count value
+     */
     quint8 getFieldCount() const;
+    /*!
+     * Sum of space allocated to fields
+     */
+    qptrdiff getFieldLength() const;
     /*!
      * Cleaning constructor
      */
@@ -164,10 +178,14 @@ struct MultiplexRecord {
      */
     bool check() const;
     /*!
+     * Object separators (hard points) have value zero
+     */
+    bool zero() const;
+    /*!
      * With integrity, return the non zero (byte) length of this
      * record (for address arithmetic).
      */
-    int length() const;
+    qptrdiff length() const;
 
 };
 

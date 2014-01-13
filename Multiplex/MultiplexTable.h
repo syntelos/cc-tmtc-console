@@ -78,39 +78,26 @@ class MultiplexTable {
 
     MultiplexIndex index;
 
-    quint32 overhead_temporal;
-
-    quint32 overhead_spatial;
-
-    quint32 user_record_count;
-
-    quint32 record_count;
-
     QFile file;
 
-    void* data;
-
-    void* first;
-
-    void* last;
+    quintptr data;
 
     /*!
+     * DISABLE COPY -- destructor unmaps data
      */
     MultiplexTable(const MultiplexTable& copy);
-    /*!
-     */
-    MultiplexRecord* record(void* p);
-    /*!
-     */
-    MultiplexRecord* recordNew();
     /*!
      * Expand file map as required by record count and object size.
      * Implicitly (unsafely) depends on positive object-size and open
      * table
      */
     void reopen();
-
- protected:
+    /*!
+     */
+    MultiplexRecord* record(quintptr p);
+    /*!
+     */
+    MultiplexRecord* recordNew();
     /*!
      */
     MultiplexRecord* recordFirst();
@@ -125,10 +112,6 @@ class MultiplexTable {
     /*!
      */
     ~MultiplexTable();
-    /*!
-     * Have information required for open
-     */
-    bool isReady();
     /*!
      * Table is open
      */

@@ -186,8 +186,8 @@ void Multiplex::select(int count, MultiplexSelect** query, const QRectF& window)
         }
 
 
-        const qreal wx = window.x();
-        const qreal wy = window.y();
+        //const qreal wx = window.x();
+        //const qreal wy = window.y();
         const qreal ww = window.width();
         const qreal wh = window.height();
         /*

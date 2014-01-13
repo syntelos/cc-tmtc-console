@@ -5,6 +5,7 @@
 #define _CONSOLE_MULTIPLEX_MultiplexIndex_H
 
 #include <QHash>
+#include <QVariant>
 
 #include "System/SystemDeviceIdentifier.h"
 #include "TMTC/TMTCName.h"
@@ -20,19 +21,54 @@ class MultiplexIndex {
 
     QHash<TMTCName,int> table;
 
-    mutable int object_size;
+    qptrdiff object_size;
 
+    qptrdiff ofs_first;
+
+    qptrdiff ofs_last;
+
+    quint32 count_temporal;
+
+    quint32 count_spatial;
+
+    quint32 count_user;
+
+    void readFirst(const QVariant&);
+
+    void readLast(const QVariant&);
 
  public:
     MultiplexIndex(const SystemDeviceIdentifier& id);
     MultiplexIndex(const MultiplexIndex& copy);
     ~MultiplexIndex();
 
-    int getObjectSize() const;
+    qptrdiff getObjectSize() const;
 
-    void setObjectSize(int);
+    void setObjectSize(qptrdiff);
 
-    bool maxObjectSize(int);
+    bool maxObjectSize(qptrdiff);
+
+    qptrdiff getFirst() const;
+
+    void setFirst(qptrdiff);
+
+    qptrdiff getLast() const;
+
+    void setLast(qptrdiff);
+
+    quint32 getCountTemporal() const;
+
+    void setCountTemporal(quint32);
+
+    quint32 getCountSpatial() const;
+
+    void setCountSpatial(quint32);
+
+    quint32 getCountUser() const;
+
+    void setCountUser(quint32);
+
+    quint32 getRecordCount() const;
 
     bool read();
 

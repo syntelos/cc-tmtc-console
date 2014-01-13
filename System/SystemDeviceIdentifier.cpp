@@ -146,28 +146,22 @@ quint16 SystemDeviceIdentifier::getSuffix() const {
     return this->suffix;
 }
 QString SystemDeviceIdentifier::toString() const {
-    if (0 != suffix){
-        QString re("%1:%2");
-        re.arg(prefix).arg(suffix);
-        return re;
-    }
+    if (0 != suffix)
+        return QString("%1:%2").arg(prefix).arg(suffix);
     else
         return prefix;
 }
 QString SystemDeviceIdentifier::toString(const QString& fext) const {
     QString prefix(this->prefix);
-    prefix.replace(".","_");
+    {
+        prefix.replace(".","_");
+    }
+
     if (0 < fext.length()){
-        if (0 != suffix){
-            QString re("%1_%2.%3");
-            re.arg(prefix).arg(this->suffix).arg(fext);
-            return re;
-        }
-        else {
-            QString re("%1.%2");
-            re.arg(prefix).arg(fext);
-            return re;
-        }
+        if (0 != suffix)
+            return QString("%1_%2.%3").arg(prefix).arg(suffix).arg(fext);
+        else 
+            return QString("%1.%2").arg(prefix,fext);
     }
     else
         return prefix;

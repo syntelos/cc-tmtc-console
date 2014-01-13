@@ -7,49 +7,27 @@
 #include "MultiplexRecord.h"
 
 /*!
- * Iterate over existing data records in ascending (time) order.
- * 
- * This iterator initializes to the first record, tests the current
- * record, and increments to the subsequent record.  The 'next'
- * operator returns the current record, "then" increments the current
- * record.
- *
+ * Iterate over existing data records, beginning with the first
+ * record, for \class MultiplexTable select operator.
  */
 class MultiplexTableIterator {
 
-    void* start;
-    void* end;
-    void* record_previous;
-    void* record_next;
+    quintptr start;
+    quintptr end;
+
+    quintptr record_prev;
+    quintptr record_next;
+
 
  public:
-    MultiplexTableIterator(void* d, void* p, quint64 z);
+    MultiplexTableIterator(quintptr d, quintptr p, qptrdiff z);
     ~MultiplexTableIterator();
     /*!
-     * No cursor change, test previous node
-     */
-    bool hasPrevious();
-    /*!
-     * No cursor change, validate current node independent of previous
-     * node
-     */
-    bool hasCurrent();
-    /*!
-     * No cursor change, test current node and validate 'previous' and
-     * 'next' order.
+     * No cursor change.
      */
     bool hasNext();
     /*!
-     * No cursor change, return previous node.  Initially null when
-     * the current node is the "first" node.
-     */
-    MultiplexRecord* previous();
-    /*!
-     * No cursor change, return current node.
-     */
-    MultiplexRecord* current();
-    /*!
-     * Cursor change, return current node
+     * Cursor change, return current node and then iterate.
      */
     MultiplexRecord* next();
 

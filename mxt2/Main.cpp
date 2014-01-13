@@ -6,6 +6,7 @@
 #include <QByteArray>
 #include <QFile>
 #include <QIODevice>
+#include <QTextStream>
 
 #include "System/SystemDeviceIdentifier.h"
 #include "TMTC/TMTCMessage.h"
@@ -58,18 +59,25 @@ const static int TEST_MSGS_COUNT = 40;
 
 const static QByteArray SID("192.168.2.2:0");
 
+static QTextStream sout(stdout);
+static QTextStream serr(stderr);
 
 int main(int argc, char** argv){
 
+    QString prog_name(argv[0]);
+
     SystemDeviceIdentifier sid(SID);
+
+    QString table_name = sid.toString("table");
 
     MultiplexTable table(sid);
 
-    const char* table_name = qPrintable(sid.toString("table"));
+
+    serr << prog_name << ": table '" <<  table_name << "'" << endl;
 
     if (table.open()){
 
-        std::cerr << argv[0] << ": successfully opened table " <<  table_name << std::endl;
+        serr << prog_name << ": successfully opened table '" <<  table_name << "'" << endl;
 
         int cc;
         for (cc = 0; cc < TEST_MSGS_COUNT; cc++){
@@ -85,7 +93,7 @@ int main(int argc, char** argv){
     }
     else {
 
-        std::cerr << argv[0] << ": error opening table " <<  table_name << std::endl;
+        serr << prog_name << ": error opening table '" <<  table_name << "'" << endl;
         return 1;
     }
 }

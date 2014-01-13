@@ -7,18 +7,21 @@
 MultiplexRecordIterator::MultiplexRecordIterator(const MultiplexRecord& record)
     : count(record.count.value), field(0)
 {
-    void* p = const_cast<MultiplexFieldV*>(&record.data[0]);
+    /*
+     * Pointer arithmetic for field memory layout
+     */
+    quintptr adr_cursor = reinterpret_cast<quintptr>(const_cast<MultiplexFieldV*>(&record.data[0]));
 
     index = (new MultiplexFieldV*[count]);
 
     int cc;
     for (cc = 0; cc < count; cc++){
 
-        MultiplexFieldV* fv = reinterpret_cast<MultiplexFieldV*>(p);
+        MultiplexFieldV* fv = reinterpret_cast<MultiplexFieldV*>(adr_cursor);
 
         index[cc] = fv;
 
-        p += (MX::FieldSizeV + fv->alloc);
+        adr_cursor += (MX::FieldSizeV + fv->alloc);
     }
 }
 MultiplexRecordIterator::~MultiplexRecordIterator(){

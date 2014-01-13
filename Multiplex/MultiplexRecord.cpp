@@ -2,6 +2,7 @@
  * Copyright 2014 John Pritchard, Syntelos.  All rights reserved.
  */
 #include <QByteArray>
+#include <QDateTime>
 
 #include "MultiplexRecord.h"
 #include "MultiplexRecordIterator.h"
@@ -14,10 +15,28 @@ quint8 MultiplexRecord::getFieldCount() const {
 
     return count.value;
 }
+qptrdiff MultiplexRecord::getFieldLength() const {
+
+    if (check()){
+
+        qptrdiff len = 0;
+
+        MultiplexRecordIterator tgt(*this);
+
+        while (tgt.hasNext()){
+
+            len += tgt.next().length();
+        }
+        return len;
+    }
+    else {
+        return 0;
+    }
+}
 void MultiplexRecord::init(){
     this->gs = MX::GS;
     this->rs = MX::RS;
-    this->time.init(0);
+    this->time.init(QDateTime::currentMSecsSinceEpoch());
     this->count.init(0);
 }
 void MultiplexRecord::init(const MultiplexRecord& copy){
@@ -38,19 +57,21 @@ bool MultiplexRecord::check() const {
     return (MX::GS == gs && MX::RS == rs &&
             time.check() && count.check());
 }
-int MultiplexRecord::length() const {
+bool MultiplexRecord::zero() const {
+    return (0 == gs && 0 == rs &&
+            time.zero() && count.zero());
+}
+qptrdiff MultiplexRecord::length() const {
 
-    if (check()){
+    qptrdiff flen = getFieldLength();
 
-        int len = MX::RecordBase;
+    if (0 != flen){
 
-        MultiplexRecordIterator tgt(*this);
+        return (flen + MX::RecordBase);
+    }
+    else if (check()){
 
-        while (tgt.hasNext()){
-
-            len += tgt.next().length();
-        }
-        return len;
+        return MX::RecordBase;
     }
     else {
         return 0;
@@ -73,7 +94,10 @@ bool MultiplexFieldL::validate(const qint64 value) const {
 bool MultiplexFieldL::check() const {
     return (MX::FS == this->fs);
 }
-int MultiplexFieldL::length() const {
+bool MultiplexFieldL::zero() const {
+    return (0 == this->fs);
+}
+qptrdiff MultiplexFieldL::length() const {
     if (MX::FS == this->fs){
 
         return MX::FieldSizeL;
@@ -189,7 +213,7 @@ bool MultiplexFieldV::init(const QVariant& value){
 
             const char* vbary = bary.data();
 
-            int cc;
+            quint32 cc;
             for (cc = 0; cc < count; cc++){
                 this->value[cc] = vbary[cc];
             }
@@ -235,7 +259,10 @@ bool MultiplexFieldV::validate(const QVariant& value) const {
 bool MultiplexFieldV::check() const {
     return (MX::FS == this->fs);
 }
-int MultiplexFieldV::length() const {
+bool MultiplexFieldV::zero() const {
+    return (0 == this->fs);
+}
+qptrdiff MultiplexFieldV::length() const {
     if (MX::FS == this->fs){
 
         return MX::FieldSizeV + alloc;
@@ -261,7 +288,10 @@ bool MultiplexFieldB::validate(const quint8 value) const {
 bool MultiplexFieldB::check() const {
     return (MX::FS == this->fs);
 }
-int MultiplexFieldB::length() const {
+bool MultiplexFieldB::zero() const {
+    return (0 == this->fs);
+}
+qptrdiff MultiplexFieldB::length() const {
     if (MX::FS == this->fs){
 
         return MX::FieldSizeB;
