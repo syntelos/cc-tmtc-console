@@ -132,7 +132,7 @@ inline MultiplexRecord* MultiplexTable::record(quintptr p){
 }
 MultiplexRecord* MultiplexTable::recordNew(){
 
-    MultiplexTableCreator table(data,(data + index.getLast()),file.size());
+    MultiplexTableCreator table(data,(data + index.useLast()),file.size());
 
     while (table.hasNext()){
 

@@ -54,6 +54,8 @@ class MultiplexIndex {
 
     qptrdiff getLast() const;
 
+    qptrdiff useLast() const;
+
     void setLast(qptrdiff);
 
     quint32 getCountTemporal() const;

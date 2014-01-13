@@ -64,6 +64,13 @@ qptrdiff MultiplexIndex::getLast() const {
 
     return ofs_last;
 }
+qptrdiff MultiplexIndex::useLast() const {
+
+    if (-1 == ofs_last)
+        return 0;
+    else
+        return ofs_last;
+}
 void MultiplexIndex::readLast(const QVariant& ofs){
 
     if (ofs.isValid()){
