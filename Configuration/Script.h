@@ -16,7 +16,6 @@
 #include "System/SystemScriptSymbol.h"
 #include "Storage/StorageListItem.h"
 #include "ObjectTree/ObjectTreeImportExport.h"
-#include "Null.h"
 
 class Script : public StorageListItem, public ObjectTreeImportExport {
     Q_OBJECT;

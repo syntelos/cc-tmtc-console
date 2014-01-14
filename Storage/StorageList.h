@@ -9,7 +9,6 @@
 #include "ObjectTree/ObjectTreeList.h"
 #include "ObjectTree/ObjectTreeNode.h"
 #include "StorageInterface.h"
-#include "Null.h"
 
 /*!
  * Abstract interface to subjects of the \class
@@ -30,7 +29,7 @@ class StorageList : public ObjectTreeNode,
  public:
     /*!
      */
-    StorageList(QObject* parent = vnul)
+    StorageList(QObject* parent = 0)
         : ObjectTreeNode(parent)
     {
     }

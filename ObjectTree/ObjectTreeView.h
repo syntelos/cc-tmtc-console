@@ -42,7 +42,7 @@ class ObjectTreeView : public QTreeView {
      * This constructor initializes the view with "setModel" and
      * "show".
      */
-    ObjectTreeView(ObjectTreeModel* model, QWidget* parent = vnul);
+    ObjectTreeView(ObjectTreeModel* model, QWidget* parent = 0);
     /*!
      */
     ~ObjectTreeView();

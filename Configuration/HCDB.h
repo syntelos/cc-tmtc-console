@@ -18,7 +18,6 @@
 #include "Devices.h"
 #include "Libraries.h"
 #include "Scripts.h"
-#include "Null.h"
 
 #define HcdbDefaultDriverType "QSQLITE"
 #define HcdbLibraryTableName "HCDB_LIBRARY"
@@ -45,7 +44,7 @@ class HCDB : public ObjectTreeNode,
     Scripts* scripts;
 
  public:
-    HCDB(CCDB* ccdb, QObject* parent = vnul);
+    HCDB(CCDB* ccdb, QObject* parent = 0);
     ~HCDB();
 
  signals:

@@ -21,8 +21,8 @@ class StorageEditorDialog : public QDialog {
     StorageEditor* editor;
 
  public:
-    StorageEditorDialog(QObject* subject, QWidget* parent = vnul);
-    StorageEditorDialog(QObject* subject, StorageInterface* storage, QWidget* parent = vnul);
+    StorageEditorDialog(QObject* subject, QWidget* parent = 0);
+    StorageEditorDialog(QObject* subject, StorageInterface* storage, QWidget* parent = 0);
     ~StorageEditorDialog();
 
     void connectFinishedTo(const QObject* receiver, const char* slot);

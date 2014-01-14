@@ -7,7 +7,6 @@
 #include "ObjectTree/ObjectTreeModel.h"
 #include "StorageInterface.h"
 #include "PropertyEditorInterface.h"
-#include "Null.h"
 
 /*!
  * When the root of the storage tree has storage with USER properties,
@@ -24,7 +23,7 @@ class StorageModelRoot :
      * identically (as a tree model) with or without a \class QObject
      * parent.
      */
-    StorageModelRoot(QObject* parent = vnul) 
+    StorageModelRoot(QObject* parent = 0) 
         : ObjectTreeModel(parent)
     {
     }

@@ -37,7 +37,7 @@ void StorageTreeEditor::selected(const QModelIndex& index){
             /*
              * Change editor, delete old
              */
-            nodeEditor->setParent(vnul);
+            nodeEditor->setParent(0);
             nodeEditor->deleteLater();
             /*
              * Choose StorageEditor constructor
@@ -49,7 +49,7 @@ void StorageTreeEditor::selected(const QModelIndex& index){
                     nodeEditor = new StorageEditor(node,this);
                 }
                 else {
-                    StorageInterface* storage = vnul;
+                    StorageInterface* storage = 0;
                     QObject* p = node->parent();
                     while (true){
                         storage = dynamic_cast<StorageInterface*>(p);

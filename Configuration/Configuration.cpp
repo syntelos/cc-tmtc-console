@@ -33,7 +33,7 @@ Configuration* Configuration::Init(QScriptEngine* engine){
     return new Configuration(engine);
 }
 Configuration::Configuration(QScriptEngine* engine)
-    : ObjectTreeModel(vnul), engine(engine), ccdb(vnul), hcdb(vnul)
+    : ObjectTreeModel(0), engine(engine), ccdb(0), hcdb(0)
 {
     instance = this;
 

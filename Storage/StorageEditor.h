@@ -8,7 +8,6 @@
 
 #include "StorageInterface.h"
 #include "StorageObjectForm.h"
-#include "Null.h"
 
 /*!
  * This class is a widget using the \class StorageObjectForm to edit a

@@ -26,7 +26,7 @@ ObjectTreeView::ObjectTreeView(ObjectTreeModel* model, QWidget* parent)
 ObjectTreeView::~ObjectTreeView(){
 
     QObject* model = this->model();
-    model->setParent(vnul);
+    model->setParent(0);
 }
 void ObjectTreeView::addRecord(){
     QModelIndex parent = this->selectionModel()->currentIndex();
@@ -120,7 +120,7 @@ void ObjectTreeView::endSelection(){
          */
         delete this->selection;
 
-        this->selection = vnul; //(delete)
+        this->selection = 0; //(delete)
 
     }
 }

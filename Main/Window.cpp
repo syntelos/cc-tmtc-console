@@ -45,7 +45,7 @@ Window* Window::instance;
 /*
  */
 Window::Window(QScriptEngine* script)
-    : QMainWindow(vnul), configureOpen(false), init_program(0)
+    : QMainWindow(0), configureOpen(false), init_program(0)
 {
     Window::instance = this;
 
@@ -188,7 +188,7 @@ void Window::removeMenu(const QString& title){
         QMenu* child = qobject_cast<QMenu*>(child_object);
         if (child && title == child->title()){
 
-            child->setParent(vnul);
+            child->setParent(0);
             child->deleteLater();
             break;
         }

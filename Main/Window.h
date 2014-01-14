@@ -16,7 +16,6 @@
 #include "System/SystemWindow.h"
 #include "Configuration/Configuration.h"
 #include "Configuration/ConfigurationScriptable.h"
-#include "Null.h"
 #include "Init.h"
 
 /*!

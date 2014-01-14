@@ -22,19 +22,19 @@ void libraryFromScriptValue(const QScriptValue &object, Library* &out){
 
 
 Library::Library(QObject* parent)
-    : StorageListItem(parent), libraryUuid(vnul), fileIdentifier(vnul), languageClassName(vnul), connectionClassName(vnul)
+    : StorageListItem(parent), libraryUuid(0), fileIdentifier(0), languageClassName(0), connectionClassName(0)
 {
     qScriptRegisterMetaType(Configuration::Instance()->getScriptEngine(), libraryToScriptValue, libraryFromScriptValue);
 }
 Library::Library(QSqlQuery& query, int start, QObject* parent)
-    : StorageListItem(parent), fileIdentifier(vnul)
+    : StorageListItem(parent), fileIdentifier(0)
 {
     this->read(query,start);
 
     qScriptRegisterMetaType(Configuration::Instance()->getScriptEngine(), libraryToScriptValue, libraryFromScriptValue);
 }
 Library::Library(QSqlQuery& query, QObject* parent)
-    : StorageListItem(parent), fileIdentifier(vnul)
+    : StorageListItem(parent), fileIdentifier(0)
 {
     this->read(query);
 
@@ -130,12 +130,12 @@ void Library::setLibraryUuid(QString* libraryUuid){
         else {
             delete libraryUuid;
 
-            this->libraryUuid = vnul;
+            this->libraryUuid = 0;
         }
     }
     else {
 
-        this->libraryUuid = vnul;
+        this->libraryUuid = 0;
     }
 }
 void Library::setLibraryUuid(QString& libraryUuid){
@@ -149,7 +149,7 @@ void Library::setLibraryUuid(QString& libraryUuid){
     }
     else {
 
-        this->libraryUuid = vnul;
+        this->libraryUuid = 0;
     }
 }
 const QString* Library::getFileIdentifier() const {
@@ -172,7 +172,7 @@ void Library::setFileIdentifier(QString* fileIdentifier){
         else {
             delete fileIdentifier;
 
-            this->fileIdentifier = vnul;
+            this->fileIdentifier = 0;
 
             QString empty;
 
@@ -181,7 +181,7 @@ void Library::setFileIdentifier(QString* fileIdentifier){
     }
     else {
 
-        this->fileIdentifier = vnul;
+        this->fileIdentifier = 0;
 
         QString empty;
 
@@ -202,7 +202,7 @@ void Library::setFileIdentifier(QString& fileIdentifier){
     }
     else {
 
-        this->fileIdentifier = vnul;
+        this->fileIdentifier = 0;
 
         QString empty;
 
@@ -228,12 +228,12 @@ void Library::setLanguageClassName(QString* languageClassName){
         else {
             delete languageClassName;
 
-            this->languageClassName = vnul;
+            this->languageClassName = 0;
         }
     }
     else {
 
-        this->languageClassName = vnul;
+        this->languageClassName = 0;
     }
 }
 void Library::setLanguageClassName(QString& languageClassName){
@@ -247,7 +247,7 @@ void Library::setLanguageClassName(QString& languageClassName){
     }
     else {
 
-        this->languageClassName = vnul;
+        this->languageClassName = 0;
     }
 }
 const QString* Library::getConnectionClassName() const {
@@ -268,12 +268,12 @@ void Library::setConnectionClassName(QString* connectionClassName){
         else {
             delete connectionClassName;
 
-            this->connectionClassName = vnul;
+            this->connectionClassName = 0;
         }
     }
     else {
 
-        this->connectionClassName = vnul;
+        this->connectionClassName = 0;
     }
 }
 void Library::setConnectionClassName(QString& connectionClassName){
@@ -287,7 +287,7 @@ void Library::setConnectionClassName(QString& connectionClassName){
     }
     else {
 
-        this->connectionClassName = vnul;
+        this->connectionClassName = 0;
     }
 }
 QWidget* Library::createPropertyFormEditor(int index, const QMetaProperty& property){
@@ -295,7 +295,7 @@ QWidget* Library::createPropertyFormEditor(int index, const QMetaProperty& prope
      * TODO See QLibrary for requirements
      * TODO ?> File text edit & picker button [FileTextEdit : HBox] <?
      */
-    return vnul;
+    return 0;
 }
 QWidget* Library::createPropertyFormLabel(int index, const QMetaProperty& property){
 
@@ -321,7 +321,7 @@ QWidget* Library::createPropertyFormLabel(int index, const QMetaProperty& proper
         /*
          * Accept default
          */
-        return vnul;
+        return 0;
     }
 }
 bool Library::setPropertyForEditor(int index, const QMetaProperty& property, const QWidget& editor){
@@ -330,5 +330,5 @@ bool Library::setPropertyForEditor(int index, const QMetaProperty& property, con
 }
 bool Library::isInert(){
 
-    return (vnul == fileIdentifier);
+    return (0 == fileIdentifier);
 }

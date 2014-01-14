@@ -20,7 +20,6 @@
 #include "Storage/StorageTreeEditor.h"
 #include "System/SystemScriptable.h"
 #include "Multiplex/Multiplex.h"
-#include "Null.h"
 
 /*!
  * Root of the configuration tree, scriptable "configuration".

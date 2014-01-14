@@ -43,7 +43,7 @@ StorageEditor::StorageEditor(QObject* subject, StorageInterface* storage, QWidge
 }
 StorageEditor::~StorageEditor(){
 
-    formWidget = vnul; // child destroyed by QObject
+    formWidget = 0; // child destroyed by QObject
 }
 void StorageEditor::init(){
     /*

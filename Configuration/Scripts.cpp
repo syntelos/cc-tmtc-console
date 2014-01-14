@@ -44,7 +44,7 @@ Scripts::~Scripts(){
 
     this->clear();
 
-    hcdb = vnul;
+    hcdb = 0;
 
 }
 void Scripts::init(){
@@ -214,7 +214,7 @@ bool Scripts::drop(Script* script){
         if (linkSource){
             /*
              */
-            script->setParent(vnul);
+            script->setParent(0);
             script->deleteLater();
             /*
              */
@@ -245,7 +245,7 @@ bool Scripts::deconfigure(Script* script){
         if (linkSource){
             /*
              */
-            script->setLinkTarget(vnul);
+            script->setLinkTarget(0);
             /*
              */
             const QString* hostUuid = this->getHostUuid();
@@ -348,7 +348,7 @@ Script* Scripts::find(const SystemScriptSymbol& source){
             }
         }
     }
-    return vnul;
+    return 0;
 }
 Script* Scripts::find(const QString& source){
     const QObjectList& children = this->children();
@@ -366,7 +366,7 @@ Script* Scripts::find(const QString& source){
             }
         }
     }
-    return vnul;
+    return 0;
 }
 Script* Scripts::find(const char* source){
     const QObjectList& children = this->children();
@@ -384,5 +384,5 @@ Script* Scripts::find(const char* source){
             }
         }
     }
-    return vnul;
+    return 0;
 }

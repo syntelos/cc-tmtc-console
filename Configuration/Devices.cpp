@@ -42,7 +42,7 @@ Devices::~Devices(){
 
     this->clear();
 
-    hcdb = vnul;
+    hcdb = 0;
 
 }
 void Devices::init(){

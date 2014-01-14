@@ -10,12 +10,12 @@
  * ObjectTreeNode
  */
 ObjectTreeNode::ObjectTreeNode(QObject* parent)
-    : QObject(parent), nodeView(vnul)
+    : QObject(parent), nodeView(0)
 {
 }
 ObjectTreeNode::~ObjectTreeNode(){
 
-    nodeView = vnul;
+    nodeView = 0;
 }
 void ObjectTreeNode::beginInsertNode(int index1, int index2){
     ObjectTreeNodeAncestry* list = this->ancestry();
@@ -128,10 +128,10 @@ QWidget* ObjectTreeNode::ancestorWidget(){
             p = p->parent();
         }
     }
-    return vnul;
+    return 0;
 }
 ObjectTreeNodeAncestry* ObjectTreeNode::ancestry(){
-    ObjectTreeNodeAncestry* list = vnul;
+    ObjectTreeNodeAncestry* list = 0;
     int x;
     /*
      * Build list from tail (this)
@@ -159,7 +159,7 @@ ObjectTreeNodeAncestry* ObjectTreeNode::ancestry(){
         delete list;
     }
 
-    return vnul;
+    return 0;
 }
 ObjectNodeView* ObjectTreeNode::getObjectNodeView(){
 
@@ -180,7 +180,7 @@ ObjectTreeNodeAncestry::ObjectTreeNodeAncestry(QObject* node, int index, ObjectT
  * ObjectTreeNodeAncestry TAIL constructor builds a list from head to tail
  */
 ObjectTreeNodeAncestry::ObjectTreeNodeAncestry(ObjectTreeNodeAncestry* head, int index1, int index2, QObject* node)
-    : node(node), index1(index1), index2(index2), child(vnul)
+    : node(node), index1(index1), index2(index2), child(0)
 {
     ObjectTreeNodeAncestry* p = head;
     while (p){
@@ -202,7 +202,7 @@ ObjectTreeNodeAncestry::~ObjectTreeNodeAncestry(){
 
         delete child;
     }
-    node = vnul;
+    node = 0;
 }
 ObjectTreeNodeAncestry* ObjectTreeNodeAncestry::parent(){
     /*
@@ -222,7 +222,7 @@ ObjectTreeNodeAncestry* ObjectTreeNodeAncestry::parent(){
     }
     else {
 
-        return vnul;
+        return 0;
     }
 }
 ObjectTreeNodeAncestry* ObjectTreeNodeAncestry::tail(){

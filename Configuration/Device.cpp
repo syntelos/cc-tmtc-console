@@ -26,19 +26,19 @@ void deviceFromScriptValue(const QScriptValue &object, Device* &out){
 
 
 Device::Device(QObject* parent)
-    : StorageListItem(parent), libraryUuid(vnul), connectionIdentifier(vnul)
+    : StorageListItem(parent), libraryUuid(0), connectionIdentifier(0)
 {
     qScriptRegisterMetaType(Configuration::Instance()->getScriptEngine(), deviceToScriptValue, deviceFromScriptValue);
 }
 Device::Device(QSqlQuery& query, int start, QObject* parent)
-    : StorageListItem(parent), libraryUuid(vnul), connectionIdentifier(vnul)
+    : StorageListItem(parent), libraryUuid(0), connectionIdentifier(0)
 {
     this->read(query,start);
 
     qScriptRegisterMetaType(Configuration::Instance()->getScriptEngine(), deviceToScriptValue, deviceFromScriptValue);
 }
 Device::Device(QSqlQuery& query, QObject* parent)
-    : StorageListItem(parent), libraryUuid(vnul), connectionIdentifier(vnul)
+    : StorageListItem(parent), libraryUuid(0), connectionIdentifier(0)
 {
     this->read(query);
 
@@ -107,12 +107,12 @@ void Device::setLibraryUuid(QString* libraryUuid){
         else {
             delete libraryUuid;
 
-            this->libraryUuid = vnul;
+            this->libraryUuid = 0;
         }
     }
     else {
 
-        this->libraryUuid = vnul;
+        this->libraryUuid = 0;
     }
 }
 void Device::setLibraryUuid(QString& libraryUuid){
@@ -126,7 +126,7 @@ void Device::setLibraryUuid(QString& libraryUuid){
     }
     else {
 
-        this->libraryUuid = vnul;
+        this->libraryUuid = 0;
     }
 }
 const SystemDeviceIdentifier* Device::getSystemDeviceIdentifier() const {
@@ -195,7 +195,7 @@ void Device::setConnectionIdentifier(QString* connectionIdentifier){
         else {
             delete connectionIdentifier;
 
-            this->connectionIdentifier = vnul;
+            this->connectionIdentifier = 0;
 
             QString empty;
 
@@ -204,7 +204,7 @@ void Device::setConnectionIdentifier(QString* connectionIdentifier){
     }
     else {
 
-        this->connectionIdentifier = vnul;
+        this->connectionIdentifier = 0;
 
         QString empty;
 
@@ -225,7 +225,7 @@ void Device::setConnectionIdentifier(QString& connectionIdentifier){
     }
     else {
 
-        this->connectionIdentifier = vnul;
+        this->connectionIdentifier = 0;
 
         QString empty;
 
@@ -237,7 +237,7 @@ QWidget* Device::createPropertyFormEditor(int index, const QMetaProperty& proper
     /*
      * Accept default
      */
-    return vnul;
+    return 0;
 }
 QWidget* Device::createPropertyFormLabel(int index, const QMetaProperty& property){
 
@@ -255,7 +255,7 @@ QWidget* Device::createPropertyFormLabel(int index, const QMetaProperty& propert
         /*
          * Accept default
          */
-        return vnul;
+        return 0;
     }
 }
 bool Device::setPropertyForEditor(int index, const QMetaProperty& property, const QWidget& editor){
@@ -264,5 +264,5 @@ bool Device::setPropertyForEditor(int index, const QMetaProperty& property, cons
 }
 bool Device::isInert(){
 
-    return (vnul == connectionIdentifier);
+    return (0 == connectionIdentifier);
 }

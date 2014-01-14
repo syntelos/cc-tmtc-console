@@ -11,7 +11,6 @@
 #include <QVariant>
 
 #include "ObjectTreeNode.h"
-#include "Null.h"
 
 /*!
  * This class presents a hierarchical model interface to the \class
@@ -36,7 +35,7 @@ class ObjectTreeModel : public QAbstractItemModel {
  public:
     /*!
      */
-    ObjectTreeModel(QObject* parent = vnul);
+    ObjectTreeModel(QObject* parent = 0);
     /*!
      */
     ~ObjectTreeModel();

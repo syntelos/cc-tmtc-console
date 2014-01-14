@@ -35,14 +35,14 @@ void scriptFromScriptValue(const QScriptValue &object, Script* &out){
 
 
 Script::Script(QObject* parent)
-    : StorageListItem(parent), linkSource(vnul), linkTarget(vnul), file(vnul), content(vnul)
+    : StorageListItem(parent), linkSource(0), linkTarget(0), file(0), content(0)
 {
     SystemScriptSymbol::Init();
 
     qScriptRegisterMetaType(Configuration::Instance()->getScriptEngine(), scriptToScriptValue, scriptFromScriptValue);
 }
 Script::Script(QSqlQuery& query, int start, QObject* parent)
-    : StorageListItem(parent), linkSource(vnul), linkTarget(vnul), file(vnul), content(vnul)
+    : StorageListItem(parent), linkSource(0), linkTarget(0), file(0), content(0)
 {
     SystemScriptSymbol::Init();
 
@@ -51,7 +51,7 @@ Script::Script(QSqlQuery& query, int start, QObject* parent)
     qScriptRegisterMetaType(Configuration::Instance()->getScriptEngine(), scriptToScriptValue, scriptFromScriptValue);
 }
 Script::Script(QSqlQuery& query, QObject* parent)
-    : StorageListItem(parent), linkSource(vnul), linkTarget(vnul), file(vnul), content(vnul)
+    : StorageListItem(parent), linkSource(0), linkTarget(0), file(0), content(0)
 {
     SystemScriptSymbol::Init();
 
@@ -166,13 +166,13 @@ void Script::setLinkSource(SystemScriptSymbol* linkSource){
         else {
             delete linkSource;
 
-            this->linkSource = vnul;
+            this->linkSource = 0;
 
             setObjectName("");
         }
     }
     else {
-        this->linkSource = vnul;
+        this->linkSource = 0;
 
         setObjectName("");
     }
@@ -192,7 +192,7 @@ void Script::setLinkSource(SystemScriptSymbol& linkSource){
     }
     else {
 
-        this->linkSource = vnul;
+        this->linkSource = 0;
 
         setObjectName(linkSource);
     }
@@ -212,7 +212,7 @@ void Script::setLinkSource(QString& linkSource){
     }
     else {
 
-        this->linkSource = vnul;
+        this->linkSource = 0;
 
         setObjectName("");
     }
@@ -236,12 +236,12 @@ void Script::setLinkTarget(SystemScriptSymbol* linkTarget){
         else {
             delete linkTarget;
 
-            this->linkTarget = vnul;
+            this->linkTarget = 0;
         }
     }
     else {
 
-        this->linkTarget = vnul;
+        this->linkTarget = 0;
     }
 }
 void Script::setLinkTarget(SystemScriptSymbol& linkTarget){
@@ -255,7 +255,7 @@ void Script::setLinkTarget(SystemScriptSymbol& linkTarget){
     }
     else {
 
-        this->linkTarget = vnul;
+        this->linkTarget = 0;
     }
 }
 void Script::setLinkTarget(QString& linkTarget){
@@ -270,7 +270,7 @@ void Script::setLinkTarget(QString& linkTarget){
     }
     else {
 
-        this->linkTarget = vnul;
+        this->linkTarget = 0;
     }
 }
 const QString* Script::getFile() const {
@@ -288,7 +288,7 @@ void Script::setFile(QString* file){
     }
     else {
 
-        this->file = vnul;
+        this->file = 0;
     }
 }
 void Script::setFile(QString& file){
@@ -302,7 +302,7 @@ void Script::setFile(QString& file){
     }
     else {
 
-        this->file = vnul;
+        this->file = 0;
     }
 }
 void Script::setFile(QFileInfo& file){
@@ -316,7 +316,7 @@ void Script::setFile(QFileInfo& file){
     }
     else {
 
-        this->file = vnul;
+        this->file = 0;
     }
 }
 const QString* Script::getContent() const {
@@ -337,12 +337,12 @@ void Script::setContent(QString* content){
         else {
             delete content;
 
-            this->content = vnul;
+            this->content = 0;
         }
     }
     else {
 
-        this->content = vnul;
+        this->content = 0;
     }
 }
 void Script::setContent(QString& content){
@@ -356,7 +356,7 @@ void Script::setContent(QString& content){
     }
     else {
 
-        this->content = vnul;
+        this->content = 0;
     }
 }
 void Script::setContent(QByteArray& content){
@@ -370,7 +370,7 @@ void Script::setContent(QByteArray& content){
     }
     else {
 
-        this->content = vnul;
+        this->content = 0;
     }
 }
 QWidget* Script::createPropertyFormEditor(int index, const QMetaProperty& property){
@@ -424,7 +424,7 @@ QWidget* Script::createPropertyFormEditor(int index, const QMetaProperty& proper
         /*
          * Accept default
          */
-        return vnul;
+        return 0;
     }
 }
 QWidget* Script::createPropertyFormLabel(int index, const QMetaProperty& property){
@@ -451,7 +451,7 @@ QWidget* Script::createPropertyFormLabel(int index, const QMetaProperty& propert
         /*
          * Accept default
          */
-        return vnul;
+        return 0;
     }
 }
 bool Script::setPropertyForEditor(int index, const QMetaProperty& property, const QWidget& editor){
@@ -489,7 +489,7 @@ bool Script::setPropertyForEditor(int index, const QMetaProperty& property, cons
 }
 bool Script::isInert(){
 
-    return (vnul == linkSource || vnul == linkTarget);
+    return (0 == linkSource || 0 == linkTarget);
 }
 void Script::importToObjectTreeNode(){
 

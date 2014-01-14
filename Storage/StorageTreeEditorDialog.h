@@ -23,7 +23,7 @@ class StorageTreeEditorDialog : public QDialog
     StorageTreeEditor* editor;
 
  public:
-    StorageTreeEditorDialog(ObjectTreeModel* subject, QWidget* parent = vnul);
+    StorageTreeEditorDialog(ObjectTreeModel* subject, QWidget* parent = 0);
 
     ~StorageTreeEditorDialog();
 

@@ -23,7 +23,7 @@ StorageEditorDialog::StorageEditorDialog(QObject* subject, StorageInterface* sto
 }
 StorageEditorDialog::~StorageEditorDialog(){
 
-    editor = vnul;
+    editor = 0;
 }
 void StorageEditorDialog::connectFinishedTo(const QObject* receiver, const char* slot){
 

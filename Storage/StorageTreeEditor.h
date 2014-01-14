@@ -12,7 +12,6 @@
 #include "ObjectTree/ObjectTreeModel.h"
 #include "ObjectTree/ObjectTreeView.h"
 #include "StorageEditor.h"
-#include "Null.h"
 
 /*!
  * Split pane shows the tree view on the left, and the editor for the
@@ -41,7 +40,7 @@ class StorageTreeEditor : public QSplitter,
      * QAbstractItemView) is connected to the "selected" slot in this
      * class for navigation.
      */
-    StorageTreeEditor(ObjectTreeModel* model, QWidget* parent = vnul);
+    StorageTreeEditor(ObjectTreeModel* model, QWidget* parent = 0);
     ~StorageTreeEditor();
 
  public slots:

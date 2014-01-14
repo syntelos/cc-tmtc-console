@@ -26,7 +26,6 @@
 #include "ObjectTree/ObjectTreeNode.h"
 #include "ObjectTree/ObjectTreeList.h"
 #include "ObjectTree/ObjectTreeImportExport.h"
-#include "Null.h"
 
 
 StorageObjectForm::StorageObjectForm(QObject* subject, QWidget* parent)
@@ -43,15 +42,15 @@ StorageObjectForm::~StorageObjectForm(){
     /*
      * Do not delete the subject (model) when destroying the viewer
      */
-    subject = vnul;
-    propertyEditor = vnul;
+    subject = 0;
+    propertyEditor = 0;
     /*
      * Clear any reference to <this>.
      */
     ObjectTreeNode* node = dynamic_cast<ObjectTreeNode*>(this->subject);
     if (node){
 
-        node->setObjectNodeView(vnul);
+        node->setObjectNodeView(0);
     }
 }
 void StorageObjectForm::init(){
@@ -83,15 +82,15 @@ void StorageObjectForm::init(){
                 /*
                  * Derivation of editor and label
                  */
-                QWidget* editor = vnul;
-                QWidget* label = vnul;
+                QWidget* editor = 0;
+                QWidget* label = 0;
 
                 if (propertyEditor){
                     editor = propertyEditor->createPropertyFormEditor(cc,metaproperty);
                     label = propertyEditor->createPropertyFormLabel(cc,metaproperty);
                 }
                 //
-                if (vnul == editor){
+                if (0 == editor){
 
                     if (wri){
 
@@ -104,17 +103,17 @@ void StorageObjectForm::init(){
                     }
                 }
                 //
-                if (vnul == label){
+                if (0 == label){
 
                     label = new QLabel(propName);
                 }
                 /*
                  * Install into form, or throw editor exception
                  */
-                if (vnul != editor){
+                if (0 != editor){
                     /*
                      */
-                    if (vnul == label){
+                    if (0 == label){
 
                         label = new QLabel(propName);
                     }
@@ -140,7 +139,7 @@ void StorageObjectForm::init(){
                 }
                 else {
 
-                    if (vnul != label){
+                    if (0 != label){
 
                         delete label;
                     }
@@ -162,7 +161,7 @@ QWidget* StorageObjectForm::createEditor(QVariant& value){
 
     switch(value.type()){
     case QMetaType::Void:
-        return vnul;
+        return 0;
     case QMetaType::Bool:
         {
             QCheckBox* editor = new QCheckBox(this);
@@ -206,7 +205,7 @@ QWidget* StorageObjectForm::createEditor(QVariant& value){
             return editor;
         }
     case QMetaType::QByteArray:
-        return vnul;
+        return 0;
     case QMetaType::LongLong:
         {
             QSpinBox* editor = new QSpinBox(this);
@@ -224,7 +223,7 @@ QWidget* StorageObjectForm::createEditor(QVariant& value){
             return editor;
         }
     case QMetaType::QCursor:
-        return vnul;
+        return 0;
     case QMetaType::QDate:
         {
             QDateEdit* editor = new QDateEdit(this);
@@ -232,7 +231,7 @@ QWidget* StorageObjectForm::createEditor(QVariant& value){
             return editor;
         }
     case QMetaType::QSize:
-        return vnul;
+        return 0;
     case QMetaType::QTime:
         {
             QTimeEdit* editor = new QTimeEdit(this);
@@ -245,26 +244,26 @@ QWidget* StorageObjectForm::createEditor(QVariant& value){
     case QMetaType::QSizeF:
     case QMetaType::QRectF:
     case QMetaType::QLine:
-        return vnul;
+        return 0;
     case QMetaType::QTextLength:
-        return vnul;
+        return 0;
     case QMetaType::QStringList:
-        return vnul;
+        return 0;
     case QMetaType::QVariantMap:
     case QMetaType::QVariantHash:
     case QMetaType::QIcon:
     case QMetaType::QPen:
     case QMetaType::QLineF:
-        return vnul;
+        return 0;
     case QMetaType::QTextFormat:
-        return vnul;
+        return 0;
     case QMetaType::QRect:
     case QMetaType::QPoint:
-        return vnul;
+        return 0;
     case QMetaType::QUrl:
-        return vnul;
+        return 0;
     case QMetaType::QRegExp:
-        return vnul;
+        return 0;
     case QMetaType::QDateTime:
         {
             QDateTimeEdit* editor = new QDateTimeEdit(this);
@@ -291,9 +290,9 @@ QWidget* StorageObjectForm::createEditor(QVariant& value){
     case QMetaType::QVector4D:
     case QMetaType::QQuaternion:
     case QMetaType::QEasingCurve:
-        return vnul;
+        return 0;
     default:
-        return vnul;
+        return 0;
     }
 }
 void StorageObjectForm::accept(){
@@ -350,7 +349,7 @@ void StorageObjectForm::accept(){
                          * Combo Box
                          */
                         const QComboBox* comboxBox = qobject_cast<const QComboBox*>(editor);
-                        if (vnul != comboxBox){
+                        if (0 != comboxBox){
 
                             QVariant value = comboxBox->itemData(comboxBox->currentIndex());
 
@@ -367,7 +366,7 @@ void StorageObjectForm::accept(){
                     else if (-1 < editorMeta->indexOfProperty("dateTime")){
 
                         const QDateEdit* dateEditor = qobject_cast<const QDateEdit*>(editor);
-                        if (vnul != dateEditor){
+                        if (0 != dateEditor){
                             /*
                              * Date Edit
                              */
@@ -376,7 +375,7 @@ void StorageObjectForm::accept(){
                         }
                         else {
                             const QTimeEdit* timeEditor = qobject_cast<const QTimeEdit*>(editor);
-                            if (vnul != timeEditor){
+                            if (0 != timeEditor){
                                 /*
                                  * Time Edit
                                  */
@@ -385,7 +384,7 @@ void StorageObjectForm::accept(){
                             }
                             else {
                                 const QDateTimeEdit* dateTimeEditor = qobject_cast<const QDateTimeEdit*>(editor);
-                                if (vnul != dateTimeEditor){
+                                if (0 != dateTimeEditor){
                                     /*
                                      * Date Time Edit
                                      */

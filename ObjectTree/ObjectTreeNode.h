@@ -8,7 +8,6 @@
 #include <QModelIndex>
 #include <QWidget>
 
-#include "Null.h"
 
 #include "ObjectNodeView.h"
 
@@ -25,7 +24,7 @@ class ObjectTreeNode : public QObject {
  public:
     /*!
      */
-    ObjectTreeNode(QObject* parent = vnul);
+    ObjectTreeNode(QObject* parent = 0);
     /*!
      */
     ~ObjectTreeNode();
@@ -112,11 +111,11 @@ class ObjectTreeNodeAncestry {
     /*!
      * List head constructor 
      */
-    ObjectTreeNodeAncestry(QObject* node, int index, ObjectTreeNodeAncestry* tail = vnul);
+    ObjectTreeNodeAncestry(QObject* node, int index, ObjectTreeNodeAncestry* tail = 0);
     /*!
      * List tail constructor
      */
-    ObjectTreeNodeAncestry(ObjectTreeNodeAncestry* head, int index1, int index2, QObject* node = vnul);
+    ObjectTreeNodeAncestry(ObjectTreeNodeAncestry* head, int index1, int index2, QObject* node = 0);
     /*!
      * Delete from top (to bottom, parent to child), as returned by
      * ObjectTreeNode::ancestry.

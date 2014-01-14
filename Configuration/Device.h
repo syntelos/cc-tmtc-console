@@ -14,7 +14,6 @@
 #include "System/SystemDeviceConnection.h"
 #include "System/SystemDeviceIdentifier.h"
 #include "Storage/StorageListItem.h"
-#include "Null.h"
 
 class Device : public StorageListItem, public SystemDevice {
     Q_OBJECT;

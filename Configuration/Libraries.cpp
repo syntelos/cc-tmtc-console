@@ -41,7 +41,7 @@ Libraries::~Libraries(){
 
     this->clear();
 
-    hcdb = vnul;
+    hcdb = 0;
 
 }
 void Libraries::init(){

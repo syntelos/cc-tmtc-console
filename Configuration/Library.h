@@ -11,7 +11,6 @@
 #include <QWidget>
 
 #include "Storage/StorageListItem.h"
-#include "Null.h"
 
 /*!
  * Child of \class Libraries.

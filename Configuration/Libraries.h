@@ -12,7 +12,6 @@
 
 #include "Storage/StorageList.h"
 #include "Library.h"
-#include "Null.h"
 
 class Libraries : public StorageList<Library*> {
     Q_OBJECT;
@@ -27,7 +26,7 @@ class Libraries : public StorageList<Library*> {
  public:
     /*!
      */
-    Libraries(QSqlDatabase* db, QObject* parent = vnul);
+    Libraries(QSqlDatabase* db, QObject* parent = 0);
     /*!
      */
     ~Libraries();

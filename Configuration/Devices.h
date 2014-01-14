@@ -12,7 +12,6 @@
 
 #include "Storage/StorageList.h"
 #include "Device.h"
-#include "Null.h"
 
 class Devices : public StorageList<Device*> {
     Q_OBJECT;
@@ -27,7 +26,7 @@ class Devices : public StorageList<Device*> {
  public:
     /*!
      */
-    Devices(QSqlDatabase* db, QObject* parent = vnul);
+    Devices(QSqlDatabase* db, QObject* parent = 0);
     /*!
      */
     ~Devices();

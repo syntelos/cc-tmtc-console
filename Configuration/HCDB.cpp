@@ -20,10 +20,10 @@ void hcdbFromScriptValue(const QScriptValue &object, HCDB* &out){
 HCDB::HCDB(CCDB* ccdb, QObject* parent)
     : ObjectTreeNode(parent),
       ccdb(ccdb),
-      db(vnul),
-      libraries(vnul),
-      devices(vnul),
-      scripts(vnul)
+      db(0),
+      libraries(0),
+      devices(0),
+      scripts(0)
 {
     initSystemScriptable(this);
 
@@ -49,7 +49,7 @@ HCDB::~HCDB(){
         delete db;
     }
 
-    ccdb = vnul;
+    ccdb = 0;
 }
 bool HCDB::init(){
 
@@ -87,7 +87,7 @@ bool HCDB::init(){
 
             delete db;
 
-            db = vnul;
+            db = 0;
 
             return false;
         }

@@ -13,7 +13,6 @@
 #include "Storage/StorageList.h"
 #include "System/SystemScriptSymbol.h"
 #include "Script.h"
-#include "Null.h"
 
 /*!
  * 
@@ -31,7 +30,7 @@ class Scripts : public StorageList<Script*> {
  public:
     /*!
      */
-    Scripts(QSqlDatabase* db, QObject* parent = vnul);
+    Scripts(QSqlDatabase* db, QObject* parent = 0);
     /*!
      */
     ~Scripts();

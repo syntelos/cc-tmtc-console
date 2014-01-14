@@ -8,7 +8,6 @@
 
 #include "StorageInterface.h"
 #include "PropertyEditorInterface.h"
-#include "Null.h"
 
 /*!
  * A storage model is an editable node of the meta object tree that is
@@ -21,7 +20,7 @@ class StorageModel :
     public PropertyEditorInterface
 {
  public:
-    StorageModel(QObject* parent = vnul)
+    StorageModel(QObject* parent = 0)
         : QObject(parent)
     {
     }

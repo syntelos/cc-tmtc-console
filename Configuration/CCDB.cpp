@@ -19,7 +19,6 @@
 #include "Configuration.h"
 #include "ConfigurationError.h"
 #include "CCDB.h"
-#include "Null.h"
 
 
 QScriptValue ccdbToScriptValue(QScriptEngine *engine, CCDB* const &in){
@@ -34,14 +33,14 @@ void ccdbFromScriptValue(const QScriptValue &object, CCDB* &out){
 CCDB::CCDB(QObject* parent)
     : StorageModel(parent),
       db(new QSqlDatabase(QSqlDatabase::addDatabase(CcdbDriverType,CcdbTableName))),
-      hostUuid(vnul),
-      hcdbDriverType(vnul),
-      hcdbDatabaseName(vnul),
-      hcdbDatabaseOptions(vnul),
-      hcdbHostName(vnul),
+      hostUuid(0),
+      hcdbDriverType(0),
+      hcdbDatabaseName(0),
+      hcdbDatabaseOptions(0),
+      hcdbHostName(0),
       hcdbHostPort(0),
-      hcdbUserName(vnul),
-      hcdbUserPass(vnul)
+      hcdbUserName(0),
+      hcdbUserPass(0)
 {
     initSystemScriptable(this);
 
@@ -145,13 +144,13 @@ void CCDB::init(){
 
 }
 void CCDB::clear(){
-    setHcdbDriverType(vnul);
-    setHcdbDatabaseName(vnul);
-    setHcdbDatabaseOptions(vnul);
-    setHcdbHostName(vnul);
+    setHcdbDriverType(0);
+    setHcdbDatabaseName(0);
+    setHcdbDatabaseOptions(0);
+    setHcdbHostName(0);
     setHcdbHostPort(0);
-    setHcdbUserName(vnul);
-    setHcdbUserPass(vnul);
+    setHcdbUserName(0);
+    setHcdbUserPass(0);
 }
 bool CCDB::read(){
 
@@ -317,7 +316,7 @@ void CCDB::setHostUuid(QString& hostUuid){
     }
     else {
 
-        this->hostUuid = vnul;
+        this->hostUuid = 0;
     }
 }
 const QString* CCDB::getHcdbDriverType() const {
@@ -363,12 +362,12 @@ void CCDB::setHcdbDriverType(QString* driverType){
         else {
             delete driverType;
 
-            this->hcdbDriverType = vnul;
+            this->hcdbDriverType = 0;
         }
     }
     else {
 
-        this->hcdbDriverType = vnul;
+        this->hcdbDriverType = 0;
     }
 }
 void CCDB::setHcdbDatabaseName(QString* databaseName){
@@ -385,12 +384,12 @@ void CCDB::setHcdbDatabaseName(QString* databaseName){
         else {
             delete databaseName;
 
-            this->hcdbDatabaseName = vnul;
+            this->hcdbDatabaseName = 0;
         }
     }
     else {
 
-        this->hcdbDatabaseName = vnul;
+        this->hcdbDatabaseName = 0;
     }
 }
 void CCDB::setHcdbDatabaseOptions(QString* databaseOptions){
@@ -407,12 +406,12 @@ void CCDB::setHcdbDatabaseOptions(QString* databaseOptions){
         else {
             delete databaseOptions;
 
-            this->hcdbDatabaseOptions = vnul;
+            this->hcdbDatabaseOptions = 0;
         }
     }
     else {
 
-        this->hcdbDatabaseOptions = vnul;
+        this->hcdbDatabaseOptions = 0;
     }
 }
 void CCDB::setHcdbHostName(QString* hostName){
@@ -429,12 +428,12 @@ void CCDB::setHcdbHostName(QString* hostName){
         else {
             delete hostName;
 
-            this->hcdbHostName = vnul;
+            this->hcdbHostName = 0;
         }
     }
     else {
 
-        hcdbHostName = vnul;
+        hcdbHostName = 0;
     }
 }
 void CCDB::setHcdbHostPort(int portnum){
@@ -462,12 +461,12 @@ void CCDB::setHcdbUserName(QString* userName){
         else {
             delete userName;
 
-            this->hcdbUserName = vnul;
+            this->hcdbUserName = 0;
         }
     }
     else {
 
-        hcdbUserName = vnul;
+        hcdbUserName = 0;
     }
 }
 void CCDB::setHcdbUserPass(QString* userPass){
@@ -484,12 +483,12 @@ void CCDB::setHcdbUserPass(QString* userPass){
         else {
             delete userPass;
 
-            this->hcdbUserPass = vnul;
+            this->hcdbUserPass = 0;
         }
     }
     else {
 
-        this->hcdbUserPass = vnul;
+        this->hcdbUserPass = 0;
     }
 }
 
@@ -504,7 +503,7 @@ void CCDB::setHcdbDriverType(QString& driverType){
     }
     else {
 
-        this->hcdbDriverType = vnul;
+        this->hcdbDriverType = 0;
     }
 }
 void CCDB::setHcdbDatabaseName(QString& databaseName){
@@ -518,7 +517,7 @@ void CCDB::setHcdbDatabaseName(QString& databaseName){
     }
     else {
 
-        this->hcdbDatabaseName = vnul;
+        this->hcdbDatabaseName = 0;
     }
 }
 void CCDB::setHcdbDatabaseOptions(QString& databaseOptions){
@@ -532,7 +531,7 @@ void CCDB::setHcdbDatabaseOptions(QString& databaseOptions){
     }
     else {
 
-        this->hcdbDatabaseOptions = vnul;
+        this->hcdbDatabaseOptions = 0;
     }
 }
 void CCDB::setHcdbHostName(QString& hostName){
@@ -546,7 +545,7 @@ void CCDB::setHcdbHostName(QString& hostName){
     }
     else {
 
-        this->hcdbHostName = vnul;
+        this->hcdbHostName = 0;
     }
 }
 void CCDB::setHcdbUserName(QString& userName){
@@ -560,7 +559,7 @@ void CCDB::setHcdbUserName(QString& userName){
     }
     else {
 
-        this->hcdbUserName = vnul;
+        this->hcdbUserName = 0;
     }
 }
 void CCDB::setHcdbUserPass(QString& userPass){
@@ -574,7 +573,7 @@ void CCDB::setHcdbUserPass(QString& userPass){
     }
     else {
 
-        this->hcdbUserPass = vnul;
+        this->hcdbUserPass = 0;
     }
 }
 QWidget* CCDB::createPropertyFormEditor(int index, const QMetaProperty& property){
@@ -621,7 +620,7 @@ QWidget* CCDB::createPropertyFormEditor(int index, const QMetaProperty& property
     }
     else if ( 0 == strcmp("hcdbDatabaseName",propName)){
 
-        QLineEdit* editor = vnul;
+        QLineEdit* editor = 0;
 
         if (hcdbDatabaseName)
             editor = new QLineEdit(*hcdbDatabaseName);
@@ -633,7 +632,7 @@ QWidget* CCDB::createPropertyFormEditor(int index, const QMetaProperty& property
     }
     else if ( 0 == strcmp("hcdbUserPass",propName)){
 
-        QLineEdit* editor = vnul;
+        QLineEdit* editor = 0;
 
         if (hcdbUserPass)
             editor = new QLineEdit(*hcdbUserPass);
@@ -648,7 +647,7 @@ QWidget* CCDB::createPropertyFormEditor(int index, const QMetaProperty& property
         /*
          * Accept default
          */
-        return vnul;
+        return 0;
     }
 }
 QWidget* CCDB::createPropertyFormLabel(int index, const QMetaProperty& property){
@@ -691,7 +690,7 @@ QWidget* CCDB::createPropertyFormLabel(int index, const QMetaProperty& property)
         /*
          * Accept default
          */
-        return vnul;
+        return 0;
     }
 }
 bool CCDB::setPropertyForEditor(int index, const QMetaProperty& property, const QWidget& editor){
