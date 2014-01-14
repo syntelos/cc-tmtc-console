@@ -1,4 +1,4 @@
-TARGET = "Console"
+TARGET = ../tmtc-console
 TEMPLATE = app
 
 QT      += network
