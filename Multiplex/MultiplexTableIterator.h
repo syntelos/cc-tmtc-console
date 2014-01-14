@@ -12,8 +12,9 @@
  */
 class MultiplexTableIterator {
 
-    quintptr start;
-    quintptr end;
+    const quintptr start;
+    const quintptr end;
+    const quintptr end_cursor;
 
     quintptr record_prev;
     quintptr record_next;

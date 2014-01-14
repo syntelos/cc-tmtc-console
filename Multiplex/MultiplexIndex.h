@@ -48,13 +48,19 @@ class MultiplexIndex {
 
     bool maxObjectSize(qptrdiff);
 
+    quintptr first(quintptr start) const;
+
     qptrdiff getFirst() const;
 
     void setFirst(qptrdiff);
 
+    bool top() const;
+
     qptrdiff getLast() const;
 
     qptrdiff useLast() const;
+
+    quintptr last(quintptr start) const;
 
     void setLast(qptrdiff);
 
@@ -71,6 +77,10 @@ class MultiplexIndex {
     void setCountUser(quint32);
 
     quint32 getRecordCount() const;
+
+    qint64 getTableSize() const;
+
+    quintptr end(quintptr start) const;
 
     bool read();
 

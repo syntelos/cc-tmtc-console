@@ -192,7 +192,7 @@ struct MultiplexRecord {
 namespace MX {
 
     enum FieldSizes {
-        FieldSizeB = sizeof(MultiplexFieldB), FieldSizeV = sizeof(MultiplexFieldV), FieldSizeL = sizeof(MultiplexFieldL), RecordBase =  sizeof(MultiplexRecord)
+        FieldSizeB = sizeof(MultiplexFieldB), FieldSizeV = sizeof(MultiplexFieldV), FieldSizeL = sizeof(MultiplexFieldL), RecordBase =  sizeof(MultiplexRecord), RecordMax = (RecordBase + (255*FieldSizeV) + (255*255))
     };
 };
 #endif

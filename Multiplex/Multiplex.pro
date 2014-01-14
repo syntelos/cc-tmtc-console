@@ -16,8 +16,8 @@ SOURCES += Multiplex.cpp \
            MultiplexRecordIterator.cpp \
            MultiplexSelect.cpp \
            MultiplexTable.cpp \
-           MultiplexTableCreator.cpp \
            MultiplexTableIterator.cpp \
+           MultiplexTableSearch.cpp \
            MultiplexTables.cpp
 
 
@@ -28,6 +28,6 @@ HEADERS += Multiplex.h \
            MultiplexRecordIterator.h \
            MultiplexSelect.h \
            MultiplexTable.h \
-           MultiplexTableCreator.h \
            MultiplexTableIterator.h \
+           MultiplexTableSearch.h \
            MultiplexTables.h

@@ -3,6 +3,7 @@
  */
 #include <string.h>
 #include <iostream>
+#include <QApplication>
 #include <QByteArray>
 #include <QFile>
 #include <QIODevice>
@@ -64,6 +65,12 @@ static QTextStream serr(stderr);
 
 int main(int argc, char** argv){
 
+    QCoreApplication::setOrganizationName("syntelos");
+    QCoreApplication::setOrganizationDomain("syntelos.com");
+    QCoreApplication::setApplicationName("tmtc-console");
+
+    QApplication a(argc, argv);
+
     QString prog_name(argv[0]);
 
     SystemDeviceIdentifier sid(SID);
@@ -82,7 +89,7 @@ int main(int argc, char** argv){
         int cc;
         for (cc = 0; cc < TEST_MSGS_COUNT; cc++){
 
-            TMTCMessage m;
+            TMTCMessage m(TEST_MSGS[cc]);
 
             table.update(m);
         }

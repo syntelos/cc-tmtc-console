@@ -4,65 +4,25 @@
 #include <QDebug>
 
 #include "MultiplexTableIterator.h"
+#include "MultiplexTableSearch.h"
 
 MultiplexTableIterator::MultiplexTableIterator(quintptr d, quintptr p, qptrdiff z)
-    : start(d), end(d+z), record_prev(0), record_next(p)
+    : start(d), end(d+z), end_cursor(end-MX::RecordBase), 
+      record_prev(0), record_next(0)
 {
-    if (p){
-        /*
-         * First node search
-         * 
-         * The record allocation algorithm permits the first node to
-         * be overwritten unpredictably such that the iteration of
-         * existing nodes must accomodate (the inexactitude) with a
-         * (this) "first node search" proceedure.
-         */
-        const quintptr adr_start = (quintptr)start;
-        const quintptr adr_end = (quintptr)end;
-        const quintptr adr_next = (quintptr)p;
+    /*
+     * First node search
+     * 
+     * The record allocation algorithm (MultiplexTable recordNew)
+     * permits the first node to be overwritten unpredictably such
+     * that the iteration of existing nodes must begin with a
+     * corrective search for the first node.
+     */
+    MultiplexTableSearch search(start,end,p);
 
-        quintptr adr_cursor = adr_next;
+    if (search.hasNext()){
 
-        while (true){
-
-            if ((adr_cursor + MX::RecordBase) < adr_end){
-
-                MultiplexRecord* r = reinterpret_cast<MultiplexRecord*>(adr_cursor);
-
-                if (r->check()){
-                    /*
-                     * If 'p' was correct, fall into here and break search.
-                     */
-                    record_next = adr_cursor;
-
-                    break;
-                }
-                else {
-                    /*
-                     * If 'p' was incorrect, perform corrective search.
-                     */
-                    adr_cursor++;
-
-                    if (adr_cursor == adr_next){
-                        /*
-                         * Terminal case: table scan complete
-                         * 
-                         * Weird user corner case?  Table is too small
-                         * to hold a record?
-                         */
-                        record_next = 0;
-
-                        break;
-                    }
-                }
-            }
-            else {
-                /*
-                 * Wrap
-                 */
-                adr_cursor = adr_start;
-            }
-        }
+        record_next = (quintptr)search.next();
     }
 }
 MultiplexTableIterator::~MultiplexTableIterator()
@@ -70,7 +30,7 @@ MultiplexTableIterator::~MultiplexTableIterator()
 }
 bool MultiplexTableIterator::hasNext(){
 
-    if (0 != record_next && (record_next + MX::RecordBase) < end){
+    if (0 != record_next && record_next < end_cursor){
 
         MultiplexRecord* n = reinterpret_cast<MultiplexRecord*>(record_next);
         /*
@@ -112,7 +72,7 @@ bool MultiplexTableIterator::hasNext(){
 }
 MultiplexRecord* MultiplexTableIterator::next(){
 
-    if (0 != record_next && (record_next + MX::RecordBase) < end){
+    if (0 != record_next && record_next < end_cursor){
 
         MultiplexRecord* re = reinterpret_cast<MultiplexRecord*>(record_next);
 

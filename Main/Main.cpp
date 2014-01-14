@@ -12,9 +12,9 @@
 
 int main(int argc, char *argv[])
 {
-    QCoreApplication::setOrganizationName("Syntelos Software");
+    QCoreApplication::setOrganizationName("syntelos");
     QCoreApplication::setOrganizationDomain("syntelos.com");
-    QCoreApplication::setApplicationName("TMTC Console");
+    QCoreApplication::setApplicationName("tmtc-console");
 
     QApplication a(argc, argv);
     try {

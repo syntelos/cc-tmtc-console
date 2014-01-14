@@ -8,7 +8,6 @@
 #include "TMTC/TMTCNameValue.h"
 #include "MultiplexTable.h"
 #include "MultiplexTableIterator.h"
-#include "MultiplexTableCreator.h"
 #include "MultiplexRecordIterator.h"
 
 MultiplexTable::MultiplexTable(const SystemDeviceIdentifier& id)
@@ -132,68 +131,70 @@ inline MultiplexRecord* MultiplexTable::record(quintptr p){
 }
 MultiplexRecord* MultiplexTable::recordNew(){
 
-    MultiplexTableCreator table(data,(data + index.useLast()),file.size());
+    const quintptr cursor_start = data;
+    const quintptr cursor_end = index.end(data);
+    const quintptr cursor_last = index.last(data);
 
-    while (table.hasNext()){
+    MultiplexRecord* prev = reinterpret_cast<MultiplexRecord*>(cursor_last);
 
-        qptrdiff ofs_last = table.offset();
-        qptrdiff idx_last = index.getLast();
+    if (index.top()){
 
-        if (ofs_last != idx_last){
+        prev->init();
 
-            MultiplexRecord* prev = table.previous();
-            MultiplexRecord* next = table.next();
+        index.setFirst(0);
+        index.setLast(0);
+        index.write();
 
-            if (prev){
-                /*
-                 * Copy current data set
-                 */
-                next->init(*prev);
+        qDebug().nospace() << "MultiplexTable.recordNew [top] " << prev;
 
-                qDebug().nospace() << "MultiplexTable.recordNew [new; copy]";
-            }
-            else {
-                /*
-                 * Clear object
-                 */
-                next->init();
+        return prev;
+    }
+    else {
 
-                qDebug().nospace() << "MultiplexTable.recordNew [new; init]";
-            }
+        if (prev->check()){
 
-            /*
-             * index.first
-             */
-            if (table.hasNext()){
+            const quintptr cursor_first = index.first(data);
 
-                qptrdiff ofs_first = table.offset();
+            const qptrdiff object_size = prev->length();
 
-                MultiplexRecord* first = table.next();
+            const qptrdiff buffer = (object_size<<1);
 
-                if (first->check() && first->getTime() < next->getTime()){
+            quintptr cursor = (cursor_last + prev->length());
 
-                    index.setFirst(ofs_first);
+            if ((cursor + buffer) > cursor_end){
+
+                cursor = cursor_start;
+
+                if (cursor == cursor_first){
+
+                    index.setFirst(object_size);
                 }
             }
+            else if (cursor_first > cursor_start){
 
-            /*
-             * index
-             */
-            index.setLast(ofs_last);
+                index.setFirst((cursor+object_size)-data);
+            }
 
+            MultiplexRecord* next = reinterpret_cast<MultiplexRecord*>(cursor);
+
+            next->init(*prev);
+
+            index.setObjectSize(object_size);
+            index.setLast(cursor-data);
             index.write();
+
+            qDebug().nospace() << "MultiplexTable.recordNew [prev] " << next;
 
             return next;
         }
         else {
-            table.next();
+            qDebug().nospace() << "MultiplexTable.recordNew [bug] 0x0";
+            /*
+             * Unreachable
+             */
+            return 0;
         }
     }
-
-    qDebug().nospace() << "MultiplexTable.recordNew [bug]";
-    /*
-     */
-    return 0;
 }
 
 quint32 MultiplexTable::getOverheadTemporal(){

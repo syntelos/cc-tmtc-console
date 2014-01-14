@@ -42,6 +42,14 @@ bool MultiplexIndex::maxObjectSize(qptrdiff size){
     else
         return false;
 }
+quintptr MultiplexIndex::first(quintptr start) const{
+
+    if (0 == ofs_first)
+
+        return start;
+    else
+        return (start + ofs_first);
+}
 qptrdiff MultiplexIndex::getFirst() const {
 
     return ofs_first;
@@ -60,6 +68,10 @@ void MultiplexIndex::setFirst(qptrdiff ofs){
         ofs_first = ofs;
     }
 }
+bool MultiplexIndex::top() const {
+
+    return (-1 == ofs_last);
+}
 qptrdiff MultiplexIndex::getLast() const {
 
     return ofs_last;
@@ -70,6 +82,13 @@ qptrdiff MultiplexIndex::useLast() const {
         return 0;
     else
         return ofs_last;
+}
+quintptr MultiplexIndex::last(quintptr start) const {
+
+    if (-1 == ofs_last)
+        return start;
+    else
+        return (start + ofs_last);
 }
 void MultiplexIndex::readLast(const QVariant& ofs){
 
@@ -120,6 +139,17 @@ void MultiplexIndex::setCountUser(quint32 count){
 quint32 MultiplexIndex::getRecordCount() const {
 
     return (count_temporal + count_spatial + count_user);
+}
+qint64 MultiplexIndex::getTableSize() const {
+
+    const quint32 object_size = getObjectSize();
+    const quint32 record_count = getRecordCount();
+
+    return (object_size * record_count);
+}
+quintptr MultiplexIndex::end(quintptr start) const {
+
+    return start + getTableSize();
 }
 bool MultiplexIndex::read(){
     QSettings settings;

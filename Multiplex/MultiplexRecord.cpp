@@ -40,17 +40,22 @@ void MultiplexRecord::init(){
     this->count.init(0);
 }
 void MultiplexRecord::init(const MultiplexRecord& copy){
-    this->gs = MX::GS;
-    this->rs = MX::RS;
-    this->time.init(copy.time);
-    this->count.init(copy.count);
+    if (copy.check()){
+        this->gs = MX::GS;
+        this->rs = MX::RS;
+        this->time.init(copy.time);
+        this->count.init(copy.count);
 
-    MultiplexRecordIterator src(copy);
-    MultiplexRecordIterator tgt(*this);
+        MultiplexRecordIterator src(copy);
+        MultiplexRecordIterator tgt(*this);
 
-    while (src.hasNext()){
+        while (src.hasNext()){
 
-        tgt.next().init(src.next());
+            tgt.next().init(src.next());
+        }
+    }
+    else {
+        init();
     }
 }
 bool MultiplexRecord::check() const {
