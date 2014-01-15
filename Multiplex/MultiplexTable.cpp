@@ -11,13 +11,17 @@
 #include "MultiplexObject.h"
 #include "MultiplexRecordIterator.h"
 
+#define IsOpen 0 != data
+#define IsClosed 0 == data
+
 MultiplexTable::MultiplexTable(const SystemDeviceIdentifier& id)
     : id(id), index(id), file(id.toString("table")), data(0)
 {
     index.read();
 }
 MultiplexTable::~MultiplexTable(){
-    if (0 != data){
+
+    if (IsOpen){
         {
             unsigned char* data = (unsigned char*)this->data;
             file.unmap(data);
@@ -26,12 +30,11 @@ MultiplexTable::~MultiplexTable(){
     }
 }
 bool MultiplexTable::isOpen(){
-    return (0 != data);
+    return IsOpen;
 }
 bool MultiplexTable::open(){
-    /*
-     */
-    if (0 == data){
+
+    if (IsClosed){
 
         if (file.open(QIODevice::ReadWrite)){
 
@@ -50,7 +53,7 @@ bool MultiplexTable::open(){
 
             file.close();
 
-            return (0 != data);
+            return IsOpen;
         }
         else {
             qDebug().nospace() << "MultiplexTable " << file.fileName() << " failed to open file";
@@ -59,7 +62,8 @@ bool MultiplexTable::open(){
     return false;
 }
 void MultiplexTable::close(){
-    if (0 != data){
+
+    if (IsOpen){
         {
             unsigned char* data = (unsigned char*)this->data;
             file.unmap(data);
@@ -75,7 +79,7 @@ void MultiplexTable::reopen(){
 
     if (required_size > file.size()){
 
-        if (data){
+        if (IsOpen){
             unsigned char* data = (unsigned char*)this->data;
             file.unmap(data);
             data = 0;
@@ -94,7 +98,7 @@ void MultiplexTable::reopen(){
 }
 inline MultiplexRecord* MultiplexTable::recordFirst(){
 
-    if (0 != data){
+    if (IsOpen){
 
         quintptr first = data + index.getFirst();
 
@@ -105,7 +109,7 @@ inline MultiplexRecord* MultiplexTable::recordFirst(){
 }
 inline MultiplexRecord* MultiplexTable::recordLast(){
 
-    if (0 != data){
+    if (IsOpen){
 
         quintptr last = data + index.getLast();
 
@@ -119,69 +123,77 @@ inline MultiplexRecord* MultiplexTable::record(quintptr p){
 }
 MultiplexRecord* MultiplexTable::recordNew(){
 
-    const quintptr cursor_start = data;
-    const quintptr cursor_end = index.end(data);
-    const quintptr cursor_last = index.last(data);
+    if (IsOpen){
 
-    MultiplexRecord* prev = reinterpret_cast<MultiplexRecord*>(cursor_last);
+        const quintptr cursor_start = data;
+        const quintptr cursor_end = index.end(data);
+        const quintptr cursor_last = index.last(data);
 
-    if (index.top()){
+        MultiplexRecord* prev = reinterpret_cast<MultiplexRecord*>(cursor_last);
 
-        prev->init();
+        if (index.top()){
 
-        index.setFirst(0);
-        index.setLast(0);
-        index.write();
+            prev->init();
 
-        qDebug().nospace() << "MultiplexTable.recordNew [top] " << prev;
-
-        return prev;
-    }
-    else {
-
-        if (prev->check()){
-
-            const quintptr cursor_first = index.first(data);
-
-            const qptrdiff object_size = prev->length();
-
-            const qptrdiff buffer = (object_size<<1);
-
-            quintptr cursor = (cursor_last + prev->length());
-
-            if ((cursor + buffer) > cursor_end){
-
-                cursor = cursor_start;
-
-                if (cursor == cursor_first){
-
-                    index.setFirst(object_size);
-                }
-            }
-            else if (cursor_first > cursor_start){
-
-                index.setFirst((cursor+object_size)-data);
-            }
-
-            MultiplexRecord* next = reinterpret_cast<MultiplexRecord*>(cursor);
-
-            next->init(*prev);
-
-            index.setObjectSize(object_size);
-            index.setLast(cursor-data);
+            index.setFirst(0);
+            index.setLast(0);
             index.write();
 
-            qDebug().nospace() << "MultiplexTable.recordNew [prev] " << next;
+            qDebug().nospace() << "MultiplexTable.recordNew [top] " << prev;
 
-            return next;
+            return prev;
         }
         else {
-            qDebug().nospace() << "MultiplexTable.recordNew [bug] 0x0";
-            /*
-             * Unreachable
-             */
-            return 0;
+
+            if (prev->check()){
+
+                const quintptr cursor_first = index.first(data);
+
+                const qptrdiff object_size = prev->length();
+
+                const qptrdiff buffer = (object_size<<1);
+
+                quintptr cursor = (cursor_last + prev->length());
+
+                if ((cursor + buffer) > cursor_end){
+
+                    cursor = cursor_start;
+
+                    if (cursor == cursor_first){
+
+                        index.setFirst(object_size);
+                    }
+                }
+                else if (cursor_first > cursor_start){
+
+                    index.setFirst((cursor+object_size)-data);
+                }
+
+                MultiplexRecord* next = reinterpret_cast<MultiplexRecord*>(cursor);
+
+                next->init(*prev);
+
+                index.setObjectSize(object_size);
+                index.setLast(cursor-data);
+                index.write();
+
+                qDebug().nospace() << "MultiplexTable.recordNew [prev] " << next;
+
+                return next;
+            }
+            else {
+                qDebug().nospace() << "MultiplexTable.recordNew [bug] 0x0";
+                /*
+                 * Unreachable
+                 */
+                return 0;
+            }
         }
+    }
+    else {
+        qDebug().nospace() << "MultiplexTable.recordNew [table not open]";
+
+        return 0;
     }
 }
 
@@ -270,7 +282,7 @@ void MultiplexTable::update(const TMTCMessage& m){
 
     const int count = m.size();
 
-    if (256 > count){
+    if (IsOpen && 256 > count){
 
         MultiplexRecord* r = recordNew();
     
@@ -309,7 +321,8 @@ void MultiplexTable::update(const TMTCMessage& m){
  * Modify the last record
  */
 void MultiplexTable::update(const TMTCNameValue& nvp){
-    if (nvp.hasName() && nvp.hasValue()){
+
+    if (IsOpen && nvp.hasName() && nvp.hasValue()){
 
         MultiplexRecord* r = recordLast();
         if (r){
@@ -335,14 +348,17 @@ void MultiplexTable::update(const TMTCNameValue& nvp){
 }
 void MultiplexTable::select(MultiplexSelect& s){
 
-    MultiplexTableIterator table(data,(data + index.getFirst()),file.size());
+    if (IsOpen){
 
-    while (table.hasNext()){
+        MultiplexTableIterator table(data,(data + index.getFirst()),file.size());
 
-        MultiplexRecord *record = table.next();
+        while (table.hasNext()){
 
-        MultiplexObject object(index,*record);
+            MultiplexRecord *record = table.next();
 
-        s += object;
+            MultiplexObject object(index,*record);
+
+            s += object;
+        }
     }
 }

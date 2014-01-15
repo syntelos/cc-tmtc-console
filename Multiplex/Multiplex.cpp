@@ -29,7 +29,18 @@ bool Multiplex::update(const SystemDeviceIdentifier* id, const TMTCMessage* m){
             }
             else {
                 history = new MultiplexTable(sid);
-                this->state[sid] = history;
+
+                if (history->open()){
+
+                    qDebug().nospace() << "MultiplexTable.update(" << sid.toString() << ") [successful table open]";
+
+                    this->state[sid] = history;
+                }
+                else {
+                    qDebug().nospace() << "MultiplexTable.update(" << sid.toString() << ") [failed table open]";
+
+                    return false;
+                }
             }
             /*
              * An invalid (special) ID will deposit values into the
