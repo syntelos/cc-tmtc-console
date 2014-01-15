@@ -8,7 +8,6 @@
 #include "Window.h"
 #include "Configuration/Configuration.h"
 #include "Configuration/ConfigurationError.h"
-#include "Storage/StorageTreeEditor.h"
 
 int main(int argc, char *argv[])
 {
