@@ -303,7 +303,10 @@ void MultiplexTable::update(const TMTCMessage& m){
                     const QVariant& value = nvp->getValue();
 
                     if (!object.setValue(name,value)){
-                        qDebug().nospace() << "MultiplexTable.update(TMTCMessage): Value has been ignored in (name: " << name.toString() << ", value: " << value.toString() << ")";
+                        qDebug().nospace() << "MultiplexTable.update(TMTCMessage): record has ignored (name: " << name.toString() << ", value: " << value.toString() << ")";
+                    }
+                    else {
+                        qDebug().nospace() << "MultiplexTable.update(TMTCMessage): record updated with (name: " << name.toString() << ", value: " << value.toString() << ")";
                     }
                 }
             }

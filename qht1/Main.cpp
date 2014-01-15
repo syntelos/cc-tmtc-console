@@ -3,12 +3,12 @@
  */
 #include <iostream>
 #include <QHash>
-#include "System/SystemDeviceIdentifier.h"
+#include "TMTC/TMTCName.h"
 
 int main(int argc, char** argv){
     int cc;
 
-    QHash<SystemDeviceIdentifier,QString*> qh;
+    QHash<TMTCName,QString*> qh;
 
     /*
      * Create
@@ -17,9 +17,9 @@ int main(int argc, char** argv){
 
         QString* string = new QString(argv[cc]);
 
-        SystemDeviceIdentifier sid(*string);
+        TMTCName name(*string);
 
-        qh[sid] = string;
+        qh[name] = string;
     }
 
     if ((argc-1) != qh.size()){
@@ -35,11 +35,11 @@ int main(int argc, char** argv){
 
         QString string(argv[cc]);
 
-        SystemDeviceIdentifier sid(string);
+        TMTCName name(string);
 
-        if (qh.contains(sid)){
+        if (qh.contains(name)){
 
-            QString* test = qh[sid];
+            QString* test = qh[name];
 
             if (test){
 

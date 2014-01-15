@@ -1,4 +1,4 @@
-TARGET = qht0
+TARGET = qht1
 TEMPLATE = app
 
 QT     += network
@@ -10,6 +10,6 @@ INCLUDEPATH += ../
 SOURCES += Main.cpp
 
 unix {
-    LIBS += -L../System
-    LIBS += -lSystem
+    LIBS += -L../TMTC
+    LIBS += -lTMTC
 }
