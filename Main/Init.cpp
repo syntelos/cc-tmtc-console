@@ -8,7 +8,6 @@
 #include "Configuration/Devices.h"
 #include "Configuration/Device.h"
 #include "System/SystemDeviceConnection.h"
-#include "System/SystemDeviceIdentifier.h"
 #include "TMTC/TMTCMessage.h"
 #include "Init.h"
 
@@ -84,8 +83,8 @@ bool Init::run(){
                             SystemDeviceConnection* connection = const_cast<SystemDeviceConnection*>(device->createSystemDeviceConnection());
 
                             if (connection &&
-                                QObject::connect(connection,SIGNAL(received(const SystemDeviceIdentifier*,const TMTCMessage*)),multiplex,SLOT(receivedFromDevice(const SystemDeviceIdentifier*,const TMTCMessage*))) &&
-                                QObject::connect(multiplex,SIGNAL(sendToDevice(const SystemDeviceIdentifier*,const TMTCMessage*)),connection,SLOT(send(const SystemDeviceIdentifier*,const TMTCMessage*)))
+                                QObject::connect(connection,SIGNAL(received(const TMTCMessage*)),multiplex,SLOT(receivedFromDevice(const TMTCMessage*))) &&
+                                QObject::connect(multiplex,SIGNAL(sendToDevice(const TMTCMessage*)),connection,SLOT(send(const TMTCMessage*)))
                                 )
                             {
                                 /*

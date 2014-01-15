@@ -56,7 +56,7 @@ class TerminalOutput : public GraphicsBranch
 
  public slots:
 
-    void received(const SystemDeviceIdentifier* sid, const TMTCMessage* m);
+    void received(const TMTCMessage* m);
 
  private:
     Q_DISABLE_COPY(TerminalOutput)

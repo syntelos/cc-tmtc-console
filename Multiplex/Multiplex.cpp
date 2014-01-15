@@ -14,10 +14,10 @@ Multiplex::Multiplex(QObject* parent)
 }
 Multiplex::~Multiplex(){
 }
-bool Multiplex::update(const SystemDeviceIdentifier* id, const TMTCMessage* m){
-    if (id && m){
+bool Multiplex::update(const TMTCMessage* m){
+    if (m){
 
-        const SystemDeviceIdentifier& sid = *id;
+        const SystemDeviceIdentifier& sid = m->getIdentifier();
 
         if (sid.isValid() || sid.isSpecial()){
 
@@ -55,10 +55,10 @@ bool Multiplex::update(const SystemDeviceIdentifier* id, const TMTCMessage* m){
     }
     return false;
 }
-TMTCMessage* Multiplex::query(const SystemDeviceIdentifier* id, const TMTCMessage* m){
-    if (id && m){
+TMTCMessage* Multiplex::query(const TMTCMessage* m){
+    if (m){
 
-        const SystemDeviceIdentifier& sid = *id;
+        const SystemDeviceIdentifier& sid = m->getIdentifier();
 
         if (sid.isValid() && this->state.contains(sid)){
 
@@ -74,8 +74,6 @@ TMTCMessage* Multiplex::query(const SystemDeviceIdentifier* id, const TMTCMessag
                 /*
                  * Use desktop semantics
                  */
-                const SystemDeviceIdentifier& sid = *id;
-
                 MultiplexTable* special = 0;
 
                 if (this->state.contains(sid)){
@@ -220,18 +218,19 @@ void Multiplex::select(int count, MultiplexSelect** query, const QRectF& window)
         }
     }
 }
-void Multiplex::receivedFromDevice(const SystemDeviceIdentifier* id, const TMTCMessage* m){
-    if (id && m && this->update(id,m)){
+void Multiplex::receivedFromDevice(const TMTCMessage* m){
 
-        emit sendToUser(id,m);
+    if (m && this->update(m)){
+
+        emit sendToUser(m);
     }
 }
-void Multiplex::receivedFromUser(const SystemDeviceIdentifier* id, const TMTCMessage* m){
+void Multiplex::receivedFromUser(const TMTCMessage* m){
 
-    TMTCMessage* re = this->query(id,m);
+    TMTCMessage* re = this->query(m);
     if (re){
 
-        emit sendToUser(id,re);
+        emit sendToUser(re);
 
         re->deleteLater();
     }

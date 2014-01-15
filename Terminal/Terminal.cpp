@@ -18,7 +18,7 @@ Terminal::Terminal(QGraphicsItem *parent)
     qreal y = output.height()+2;
     this->input.setPos(x,y);
 
-    QObject::connect(&this->input,SIGNAL(send(const SystemDeviceIdentifier*,const TMTCMessage*)),this,SIGNAL(send(const SystemDeviceIdentifier*,const TMTCMessage*)));
+    QObject::connect(&this->input,SIGNAL(send(const TMTCMessage*)),this,SIGNAL(send(const TMTCMessage*)));
 }
 Terminal::~Terminal()
 {
@@ -72,7 +72,7 @@ const char* Terminal::describeClassName(QGraphicsItem* item){
         }
     }
 }
-void Terminal::received(const SystemDeviceIdentifier* sid, const TMTCMessage* m){
+void Terminal::received(const TMTCMessage* m){
 
-    this->output.received(sid,m);
+    this->output.received(m);
 }

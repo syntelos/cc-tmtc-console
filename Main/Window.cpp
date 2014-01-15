@@ -111,8 +111,8 @@ Window::Window(QScriptEngine* script)
 
         /*
          */
-        if (QObject::connect(terminal,SIGNAL(send(const SystemDeviceIdentifier*,const TMTCMessage*)),multiplex,SLOT(receivedFromUser(const SystemDeviceIdentifier*,const TMTCMessage*))) &&
-            QObject::connect(multiplex,SIGNAL(sendToUser(const SystemDeviceIdentifier*,const TMTCMessage*)),terminal,SLOT(received(const SystemDeviceIdentifier*,const TMTCMessage*)))
+        if (QObject::connect(terminal,SIGNAL(send(const TMTCMessage*)),multiplex,SLOT(receivedFromUser(const TMTCMessage*))) &&
+            QObject::connect(multiplex,SIGNAL(sendToUser(const TMTCMessage*)),terminal,SLOT(received(const TMTCMessage*)))
             )
         {
             qDebug() << "Window/Terminal: terminal & multiplex configured (duplex)";

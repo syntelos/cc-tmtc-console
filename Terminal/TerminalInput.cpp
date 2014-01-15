@@ -130,7 +130,7 @@ void TerminalInput::contentsChanged(){
 
             delete buffer;
 
-            emit send(SystemDeviceIdentifier::BroadcastIdentifier,m);
+            emit send(m);
         }
     }
     else {

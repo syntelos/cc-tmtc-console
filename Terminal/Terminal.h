@@ -45,11 +45,11 @@ class Terminal : public GraphicsBranch
     /*!
      * The terminal emits a send for user input
      */
-    void send(const SystemDeviceIdentifier*,const TMTCMessage*);
+    void send(const TMTCMessage*);
 
  public slots:
 
-    void received(const SystemDeviceIdentifier*,const TMTCMessage*);
+    void received(const TMTCMessage*);
 
  private:
     Q_DISABLE_COPY(Terminal)

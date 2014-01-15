@@ -64,11 +64,15 @@ class TMTCMessage : public QObject, public QList<TMTCNameValue*> {
      */
     ~TMTCMessage();
     /*!
+     * Field has a value
      */
     bool hasIdentifier() const; 
+
+    bool hasNotIdentifier() const; 
     /*!
+     * Return the field value, or the broadcast identifier
      */
-    SystemDeviceIdentifier* getIdentifier() const; 
+    const SystemDeviceIdentifier& getIdentifier() const; 
     /*!
      * Set once (non - null) or unset (null).  Returns false when
      * setting the field that has a non - null value.

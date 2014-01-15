@@ -29,12 +29,12 @@ class Multiplex : public QObject {
      * the heap allocation of the arguments, which are copied by this
      * method.
      */
-    bool update(const SystemDeviceIdentifier*, const TMTCMessage*);
+    bool update(const TMTCMessage*);
     /*!
      * Query the time series data set.  The caller is responsible for
      * the returned heap allocation.
      */
-    TMTCMessage* query(const SystemDeviceIdentifier*, const TMTCMessage*);
+    TMTCMessage* query(const TMTCMessage*);
     /*!
      * If the returned value is not a "null qvariant", then the const
      * may be lowered.
@@ -51,19 +51,19 @@ class Multiplex : public QObject {
      * The database emits this signal to transmit to a device
      * connection.
      */
-    void sendToDevice(const SystemDeviceIdentifier*, const TMTCMessage*);
+    void sendToDevice(const TMTCMessage*);
     /*!
      * The database emits this signal to transmit to a user interface
      * (e.g. Terminal Output)
      */
-    void sendToUser(const SystemDeviceIdentifier*, const TMTCMessage*);
+    void sendToUser(const TMTCMessage*);
 
  public slots:
     /*!
      * The database receives this signal from a device connection to
      * update the time series.
      */
-    void receivedFromDevice(const SystemDeviceIdentifier*, const TMTCMessage*);
+    void receivedFromDevice(const TMTCMessage*);
     /*!
      * The database receives this signal from a user interface
      * (e.g. Terminal Input) to query the time series.  
@@ -71,7 +71,7 @@ class Multiplex : public QObject {
      * The identifier is assumed to have persistent allocation, and
      * will be employed in the response signal sent to users.
      */
-    void receivedFromUser(const SystemDeviceIdentifier*, const TMTCMessage*);
+    void receivedFromUser(const TMTCMessage*);
 
 
  private:

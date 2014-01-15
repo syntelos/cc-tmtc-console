@@ -35,22 +35,25 @@ SystemDevice* XportConnection::getDevice(){
 SystemDeviceIdentifier* XportConnection::getDeviceIdentifier(){
     return deviceIdentifier;
 }
-void XportConnection::send(const SystemDeviceIdentifier* sid, const TMTCMessage* m){
+void XportConnection::send(const TMTCMessage* m){
+    if (m){
+        const SystemDeviceIdentifier& sid = m->getIdentifier();
 
-    if (sid && m && deviceIdentifier && 
-        /*
-         * Permit broadcast style operation with an invalid 'sid'
-         */
-        (sid->isNotValid() || deviceIdentifier->operator==(sid)))
-    {
+        if (deviceIdentifier && 
+            /*
+             * Permit broadcast style operation with an invalid 'sid'
+             */
+            (sid.isNotValid() || sid == deviceIdentifier))
+        {
 
-        this->sendMutex.lock();
+            this->sendMutex.lock();
 
-        this->sendQ.push_back(new TMTCMessage(*m));
+            this->sendQ.push_back(new TMTCMessage(*m));
 
-        this->sendFlag = true;
+            this->sendFlag = true;
 
-        this->sendMutex.unlock();
+            this->sendMutex.unlock();
+        }
     }
 }
 void XportConnection::run(){
@@ -119,7 +122,7 @@ void XportConnection::run(){
 
                             if ( ! msg->isEmpty()){
 
-                                emit received(deviceIdentifier,msg);
+                                emit received(msg);
                             }
 
                             msg->deleteLater();

@@ -130,11 +130,17 @@ bool TMTCMessage::isSpecial() const {
 }
 bool TMTCMessage::hasIdentifier() const {
 
-    return (0 != this->sid);
+    return (0 != sid);
 }
-SystemDeviceIdentifier* TMTCMessage::getIdentifier() const {
+bool TMTCMessage::hasNotIdentifier() const {
 
-    return this->sid;
+    return (0 == sid);
+}
+const SystemDeviceIdentifier& TMTCMessage::getIdentifier() const {
+    if (0 != sid)
+        return *sid;
+    else
+        return *SystemDeviceIdentifier::BroadcastIdentifier;
 }
 bool TMTCMessage::setIdentifier(SystemDeviceIdentifier* sid){
     if (0 == this->sid){

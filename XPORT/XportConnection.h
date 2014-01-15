@@ -49,7 +49,7 @@ class XportConnection : public SystemDeviceConnection {
      * This class will copy and enqueue the message for network
      * delivery.
      */
-    void send(const SystemDeviceIdentifier*, const TMTCMessage*);
+    void send( const TMTCMessage*);
 
  signals:
     /*!
@@ -79,7 +79,7 @@ class XportConnection : public SystemDeviceConnection {
      * arguments.  The message argument is deleted immediately
      * following the emission of the signal.
      */
-    void received(const SystemDeviceIdentifier*, const TMTCMessage*);
+    void received( const TMTCMessage*);
 
  private:
     Q_DISABLE_COPY(XportConnection)

@@ -57,7 +57,7 @@ class TerminalInput : public GraphicsBranch
     virtual const char* describeClassName(QGraphicsItem* item);
 
  signals:
-    void send(const SystemDeviceIdentifier*,const TMTCMessage*);
+    void send(const TMTCMessage*);
 
  public slots:
     void contentsChanged();
