@@ -8,11 +8,18 @@
 #include <QList>
 #include <QObject>
 
+#include "System/SystemDeviceIdentifier.h"
 #include "TMTCNameValue.h"
 
 /*!
  * The telemetry and telecommand message is a list of name - value
- * pairs.  
+ * pairs.  The message has a receipt or delivery time, and a device
+ * identifier.  
+ * 
+ * The identifier refers to the message source or target in receiving
+ * or delivering from or to a device.  The message class is not
+ * responsible for the heap allocation of the identifier, which is
+ * presumed to be relatively static.
  * 
  * The \class QObject has been added for the use of the "deleteLater"
  * facility.  Emitting signal arguments in this class with sender
@@ -26,19 +33,28 @@ class TMTCMessage : public QObject, public QList<TMTCNameValue*> {
      */
     qint64 time;
 
+    SystemDeviceIdentifier* sid;
+
+
  public:
     /*!
      * Construct an empty message 
      */
     TMTCMessage();
+
+    TMTCMessage(SystemDeviceIdentifier* sid);
     /*!
      * Construct an empty message with the argument message time
      */
     TMTCMessage(qint64 t);
+
+    TMTCMessage(SystemDeviceIdentifier* sid, qint64 t);
     /*!
      * Parse "NV( NV)*" as {NV,(NV)*}
      */
     TMTCMessage(const QByteArray& in);
+
+    TMTCMessage(SystemDeviceIdentifier* sid, const QByteArray& in);
     /*!
      * Copy a message from a signal when the use of it is not
      * immediate (spans multiple threads).
@@ -47,6 +63,17 @@ class TMTCMessage : public QObject, public QList<TMTCNameValue*> {
     /*!
      */
     ~TMTCMessage();
+    /*!
+     */
+    bool hasIdentifier() const; 
+    /*!
+     */
+    SystemDeviceIdentifier* getIdentifier() const; 
+    /*!
+     * Set once (non - null) or unset (null).  Returns false when
+     * setting the field that has a non - null value.
+     */
+    bool setIdentifier(SystemDeviceIdentifier*); 
     /*!
      * The names contained are all special
      */

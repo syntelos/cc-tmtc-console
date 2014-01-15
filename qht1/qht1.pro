@@ -12,4 +12,6 @@ SOURCES += Main.cpp
 unix {
     LIBS += -L../TMTC
     LIBS += -lTMTC
+    LIBS += -L../System
+    LIBS += -lSystem
 }

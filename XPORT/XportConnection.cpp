@@ -115,7 +115,7 @@ void XportConnection::run(){
 
                         if ( ! linet.isEmpty()){
 
-                            TMTCMessage* msg = new TMTCMessage(linet);
+                            TMTCMessage* msg = new TMTCMessage(deviceIdentifier,linet);
 
                             if ( ! msg->isEmpty()){
 
