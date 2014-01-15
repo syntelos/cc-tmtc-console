@@ -4,6 +4,8 @@
 #include <QDebug>
 #include <QDateTime>
 #include <QIODevice>
+#include <QReadLocker>
+#include <QWriteLocker>
 
 #include "TMTC/TMTCNameValue.h"
 #include "MultiplexTable.h"
@@ -223,6 +225,8 @@ void MultiplexTable::setRecordCount(quint32 count){
 }
 TMTCMessage* MultiplexTable::query(const TMTCMessage& m){
 
+    QReadLocker read(&lock);
+
     TMTCMessage* re = new TMTCMessage();
 
     MultiplexRecord* r = recordLast();
@@ -254,6 +258,8 @@ TMTCMessage* MultiplexTable::query(const TMTCMessage& m){
 }
 QVariant MultiplexTable::query(const TMTCName& name){
 
+    QReadLocker read(&lock);
+
     MultiplexRecord* r = recordLast();
     if (r){
 
@@ -283,6 +289,8 @@ void MultiplexTable::update(const TMTCMessage& m){
     const int count = m.size();
 
     if (IsOpen && 256 > count){
+
+        QWriteLocker write(&lock);
 
         MultiplexRecord* r = recordNew();
     
@@ -327,6 +335,8 @@ void MultiplexTable::update(const TMTCNameValue& nvp){
 
     if (IsOpen && nvp.hasName() && nvp.hasValue()){
 
+        QWriteLocker write(&lock);
+
         MultiplexRecord* r = recordLast();
         if (r){
             MultiplexObject object(index,*r);
@@ -352,6 +362,8 @@ void MultiplexTable::update(const TMTCNameValue& nvp){
 void MultiplexTable::select(MultiplexSelect& s){
 
     if (IsOpen){
+
+        QReadLocker read(&lock);
 
         MultiplexTableIterator table(data,(data + index.getFirst()),file.size());
 

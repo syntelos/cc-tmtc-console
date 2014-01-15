@@ -7,6 +7,7 @@
 #include <Qt>
 #include <QFile>
 #include <QHash>
+#include <QReadWriteLock>
 #include <QVariant>
 
 #include "System/SystemDeviceIdentifier.h"
@@ -81,6 +82,8 @@ class MultiplexTable {
     QFile file;
 
     quintptr data;
+
+    QReadWriteLock lock;
 
     /*!
      * DISABLE COPY -- destructor unmaps data
