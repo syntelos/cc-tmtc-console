@@ -14,10 +14,10 @@
  * The telemetry and telecommand message is a list of name - value
  * pairs.  
  * 
- * The \class QObject facility has been added for the use of the
- * "deleteLater" device.  Sending objects in this class via signals
- * and slots with sender responsibility for heap allocation is
- * implemented by calling "deleteLater" after emitting the signal.
+ * The \class QObject has been added for the use of the "deleteLater"
+ * facility.  Emitting signal arguments in this class with sender
+ * responsibility for heap allocation is implemented by calling
+ * "deleteLater" after emitting the signal.
  */
 class TMTCMessage : public QObject, public QList<TMTCNameValue*> {
     Q_OBJECT;
