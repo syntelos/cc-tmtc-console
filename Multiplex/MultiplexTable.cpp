@@ -8,6 +8,7 @@
 #include "TMTC/TMTCNameValue.h"
 #include "MultiplexTable.h"
 #include "MultiplexTableIterator.h"
+#include "MultiplexObject.h"
 #include "MultiplexRecordIterator.h"
 
 MultiplexTable::MultiplexTable(const SystemDeviceIdentifier& id)
@@ -29,19 +30,13 @@ bool MultiplexTable::isOpen(){
 }
 bool MultiplexTable::open(){
     /*
-     * FILE: open, resize, mem-map, then close.
-     * 
-     * RECORD: define data, first, and last.
      */
     if (0 == data){
 
         if (file.open(QIODevice::ReadWrite)){
 
             {
-                const quint32 object_size = index.getObjectSize();
-                const quint32 record_count = index.getRecordCount();
-
-                const qint64 required_size = (record_count * object_size);
+                const qint64 required_size = index.getTableSize();
                 /*
                  * Expand table file size using object size
                  */
@@ -74,20 +69,16 @@ void MultiplexTable::close(){
 }
 void MultiplexTable::reopen(){
     /*
-     * Expand file map as required by record count and object size
-     * 
-     * A reduction of (close; open) to preserve (data, first, last)
+     * Expand file map as required
      */
-    const quint32 object_size = index.getObjectSize();
-    const quint32 record_count = index.getRecordCount();
-
-    const qint64 required_size = (record_count * object_size);
+    const qint64 required_size = index.getTableSize();
 
     if (required_size > file.size()){
 
-        {
+        if (data){
             unsigned char* data = (unsigned char*)this->data;
             file.unmap(data);
+            data = 0;
         }
 
         if (file.open(QIODevice::ReadWrite)){
@@ -98,9 +89,6 @@ void MultiplexTable::reopen(){
             data = reinterpret_cast<quintptr>(file.map(0,file.size()));
 
             file.close();
-        }
-        else {
-            data = 0;
         }
     }
 }
@@ -241,7 +229,7 @@ TMTCMessage* MultiplexTable::query(const TMTCMessage& m){
 
                 if (this->index.contains(qn)){
 
-                    object.field = this->index[qn];
+                    object.field = this->index.value(qn);
 
                     QVariant value = object.getValue();
 
@@ -261,7 +249,7 @@ QVariant MultiplexTable::query(const TMTCName& name){
 
             MultiplexRecordIterator object(*r);
 
-            object.field = this->index[name];
+            object.field = this->index.value(name);
 
             return object.getValue();
         }
@@ -289,11 +277,7 @@ void MultiplexTable::update(const TMTCMessage& m){
         if (r){
             r->time.value = m.getTime();
 
-            MultiplexRecordIterator object(*r);
-
-            bool index_dirty = false;
-
-            bool objectsize_expanded = false;
+            MultiplexObject object(index,*r);
 
             int cc;
             for (cc = 0; cc < count; cc++){
@@ -306,44 +290,15 @@ void MultiplexTable::update(const TMTCMessage& m){
 
                     const QVariant& value = nvp->getValue();
 
-                    if (index.contains(name)){
-
-                        object.field = index[name];
-
-                        if (!object.set(value)){
-
-                            qDebug().nospace() << "MultiplexTable.update: Value has been ignored in (name: " << name << ", value: " << value << ")";
-                        }
-                    }
-                    else {
-                        const int field = index.count();
-
-                        index[name] = field;
-
-                        index_dirty = true;
-
-                        object.field = field;
-
-                        if (object.init(value)){
-
-                            bool exp = index.maxObjectSize(object.length());
-
-                            objectsize_expanded = (exp || objectsize_expanded);
-                        }
-                        else {
-
-                            qDebug().nospace() << "MultiplexTable.update: Value has been ignored in (name: " << name << ", value: " << value << ")";
-                        }
+                    if (!object.setValue(name,value)){
+                        qDebug().nospace() << "MultiplexTable.update(TMTCMessage): Value has been ignored in (name: " << name.toString() << ", value: " << value.toString() << ")";
                     }
                 }
             }
 
-            if (index_dirty){
+            if (index.isDirty()){
 
                 index.write();
-            }
-
-            if (objectsize_expanded){
 
                 reopen();
             }
@@ -358,34 +313,22 @@ void MultiplexTable::update(const TMTCNameValue& nvp){
 
         MultiplexRecord* r = recordLast();
         if (r){
-            MultiplexRecordIterator object(*r);
+            MultiplexObject object(index,*r);
 
             const TMTCName& name = nvp.getName();
 
             const QVariant& value = nvp.getValue();
 
-            /*
-             */
-            if (index.contains(name)){
-                object.field = index[name];
+            if (!object.setValue(name,value)){
 
-                if (!object.set(value)){
-
-                    qDebug().nospace() << "MultiplexTable.update: Value has been ignored in (name: " << name << ", value: " << value << ")";
-                }
+                qDebug().nospace() << "MultiplexTable.update(TMTCNameValue): Value has been ignored in (name: " << name.toString() << ", value: " << value.toString() << ")";
             }
-            else {
-                const int field = index.count();
-                index[name] = field;
+
+            if (index.isDirty()){
+
                 index.write();
 
-                if (object.init(value)){
-
-                    reopen();
-                }
-                else {
-                    qDebug().nospace() << "MultiplexTable.update: Value has been ignored in (name: " << name << ", value: " << value << ")";
-                }
+                reopen();
             }
         }
     }

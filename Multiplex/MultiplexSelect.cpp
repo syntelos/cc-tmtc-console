@@ -32,7 +32,7 @@ void MultiplexSelect::append(MultiplexObject& table){
 
     if (this->intersects(table)){
 
-        QVariant value = table[this->name];
+        QVariant value = table.getValue(this->name);
 
         qreal x = (qreal)(table.getTime()-this->start);
 

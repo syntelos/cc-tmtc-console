@@ -33,6 +33,8 @@ class MultiplexIndex {
 
     quint32 count_user;
 
+    mutable bool dirty;
+
     void readFirst(const QVariant&);
 
     void readLast(const QVariant&);
@@ -86,13 +88,15 @@ class MultiplexIndex {
 
     bool write() const;
 
+    bool isDirty() const;
+
     int count() const;
 
     bool contains(const TMTCName& n) const;
 
-    int& operator[](const TMTCName& n);
+    void insert(const TMTCName& n, int v);
 
-    int operator[](const TMTCName& n) const;
+    int value(const TMTCName& n) const;
 
 };
 #endif

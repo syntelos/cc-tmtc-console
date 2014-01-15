@@ -9,14 +9,7 @@
 #include "MultiplexRecord.h"
 
 /*!
- * Low level record data arithmetic operator is used by \class
- * MultiplexTable and \class MultiplexRecord exclusively.
- * 
- * This iterator initializes to the first data field, tests the
- * current data field, and increments to the subsequent data field.
- * The 'next' operator returns the current data field, "then"
- * increments the current data field.
- * 
+ * Read only (random access) record data field operator.
  * 
  * \sa MultiplexObject
  */
@@ -56,13 +49,7 @@ class MultiplexRecordIterator {
     /*!
      * Call on the current field
      */
-    bool init(const QVariant&);
-
-    bool init(const MultiplexFieldV&);
-    /*!
-     * Call on the current field
-     */
-    bool set(const QVariant&);
+    bool setValue(const QVariant&);
     /*!
      * Call on the current field
      */
@@ -70,7 +57,11 @@ class MultiplexRecordIterator {
     /*!
      * Call on the current field
      */
-    int length() const;
+    quint8 alloc() const;
+
+    quint8 storage() const;
+
+    qptrdiff length() const;
 
 };
 #endif

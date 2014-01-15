@@ -11,7 +11,8 @@ MultiplexIndex::MultiplexIndex(const SystemDeviceIdentifier& id)
     : id(id), prefix(id.toString()), table(),
       object_size(MX::RecordBase),
       ofs_first(0), ofs_last(-1),
-      count_temporal(1), count_spatial(9), count_user(3610)
+      count_temporal(1), count_spatial(9), count_user(3610),
+      dirty(false)
 {
     read();
 }
@@ -28,13 +29,19 @@ qptrdiff MultiplexIndex::getObjectSize() const {
 }
 void MultiplexIndex::setObjectSize(qptrdiff size){
 
-    if (0 < size){
+    if (0 < size && size > object_size){
+
+        dirty = false;
+
         object_size = size;
     }
 }
 bool MultiplexIndex::maxObjectSize(qptrdiff size){
 
     if (size > object_size){
+
+        dirty = false;
+
         object_size = size;
 
         return true;
@@ -63,7 +70,9 @@ void MultiplexIndex::readFirst(const QVariant& ofs){
 }
 void MultiplexIndex::setFirst(qptrdiff ofs){
 
-    if (0 <= ofs){
+    if (0 <= ofs && ofs != ofs_first){
+
+        dirty = false;
 
         ofs_first = ofs;
     }
@@ -99,7 +108,9 @@ void MultiplexIndex::readLast(const QVariant& ofs){
 }
 void MultiplexIndex::setLast(qptrdiff ofs){
 
-    if (0 <= ofs){
+    if (0 <= ofs && ofs != ofs_last){
+
+        dirty = false;
 
         ofs_last = ofs;
     }
@@ -110,7 +121,9 @@ quint32 MultiplexIndex::getCountTemporal() const {
 }
 void MultiplexIndex::setCountTemporal(quint32 count){
 
-    if (0 != count){
+    if (0 != count && count > count_temporal){
+
+        dirty = false;
 
         count_temporal = count;
     }
@@ -121,7 +134,9 @@ quint32 MultiplexIndex::getCountSpatial() const {
 }
 void MultiplexIndex::setCountSpatial(quint32 count){
 
-    if (0 != count){
+    if (0 != count && count > count_spatial){
+
+        dirty = false;
 
         count_spatial = count;
     }
@@ -132,7 +147,10 @@ quint32 MultiplexIndex::getCountUser() const {
 }
 void MultiplexIndex::setCountUser(quint32 count){
 
-    if (0 != count){
+    if (0 != count && count > count_user){
+
+        dirty = false;
+
         count_user = count;
     }
 }
@@ -228,6 +246,8 @@ bool MultiplexIndex::read(){
     }
     settings.endArray();
 
+    dirty = false;
+
     return (0 < count);
 }
 bool MultiplexIndex::write() const {
@@ -305,27 +325,47 @@ bool MultiplexIndex::write() const {
 
             int index = table[name];
 
-            settings.setValue("name",name);
+            settings.setValue("name",name.toString());
             settings.setValue("index",index);
         }
         settings.endArray();
+
+        dirty = false;
+
         return true;
     }
-    else
+    else {
+        dirty = false;
+
         return false;
+    }
+}
+bool MultiplexIndex::isDirty() const {
+
+    return dirty;
 }
 int MultiplexIndex::count() const {
+
     return table.size();
 }
 bool MultiplexIndex::contains(const TMTCName & n) const {
+
     return table.contains(n);
 }
-int& MultiplexIndex::operator[](const TMTCName & n){
-    return table[n];
+void MultiplexIndex::insert(const TMTCName & n, int v){
+
+    if (!table.contains(n)){
+
+        dirty = false;
+
+        table.insert(n,v);
+    }
 }
-int MultiplexIndex::operator[](const TMTCName & n) const {
-    return table[n];
+int MultiplexIndex::value(const TMTCName & n) const {
+
+    if (table.contains(n))
+
+        return table.value(n);
+    else
+        return -1;
 }
-
-
-

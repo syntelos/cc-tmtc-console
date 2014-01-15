@@ -8,32 +8,50 @@
 #include "MultiplexIndex.h"
 #include "MultiplexRecord.h"
 /*!
- * High level (read only) record operator.
+ * Read/write record data field operator.
  *
  * \sa MultiplexRecordIterator
  */
 class MultiplexObject {
 
- protected:
-    const MultiplexIndex& index;
-    const MultiplexRecord& record;
+    int fcount;
+
+    MultiplexFieldV** findex;
+
+    MultiplexIndex& mindex;
+
+    MultiplexRecord& mrecord;
+
+    void reindex();
 
  public:
     /*!
      */
-    MultiplexObject(const MultiplexIndex& index, const MultiplexRecord& record);
+    MultiplexObject(MultiplexIndex& index, MultiplexRecord& record);
     /*!
      */
     ~MultiplexObject();
     /*!
      */
-    bool contains(const TMTCName& n) const;
-    /*!
-     */
     qint64 getTime() const;
     /*!
      */
-    QVariant operator[](const TMTCName& n) const;
+    bool contains(const TMTCName& n) const;
+    /*!
+     */
+    QVariant getValue(const TMTCName& n) const;
+    /*!
+     */
+    bool setValue(const TMTCName& n, const QVariant& V);
+    /*!
+     */
+    quint8 alloc(const TMTCName& n) const;
+    /*!
+     */
+    quint8 storage(const TMTCName& n) const;
+    /*!
+     */
+    qptrdiff length(const TMTCName& n) const;
 
 };
 #endif

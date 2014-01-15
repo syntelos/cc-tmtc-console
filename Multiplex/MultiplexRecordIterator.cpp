@@ -49,23 +49,7 @@ MultiplexFieldV& MultiplexRecordIterator::next(){
 
     return *current;
 }
-bool MultiplexRecordIterator::init(const QVariant& value){
-    MultiplexFieldV* current = this->current();
-    if (current)
-        return current->init(value);
-    else
-        return false;
-}
-bool MultiplexRecordIterator::init(const MultiplexFieldV& copy){
-    MultiplexFieldV* current = this->current();
-    if (current){
-        current->init(copy);
-        return true;
-    }
-    else
-        return false;
-}
-bool MultiplexRecordIterator::set(const QVariant& value){
+bool MultiplexRecordIterator::setValue(const QVariant& value){
     MultiplexFieldV* current = this->current();
     if (current)
         return current->setValue(value);
@@ -79,7 +63,21 @@ QVariant MultiplexRecordIterator::getValue() const {
     else 
         return QVariant();
 }
-int MultiplexRecordIterator::length() const {
+quint8 MultiplexRecordIterator::alloc() const {
+    MultiplexFieldV* current = this->current();
+    if (current)
+        return current->alloc;
+    else 
+        return 0;
+}
+quint8 MultiplexRecordIterator::storage() const {
+    MultiplexFieldV* current = this->current();
+    if (current)
+        return current->storage;
+    else 
+        return 0;
+}
+qptrdiff MultiplexRecordIterator::length() const {
     MultiplexFieldV* current = this->current();
     if (current)
         return current->length();

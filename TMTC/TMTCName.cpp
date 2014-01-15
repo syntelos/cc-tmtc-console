@@ -1,6 +1,7 @@
 /*
  * Copyright 2013 John Pritchard, Syntelos.  All rights reserved.
  */
+#include <QDebug>
 #include <QStringList>
 
 #include "TMTCName.h"
@@ -25,7 +26,7 @@ TMTCName::TMTCName(const char* s)
 {
 }
 TMTCName::TMTCName(const TMTCName& n)
-    : QVariant(n), parsed(false)
+    : QVariant(n), parsed(n.parsed), prefix(n.prefix), suffix(n.suffix)
 {
 }
 TMTCName::~TMTCName(){
@@ -33,8 +34,9 @@ TMTCName::~TMTCName(){
 const TMTCName& TMTCName::parse() const {
     if (!this->parsed){
         this->parsed = true;
+        const QString string = toString();
 
-        const QStringList list = this->toString().split('.',QString::SkipEmptyParts);
+        const QStringList list = string.split('.',QString::SkipEmptyParts);
         const int count = list.length();
         if (2 <= count){
             this->prefix += list.at(0);
