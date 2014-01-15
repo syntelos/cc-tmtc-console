@@ -171,29 +171,6 @@ void Window::run(){
         Window::configure();
     }
 }
-/*
- * TODO Review Qt Contextual Menu
- */
-QMenu* Window::addMenu(const QString& title){
-
-    return this->menuBar()->addMenu(title);
-}
-void Window::removeMenu(const QString& title){
-    QMenuBar* menuBar = this->menuBar();
-    const QObjectList& children = menuBar->children();
-    const int sz = children.size();
-    int cc;
-    for (cc = 0; cc < sz; cc++){
-        QObject* child_object = children.at(cc);
-        QMenu* child = qobject_cast<QMenu*>(child_object);
-        if (child && title == child->title()){
-
-            child->setParent(0);
-            child->deleteLater();
-            break;
-        }
-    }
-}
 Init* Window::getInit() const {
 
     return this->init_program;

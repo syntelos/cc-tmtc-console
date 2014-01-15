@@ -13,7 +13,6 @@
 #include <QWidget>
 
 #include "System/SystemScriptable.h"
-#include "System/SystemWindow.h"
 #include "Configuration/Configuration.h"
 #include "Configuration/ConfigurationScriptable.h"
 #include "Init.h"
@@ -24,7 +23,6 @@
  * Window class called from Main.cpp
  */
 class Window : public QMainWindow,
-    public SystemWindow,
     public ConfigurationScriptable
 {
     Q_OBJECT;
@@ -44,10 +42,6 @@ class Window : public QMainWindow,
     Configuration* getConfiguration() const ;
 
     Init* getInit() const ;
-
-    QMenu* addMenu(const QString& title);
-
-    void removeMenu(const QString& title);
     /*!
      * Special accesss from main to bind and evaluate script
      * "Window::init".
