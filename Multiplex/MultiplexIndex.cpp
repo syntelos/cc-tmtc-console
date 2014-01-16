@@ -1,371 +1,319 @@
 /*
  * Copyright 2014 John Pritchard, Syntelos.  All rights reserved.
  */
-#include <QList>
-#include <QSettings>
+#include <QDebug>
+#include <QIODevice>
 
 #include "MultiplexIndex.h"
 #include "MultiplexRecord.h"
+#include "MultiplexRecordIterator.h"
 
 MultiplexIndex::MultiplexIndex(const SystemDeviceIdentifier& id)
-    : id(id), prefix(id.toString()), table(),
-      object_size(MX::RecordBase),
-      ofs_first(0), ofs_last(-1),
-      count_temporal(1), count_spatial(9), count_user(3610),
-      dirty(false)
+    : id(id), prefix(id.toString()), storage(0)
 {
-    read();
 }
-MultiplexIndex::MultiplexIndex(const MultiplexIndex& copy)
-    : id(copy.id), table(copy.table)
+MultiplexIndex::MultiplexIndex(const SystemDeviceIdentifier& id, QFile& file)
+    : id(id), prefix(id.toString()), storage(0)
 {
+    if (file.open(QIODevice::ReadWrite)){
+        /*
+         * Table discovery
+         */
+        init((quintptr)file.map(0,file.size()));
+
+        file.close();
+    }
 }
 MultiplexIndex::~MultiplexIndex()
 {
+    storage = 0;
+}
+bool MultiplexIndex::hasStorage() const {
+
+    return (0 != storage);
+}
+void MultiplexIndex::init(quintptr data){
+
+    storage = data;
+
+    if (data){
+
+        MultiplexIndexRecord* ir = reinterpret_cast<MultiplexIndexRecord*>(data);
+
+        if (ir->zero()){
+
+            ir->init();
+        }
+    }
+}
+void MultiplexIndex::clearStorage(){
+
+    storage = 0;
 }
 qptrdiff MultiplexIndex::getObjectSize() const {
+    if (0 != storage){
+        MultiplexIndexRecord* storage = reinterpret_cast<MultiplexIndexRecord*>(this->storage);
 
-    return object_size;
+        return storage->object_size.value;
+    }
+    return MX::RecordBase;
 }
 void MultiplexIndex::setObjectSize(qptrdiff size){
+    if (0 != storage){
+        MultiplexIndexRecord* storage = reinterpret_cast<MultiplexIndexRecord*>(this->storage);
 
-    if (0 < size && size > object_size){
+        qptrdiff object_size = storage->object_size.value;
 
-        dirty = false;
+        if (0 < size && size > object_size){
 
-        object_size = size;
+            storage->object_size.value = size;
+        }
     }
 }
-bool MultiplexIndex::maxObjectSize(qptrdiff size){
+quintptr MultiplexIndex::start(quintptr start) const{
 
-    if (size > object_size){
-
-        dirty = false;
-
-        object_size = size;
-
-        return true;
-    }
-    else
-        return false;
+    return (start + getIndexSize());
 }
 quintptr MultiplexIndex::first(quintptr start) const{
 
-    if (0 == ofs_first)
-
-        return start;
-    else
-        return (start + ofs_first);
+    return (start + getFirst());
 }
 qptrdiff MultiplexIndex::getFirst() const {
+    if (0 != storage){
+        MultiplexIndexRecord* storage = reinterpret_cast<MultiplexIndexRecord*>(this->storage);
 
-    return ofs_first;
-}
-void MultiplexIndex::readFirst(const QVariant& ofs){
-
-    if (ofs.isValid()){
-
-        ofs_first = (qptrdiff)(ofs.toLongLong());
+        return storage->ofs_first.value;
     }
+    return getIndexSize();
 }
 void MultiplexIndex::setFirst(qptrdiff ofs){
+    if (0 != storage){
+        MultiplexIndexRecord* storage = reinterpret_cast<MultiplexIndexRecord*>(this->storage);
 
-    if (0 <= ofs && ofs != ofs_first){
+        if (getIndexSize() <= ofs){
 
-        dirty = false;
-
-        ofs_first = ofs;
+            storage->ofs_first.value = ofs;
+        }
     }
 }
-bool MultiplexIndex::top() const {
+void MultiplexIndex::setFirst(quintptr cursor, quintptr start){
 
-    return (-1 == ofs_last);
+    setFirst( cursor - start);
+}
+void MultiplexIndex::setFirst(quintptr cursor, qptrdiff object_size, quintptr start){
+
+    setFirst( (cursor + object_size), start);
 }
 qptrdiff MultiplexIndex::getLast() const {
+    if (0 != storage){
+        MultiplexIndexRecord* storage = reinterpret_cast<MultiplexIndexRecord*>(this->storage);
 
-    return ofs_last;
-}
-qptrdiff MultiplexIndex::useLast() const {
-
-    if (-1 == ofs_last)
-        return 0;
+        return storage->ofs_last.value;
+    }
     else
-        return ofs_last;
+        return getIndexSize();
 }
 quintptr MultiplexIndex::last(quintptr start) const {
 
-    if (-1 == ofs_last)
-        return start;
-    else
-        return (start + ofs_last);
-}
-void MultiplexIndex::readLast(const QVariant& ofs){
-
-    if (ofs.isValid()){
-
-        ofs_last = (qptrdiff)(ofs.toLongLong());
-    }
+    return (start + getLast());
 }
 void MultiplexIndex::setLast(qptrdiff ofs){
+    if (0 != storage){
+        MultiplexIndexRecord* storage = reinterpret_cast<MultiplexIndexRecord*>(this->storage);
 
-    if (0 <= ofs && ofs != ofs_last){
+        if (getIndexSize() <= ofs){
 
-        dirty = false;
-
-        ofs_last = ofs;
+            storage->ofs_last.value = ofs;
+        }
     }
 }
-quint32 MultiplexIndex::getCountTemporal() const {
+void MultiplexIndex::setLast(quintptr cursor, quintptr start){
 
-    return count_temporal;
+    setLast( cursor - start);
+}
+quint32 MultiplexIndex::getCountTemporal() const {
+    if (0 != storage){
+        MultiplexIndexRecord* storage = reinterpret_cast<MultiplexIndexRecord*>(this->storage);
+        return storage->count_temporal.value;
+    }
+    else
+        return 1;
 }
 void MultiplexIndex::setCountTemporal(quint32 count){
+    if (0 != storage){
+        MultiplexIndexRecord* storage = reinterpret_cast<MultiplexIndexRecord*>(this->storage);
 
-    if (0 != count && count > count_temporal){
+        if (0 != count && count > storage->count_temporal.value){
 
-        dirty = false;
-
-        count_temporal = count;
+            storage->count_temporal.value = count;
+        }
     }
 }
 quint32 MultiplexIndex::getCountSpatial() const {
+    if (0 != storage){
+        MultiplexIndexRecord* storage = reinterpret_cast<MultiplexIndexRecord*>(this->storage);
 
-    return count_spatial;
+        return storage->count_spatial.value;
+    }
+    else
+        return 9;
 }
 void MultiplexIndex::setCountSpatial(quint32 count){
+    if (0 != storage){
+        MultiplexIndexRecord* storage = reinterpret_cast<MultiplexIndexRecord*>(this->storage);
 
-    if (0 != count && count > count_spatial){
+        if (0 != count && count > storage->count_spatial.value){
 
-        dirty = false;
-
-        count_spatial = count;
+            storage->count_spatial.value = count;
+        }
     }
 }
 quint32 MultiplexIndex::getCountUser() const {
+    if (0 != storage){
+        MultiplexIndexRecord* storage = reinterpret_cast<MultiplexIndexRecord*>(this->storage);
 
-    return count_user;
+        return storage->count_user.value;
+    }
+    else
+        return 3600;
 }
 void MultiplexIndex::setCountUser(quint32 count){
+    if (0 != storage){
+        MultiplexIndexRecord* storage = reinterpret_cast<MultiplexIndexRecord*>(this->storage);
 
-    if (0 != count && count > count_user){
+        if (0 != count && count > storage->count_user.value){
 
-        dirty = false;
-
-        count_user = count;
+            storage->count_user.value = count;
+        }
     }
 }
 quint32 MultiplexIndex::getRecordCount() const {
 
-    return (count_temporal + count_spatial + count_user);
+    return (getCountTemporal() + getCountSpatial() + getCountUser());
+}
+qptrdiff MultiplexIndex::getIndexSize() const {
+    if (0 != storage){
+        MultiplexIndexRecord* storage = reinterpret_cast<MultiplexIndexRecord*>(this->storage);
+        return storage->length();
+    }
+    else
+        return MX::RecordIndexInit;
 }
 qint64 MultiplexIndex::getTableSize() const {
 
+    const qptrdiff index_size = getIndexSize();
     const quint32 object_size = getObjectSize();
     const quint32 record_count = getRecordCount();
 
-    return (object_size * record_count);
+    return (index_size + (object_size * record_count));
 }
 quintptr MultiplexIndex::end(quintptr start) const {
 
     return start + getTableSize();
 }
-bool MultiplexIndex::read(){
-    QSettings settings;
-    /*
-     * Object size
-     */
-    QString object_size_key(prefix);
-    {
-        object_size_key += '/';
-        object_size_key += "object_size";
-    }
-    setObjectSize( (qptrdiff)settings.value(object_size_key).toULongLong());
-    /*
-     * First
-     */
-    QString first_key(prefix);
-    {
-        first_key += '/';
-        first_key += "first";
-    }
-    readFirst( settings.value(first_key));
-    /*
-     * Last
-     */
-    QString last_key(prefix);
-    {
-        last_key += '/';
-        last_key += "last";
-    }
-    readLast( settings.value(last_key));
-    /*
-     * Count_Temporal
-     */
-    QString count_temporal_key(prefix);
-    {
-        count_temporal_key += '/';
-        count_temporal_key += "count_temporal";
-    }
-    setCountTemporal( (qptrdiff)settings.value(count_temporal_key).toULongLong());
-    /*
-     * Count_Spatial
-     */
-    QString count_spatial_key(prefix);
-    {
-        count_spatial_key += '/';
-        count_spatial_key += "count_spatial";
-    }
-    setCountSpatial( (qptrdiff)settings.value(count_spatial_key).toULongLong());
-    /*
-     * Count_User
-     */
-    QString count_user_key(prefix);
-    {
-        count_user_key += '/';
-        count_user_key += "count_user";
-    }
-    setCountUser( (qptrdiff)settings.value(count_user_key).toULongLong());
-    /*
-     * Index table
-     */
-    int count = settings.beginReadArray(prefix);
-    if (0 < count){
+int MultiplexIndex::query(const TMTCName & n) const {
+    if (0 != storage){
+        MultiplexIndexRecord* storage = reinterpret_cast<MultiplexIndexRecord*>(this->storage);
+        MultiplexRecordIterator<MultiplexIndexRecord> list(*storage);
 
-        table.clear();
+        int index = 0;
 
-        int cc;
-        for (cc = 0; cc < count; cc++){
-            settings.setArrayIndex(cc);
+        while (list.hasNext()){
 
-            TMTCName name = settings.value("name").value<TMTCName>();
+            MultiplexFieldV& fv = list.next();
 
-            int index = settings.value("index").toInt();
+            QVariant qv = fv.getValue();
 
-            table[name] = index;
+            TMTCName field(qv);
+
+            if (field == n)
+                return index;
+            else
+                index += 1;
         }
     }
-    settings.endArray();
-
-    dirty = false;
-
-    return (0 < count);
+    return -1;
 }
-bool MultiplexIndex::write() const {
-    QSettings settings;
-    /*
-     * Object size
-     */
-    QString object_size_key(prefix);
-    {
-        object_size_key += '/';
-        object_size_key += "object_size";
-    }
-    settings.setValue(object_size_key,object_size);
-    /*
-     * First
-     */
-    QString first_key(prefix);
-    {
-        first_key += '/';
-        first_key += "first";
-    }
-    settings.setValue(first_key,ofs_first);
-    /*
-     * Last
-     */
-    if (-1 != ofs_last){
-        QString last_key(prefix);
+int MultiplexIndex::index(const TMTCName & n) const {
+    if (0 != storage){
+        MultiplexIndexRecord* storage = reinterpret_cast<MultiplexIndexRecord*>(this->storage);
+
+        MultiplexFieldV* last = 0;
+
+        int index = 0;
+        /*
+         * Query
+         */
         {
-            last_key += '/';
-            last_key += "last";
+            MultiplexRecordIterator<MultiplexIndexRecord> list(*storage);
+
+            while (list.hasNext()){
+
+                MultiplexFieldV* fv = list.current();
+
+                QVariant qv = fv->getValue();
+
+                TMTCName field(qv);
+
+                if (field == n){
+
+                    return index;
+                }
+                else {
+                    last = fv;
+                    list.next();
+                    index += 1;
+                }
+            }
         }
-        settings.setValue(last_key,ofs_last);
-    }
-    /*
-     * Count_Temporal
-     */
-    QString count_temporal_key(prefix);
-    {
-        count_temporal_key += '/';
-        count_temporal_key += "count_temporal";
-    }
-    settings.setValue(count_temporal_key,count_temporal);
-    /*
-     * Count_Spatial
-     */
-    QString count_spatial_key(prefix);
-    {
-        count_spatial_key += '/';
-        count_spatial_key += "count_spatial";
-    }
-    settings.setValue(count_spatial_key,count_spatial);
-    /*
-     * Count_User
-     */
-    QString count_user_key(prefix);
-    {
-        count_user_key += '/';
-        count_user_key += "count_user";
-    }
-    settings.setValue(count_user_key,count_user);
-    /*
-     * Index table
-     */
-    int count = table.size();
-    if (0 < count){
-        settings.beginWriteArray(prefix,count);
+        /*
+         * Create new
+         */
+        if (storage->alloc.value > storage->count.value){
 
-        QList<TMTCName> keys = table.keys();
+            storage->count.value += 1;
 
-        int cc;
-        for (cc = 0; cc < count; cc++){
-            settings.setArrayIndex(cc);
+            MultiplexFieldV* next = 0;
 
-            TMTCName name = keys.at(cc);
+            if (0 == last){
 
-            int index = table[name];
+                next = reinterpret_cast<MultiplexFieldV*>(&storage->data[0]);
+            }
+            else {
+                const quintptr adr_last = (quintptr)last;
 
-            settings.setValue("name",name.toString());
-            settings.setValue("index",index);
+                const quintptr adr_next = adr_last + last->length();
+
+                next = reinterpret_cast<MultiplexFieldV*>(adr_next);
+            }
+
+            next->init(n);
+
+            return index;
         }
-        settings.endArray();
-
-        dirty = false;
-
-        return true;
     }
-    else {
-        dirty = false;
+    return -1;
+}
+QList<TMTCName> MultiplexIndex::list() const {
 
-        return false;
+    QList<TMTCName> re;
+
+    if (0 != storage){
+        MultiplexIndexRecord* storage = reinterpret_cast<MultiplexIndexRecord*>(this->storage);
+        MultiplexRecordIterator<MultiplexIndexRecord> list(*storage);
+
+        int index = 0;
+
+        while (list.hasNext()){
+
+            MultiplexFieldV& fv = list.next();
+
+            QVariant qv = fv.getValue();
+
+            TMTCName field(qv);
+
+            re += field;
+        }
     }
-}
-bool MultiplexIndex::isDirty() const {
-
-    return dirty;
-}
-int MultiplexIndex::count() const {
-
-    return table.size();
-}
-bool MultiplexIndex::contains(const TMTCName & n) const {
-
-    return table.contains(n);
-}
-void MultiplexIndex::insert(const TMTCName & n, int v){
-
-    if (!table.contains(n)){
-
-        dirty = false;
-
-        table.insert(n,v);
-    }
-}
-int MultiplexIndex::value(const TMTCName & n) const {
-
-    if (table.contains(n))
-
-        return table.value(n);
-    else
-        return -1;
+    return re;
 }

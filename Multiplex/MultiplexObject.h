@@ -22,8 +22,6 @@ class MultiplexObject {
 
     MultiplexRecord& mrecord;
 
-    void reindex();
-
  public:
     /*!
      */
@@ -33,7 +31,13 @@ class MultiplexObject {
     ~MultiplexObject();
     /*!
      */
-    qint64 getTime() const;
+    void reindex();
+    /*!
+     */
+    quint8 getFieldCount();
+    /*!
+     */
+    qint64 getTime();
     /*!
      */
     bool contains(const TMTCName& n) const;

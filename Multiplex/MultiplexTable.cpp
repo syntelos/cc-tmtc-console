@@ -19,9 +19,18 @@
 MultiplexTable::MultiplexTable(const SystemDeviceIdentifier& id)
     : id(id), index(id), file(id.toString("table")), data(0)
 {
-    index.read();
 }
 MultiplexTable::~MultiplexTable(){
+
+    if (IsOpen){
+        {
+            unsigned char* data = (unsigned char*)this->data;
+            file.unmap(data);
+        }
+        data = 0;
+    }
+}
+void MultiplexTable::close(){
 
     if (IsOpen){
         {
@@ -39,19 +48,44 @@ bool MultiplexTable::open(){
     if (IsClosed){
 
         if (file.open(QIODevice::ReadWrite)){
-
-            {
-                const qint64 required_size = index.getTableSize();
-                /*
-                 * Expand table file size using object size
-                 */
-                if (required_size > file.size()){
-                    file.resize(required_size);
-                    file.seek(0);
-                }
+            /*
+             * Table discovery
+             */
+            qint64 required_size = index.getTableSize();
+            if (required_size > file.size()){
+                file.resize(required_size);
+                file.seek(0);
             }
 
             data = reinterpret_cast<quintptr>(file.map(0,file.size()));
+
+            if (IsOpen){
+
+                index.init(data);
+                /*
+                 * Table definition
+                 */
+                required_size = index.getTableSize();
+
+                if (required_size > file.size()){
+
+                    file.unmap((unsigned char*)data);
+
+                    data = 0;
+
+                    index.clearStorage();
+
+                    file.resize(required_size);
+
+                    file.seek(0);
+
+                    data = reinterpret_cast<quintptr>(file.map(0,file.size()));
+
+                    if (IsOpen){
+                        index.init(data);
+                    }
+                }
+            }
 
             file.close();
 
@@ -62,16 +96,6 @@ bool MultiplexTable::open(){
         }
     }
     return false;
-}
-void MultiplexTable::close(){
-
-    if (IsOpen){
-        {
-            unsigned char* data = (unsigned char*)this->data;
-            file.unmap(data);
-        }
-        data = 0;
-    }
 }
 void MultiplexTable::reopen(){
     /*
@@ -102,7 +126,7 @@ inline MultiplexRecord* MultiplexTable::recordFirst(){
 
     if (IsOpen){
 
-        quintptr first = data + index.getFirst();
+        quintptr first = index.first(data);
 
         return reinterpret_cast<MultiplexRecord*>(first);
     }
@@ -113,7 +137,7 @@ inline MultiplexRecord* MultiplexTable::recordLast(){
 
     if (IsOpen){
 
-        quintptr last = data + index.getLast();
+        quintptr last = index.last(data);
 
         return reinterpret_cast<MultiplexRecord*>(last);
     }
@@ -127,69 +151,68 @@ MultiplexRecord* MultiplexTable::recordNew(){
 
     if (IsOpen){
 
-        const quintptr cursor_start = data;
-        const quintptr cursor_end = index.end(data);
         const quintptr cursor_last = index.last(data);
 
         MultiplexRecord* prev = reinterpret_cast<MultiplexRecord*>(cursor_last);
 
-        if (index.top()){
+        if (prev->zero()){
 
             prev->init();
-
-            index.setFirst(0);
-            index.setLast(0);
-            index.write();
 
             qDebug().nospace() << "MultiplexTable.recordNew [top] " << prev;
 
             return prev;
         }
-        else {
+        else if (prev->check()){
 
-            if (prev->check()){
+            const quintptr cursor_start = index.start(data);
 
-                const quintptr cursor_first = index.first(data);
+            const quintptr cursor_end = index.end(data);
 
-                const qptrdiff object_size = prev->length();
+            const quintptr cursor_first = index.first(data);
 
-                const qptrdiff buffer = (object_size<<1);
+            const qptrdiff object_size = prev->length();
 
-                quintptr cursor = (cursor_last + prev->length());
+            const qptrdiff buffer = (object_size<<1);
 
-                if ((cursor + buffer) > cursor_end){
+            quintptr cursor = (cursor_last + object_size);
 
-                    cursor = cursor_start;
+            if ((cursor + buffer) > cursor_end){
 
-                    if (cursor == cursor_first){
+                cursor = cursor_start;
 
-                        index.setFirst(object_size);
-                    }
+                if (cursor >= cursor_first){
+                    /*
+                     * Establish "pushing first" case on wrap of last
+                     */
+                    index.setFirst(cursor,object_size,data);
                 }
-                else if (cursor_first > cursor_start){
-
-                    index.setFirst((cursor+object_size)-data);
-                }
-
-                MultiplexRecord* next = reinterpret_cast<MultiplexRecord*>(cursor);
-
-                next->init(*prev);
-
-                index.setObjectSize(object_size);
-                index.setLast(cursor-data);
-                index.write();
-
-                qDebug().nospace() << "MultiplexTable.recordNew [prev] " << next;
-
-                return next;
             }
-            else {
-                qDebug().nospace() << "MultiplexTable.recordNew [bug] 0x0";
+            else if (cursor_first > cursor_start){
                 /*
-                 * Unreachable
+                 * Use "pushing first" case
                  */
-                return 0;
+                index.setFirst(cursor,object_size,data);
             }
+
+            MultiplexRecord* next = reinterpret_cast<MultiplexRecord*>(cursor);
+
+            next->init(*prev);
+
+            index.setObjectSize(object_size);
+
+            index.setLast(cursor,data);
+
+            qDebug().nospace() << "MultiplexTable.recordNew [prev] " << next;
+
+            return next;
+        }
+        else {
+            qDebug().nospace() << "MultiplexTable.recordNew [bug] 0x0";
+            /*
+             * Unreachable
+             */
+            return 0;
         }
     }
     else {
@@ -234,7 +257,7 @@ TMTCMessage* MultiplexTable::query(const TMTCMessage& m){
 
         const int count = m.size();
 
-        MultiplexRecordIterator object(*r);
+        MultiplexRecordIterator<MultiplexRecord> object(*r);
 
         int cc;
         for (cc = 0; cc < count; cc++){
@@ -243,9 +266,9 @@ TMTCMessage* MultiplexTable::query(const TMTCMessage& m){
 
                 const TMTCName& qn = nvp->getName();
 
-                if (this->index.contains(qn)){
+                object.field = this->index.query(qn);
 
-                    object.field = this->index.value(qn);
+                if (-1 < object.field){
 
                     QVariant value = object.getValue();
 
@@ -263,11 +286,11 @@ QVariant MultiplexTable::query(const TMTCName& name){
     MultiplexRecord* r = recordLast();
     if (r){
 
-        if (index.contains(name)){
+        MultiplexRecordIterator<MultiplexRecord> object(*r);
 
-            MultiplexRecordIterator object(*r);
+        object.field = this->index.query(name);
 
-            object.field = this->index.value(name);
+        if (-1 < object.field){
 
             return object.getValue();
         }
@@ -319,12 +342,7 @@ void MultiplexTable::update(const TMTCMessage& m){
                 }
             }
 
-            if (index.isDirty()){
-
-                index.write();
-
-                reopen();
-            }
+            reopen();
         }
     }
 }
@@ -350,12 +368,7 @@ void MultiplexTable::update(const TMTCNameValue& nvp){
                 qDebug().nospace() << "MultiplexTable.update(TMTCNameValue): Value has been ignored in (name: " << name.toString() << ", value: " << value.toString() << ")";
             }
 
-            if (index.isDirty()){
-
-                index.write();
-
-                reopen();
-            }
+            reopen();
         }
     }
 }
@@ -365,7 +378,7 @@ void MultiplexTable::select(MultiplexSelect& s){
 
         QReadLocker read(&lock);
 
-        MultiplexTableIterator table(data,(data + index.getFirst()),file.size());
+        MultiplexTableIterator table(data,index.first(data),file.size());
 
         while (table.hasNext()){
 

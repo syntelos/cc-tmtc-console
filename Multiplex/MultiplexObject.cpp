@@ -41,14 +41,19 @@ void MultiplexObject::reindex(){
         }
     }
 }
-qint64 MultiplexObject::getTime() const {
+quint8 MultiplexObject::getFieldCount(){
 
-    return mrecord.time.value;
+    return mrecord.getFieldCount();
+}
+qint64 MultiplexObject::getTime(){
+
+    return mrecord.getTime();
 }
 bool MultiplexObject::contains(const TMTCName& n) const {
-    if (mindex.contains(n)){
 
-        const int field = mindex.value(n);
+    const int field = mindex.query(n);
+
+    if (-1 < field && field < fcount){
 
         MultiplexFieldV* fv = findex[field];
 
@@ -60,32 +65,31 @@ bool MultiplexObject::contains(const TMTCName& n) const {
     return false;
 }
 QVariant MultiplexObject::getValue(const TMTCName& n) const {
-    if (mindex.contains(n)){
 
-        const int field = mindex.value(n);
+    const int field = mindex.query(n);
+
+    if (-1 < field && field < fcount){
 
         MultiplexFieldV* fv = findex[field];
 
         if (fv->check()){
 
             return fv->getValue();
-        }        
+        }
     }
     return QVariant();
 }
 bool MultiplexObject::setValue(const TMTCName& n, const QVariant& v){
-    if (mindex.contains(n)){
 
-        const int field = mindex.value(n);
+    const int field = mindex.index(n);
+
+    if (field < fcount){
 
         MultiplexFieldV* fv = findex[field];
 
         return fv->setValue(v);
     }
     else {
-        const int field = mindex.count();
-
-        mindex.insert(n,field);
 
         mrecord.count.value += 1;
 
@@ -95,27 +99,29 @@ bool MultiplexObject::setValue(const TMTCName& n, const QVariant& v){
 
         bool re = fv->init(v);
 
-        mindex.maxObjectSize(mrecord.length());
+        mindex.setObjectSize(mrecord.length());
 
         return re;
     }
 }
 quint8 MultiplexObject::alloc(const TMTCName& n) const {
-    if (mindex.contains(n)){
 
-        const int field = mindex.value(n);
+    const int field = mindex.query(n);
+
+    if (-1 < field && field < fcount){
 
         MultiplexFieldV* fv = findex[field];
 
         return fv->alloc;
     }
-    else 
+    else
         return 0;
 }
 quint8 MultiplexObject::storage(const TMTCName& n) const {
-    if (mindex.contains(n)){
 
-        const int field = mindex.value(n);
+    const int field = mindex.query(n);
+
+    if (-1 < field && field < fcount){
 
         MultiplexFieldV* fv = findex[field];
 
@@ -125,9 +131,10 @@ quint8 MultiplexObject::storage(const TMTCName& n) const {
         return 0;
 }
 qptrdiff MultiplexObject::length(const TMTCName& n) const {
-    if (mindex.contains(n)){
 
-        const int field = mindex.value(n);
+    const int field = mindex.query(n);
+
+    if (-1 < field && field < fcount){
 
         MultiplexFieldV* fv = findex[field];
 

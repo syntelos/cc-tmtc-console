@@ -36,6 +36,10 @@ class TMTCName : public QVariant {
     /*!
      * Parse name from argument ASCII
      */
+    TMTCName(QVariant&);
+    /*!
+     * Parse name from argument ASCII
+     */
     TMTCName(QString&);
     /*!
      * Parse name from argument ASCII

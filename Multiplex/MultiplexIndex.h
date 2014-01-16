@@ -4,7 +4,9 @@
 #ifndef _CONSOLE_MULTIPLEX_MultiplexIndex_H
 #define _CONSOLE_MULTIPLEX_MultiplexIndex_H
 
-#include <QHash>
+#include <Qt>
+#include <QFile>
+#include <QList>
 #include <QVariant>
 
 #include "System/SystemDeviceIdentifier.h"
@@ -19,84 +21,118 @@ class MultiplexIndex {
 
     QString prefix;
 
-    QHash<TMTCName,int> table;
+    quintptr storage;
 
-    qptrdiff object_size;
-
-    qptrdiff ofs_first;
-
-    qptrdiff ofs_last;
-
-    quint32 count_temporal;
-
-    quint32 count_spatial;
-
-    quint32 count_user;
-
-    mutable bool dirty;
-
-    void readFirst(const QVariant&);
-
-    void readLast(const QVariant&);
+    /*!
+     * Disable Copy
+     */
+    MultiplexIndex(const MultiplexIndex& copy);
 
  public:
+    /*!
+     */
     MultiplexIndex(const SystemDeviceIdentifier& id);
-    MultiplexIndex(const MultiplexIndex& copy);
+    /*!
+     * Unit test open existing table file
+     */
+    MultiplexIndex(const SystemDeviceIdentifier& id, QFile& file);
+    /*!
+     */
     ~MultiplexIndex();
-
+    /*!
+     */
+    bool hasStorage() const;
+    /*!
+     */
+    void init(quintptr);
+    /*!
+     */
+    void clearStorage();
+    /*!
+     * The size of a (non index) record is the length of the most
+     * recent record.  This value never decreases over the life of a
+     * table file.
+     */
     qptrdiff getObjectSize() const;
 
     void setObjectSize(qptrdiff);
-
-    bool maxObjectSize(qptrdiff);
-
+    /*!
+     * Offset to address
+     */
+    quintptr start(quintptr start) const;
+    /*!
+     * Offset to address
+     */
     quintptr first(quintptr start) const;
 
     qptrdiff getFirst() const;
 
     void setFirst(qptrdiff);
 
-    bool top() const;
+    void setFirst(quintptr,quintptr);
+
+    void setFirst(quintptr,qptrdiff,quintptr);
 
     qptrdiff getLast() const;
-
-    qptrdiff useLast() const;
-
+    /*!
+     * Offset to address
+     */
     quintptr last(quintptr start) const;
 
     void setLast(qptrdiff);
 
+    void setLast(quintptr,quintptr);
+    /*!
+     * Temporal overhead in (non index) records
+     */
     quint32 getCountTemporal() const;
 
     void setCountTemporal(quint32);
-
+    /*!
+     * Spatial overhead in (non index) records.  This value never
+     * decreases over the life of a table file.
+     */
     quint32 getCountSpatial() const;
 
     void setCountSpatial(quint32);
-
+    /*!
+     * User's required number of (non index) records.  This value
+     * never decreases over the life of a table file.
+     */
     quint32 getCountUser() const;
 
     void setCountUser(quint32);
-
+    /*!
+     * Allocated number of (non index) records.  This value never
+     * decreases over the life of a table file.
+     */
     quint32 getRecordCount() const;
-
+    /*!
+     * Allocated size of the index record.  This value never decreases
+     * over the life of a table file.
+     */
+    qptrdiff getIndexSize() const;
+    /*!
+     * Required size of the table file.  This value never decreases
+     * over the life of a table file.
+     */
     qint64 getTableSize() const;
-
+    /*!
+     * Offset to address
+     */
     quintptr end(quintptr start) const;
-
-    bool read();
-
-    bool write() const;
-
-    bool isDirty() const;
-
-    int count() const;
-
-    bool contains(const TMTCName& n) const;
-
-    void insert(const TMTCName& n, int v);
-
-    int value(const TMTCName& n) const;
+    /*!
+     * Return negative one for not found
+     */
+    int query(const TMTCName& n) const;
+    /*!
+     * Return negative one for missing storage, or index record
+     * capacity reached.
+     */
+    int index(const TMTCName& n) const;
+    /*!
+     */
+    QList<TMTCName> list() const;
 
 };
 #endif

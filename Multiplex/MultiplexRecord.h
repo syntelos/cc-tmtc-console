@@ -84,6 +84,77 @@ struct MultiplexFieldL {
 
 };
 /*!
+ * 
+ */
+struct MultiplexFieldP {
+ private:
+    MultiplexFieldP();
+    MultiplexFieldP(MultiplexFieldP&);
+    ~MultiplexFieldP();
+
+ public:
+    volatile char fs;
+    volatile qptrdiff value;
+    /*!
+     * Constructor
+     */
+    void init(const qptrdiff value);
+
+    void init(const MultiplexFieldP& copy);
+    /*!
+     * Confirm integrity and value
+     */
+    bool validate(const qptrdiff value) const;
+    /*!
+     * Perform integrity check
+     */
+    bool check() const;
+
+    bool zero() const;
+    /*!
+     * With integrity, return the non zero (byte) length of this
+     * record (for address arithmetic).
+     */
+    qptrdiff length() const;
+
+};
+/*!
+ * 
+ */
+struct MultiplexFieldI {
+ private:
+    MultiplexFieldI();
+    MultiplexFieldI(MultiplexFieldI&);
+    ~MultiplexFieldI();
+
+ public:
+    volatile char fs;
+    volatile quint32 value;
+    /*!
+     * Constructor
+     */
+    void init(const quint32 value);
+
+    void init(const MultiplexFieldI& copy);
+    /*!
+     * Confirm integrity and value
+     */
+    bool validate(const quint32 value) const;
+    /*!
+     * Perform integrity check
+     */
+    bool check() const;
+
+    bool zero() const;
+    /*!
+     * With integrity, return the non zero (byte) length of this
+     * record (for address arithmetic).
+     */
+    qptrdiff length() const;
+
+};
+
+/*!
  *
  */
 struct MultiplexFieldV {
@@ -94,7 +165,7 @@ struct MultiplexFieldV {
 
  public:
     enum ValueAlloc {
-        DefaultAlloc = 8,
+        DefaultAlloc = sizeof(double),
         StorageLimit = 255
     };
 
@@ -188,11 +259,69 @@ struct MultiplexRecord {
     qptrdiff length() const;
 
 };
+/*!
+ *
+ */
+struct MultiplexIndexRecord {
+
+ public:
+    volatile char gs;
+    volatile char rs;
+
+    MultiplexFieldP object_size;
+    MultiplexFieldP ofs_first;
+    MultiplexFieldP ofs_last;
+    MultiplexFieldI count_temporal;
+    MultiplexFieldI count_spatial;
+    MultiplexFieldI count_user;
+    MultiplexFieldB alloc;
+    MultiplexFieldB count;
+    MultiplexFieldV data[];
+
+    /*!
+     * Convenience for count value
+     */
+    quint8 getFieldCount() const;
+    /*!
+     * Sum of space allocated to fields
+     */
+    qptrdiff getFieldLength() const;
+    /*!
+     * Cleaning constructor
+     */
+    void init();
+    /*!
+     * Perform integrity check of base record: GS, RS, time and count.
+     */
+    bool check() const;
+    /*!
+     * Object separators (hard points) have value zero
+     */
+    bool zero() const;
+    /*!
+     * With integrity, return the non zero (byte) length of this
+     * record (for address arithmetic).
+     */
+    qptrdiff length() const;
+
+};
 
 namespace MX {
-
-    enum FieldSizes {
-        FieldSizeB = sizeof(MultiplexFieldB), FieldSizeV = sizeof(MultiplexFieldV), FieldSizeL = sizeof(MultiplexFieldL), RecordBase =  sizeof(MultiplexRecord), RecordMax = (RecordBase + (255*FieldSizeV) + (255*255))
+    /*!
+     * Addressing constants
+     */
+    enum Lengths {
+        FieldSizeB       = sizeof(MultiplexFieldB),
+        FieldSizeV       = sizeof(MultiplexFieldV),
+        FieldSizeL       = sizeof(MultiplexFieldL),
+        FieldSizeP       = sizeof(MultiplexFieldP),
+        FieldSizeI       = sizeof(MultiplexFieldI),
+        RecordBase       = sizeof(MultiplexRecord),
+        RecordIndexCount = 20,
+        RecordIndexBase  = sizeof(MultiplexIndexRecord),
+        RecordIndexInit  = (RecordIndexBase + (RecordIndexCount*FieldSizeV) + (RecordIndexCount*255)),
+        RecordIndexMax   = (sizeof(MultiplexIndexRecord) + (255*FieldSizeV) + (255*255)),
+        RecordMax        = (RecordBase + (255*FieldSizeV) + (255*255))
     };
 };
 #endif

@@ -21,7 +21,7 @@ qptrdiff MultiplexRecord::getFieldLength() const {
 
         qptrdiff len = 0;
 
-        MultiplexRecordIterator tgt(*this);
+        MultiplexRecordIterator<MultiplexRecord> tgt(*this);
 
         while (tgt.hasNext()){
 
@@ -46,8 +46,8 @@ void MultiplexRecord::init(const MultiplexRecord& copy){
         this->time.init(copy.time);
         this->count.init(copy.count);
 
-        MultiplexRecordIterator src(copy);
-        MultiplexRecordIterator tgt(*this);
+        MultiplexRecordIterator<MultiplexRecord> src(copy);
+        MultiplexRecordIterator<MultiplexRecord> tgt(*this);
 
         while (src.hasNext()){
 
@@ -83,6 +83,85 @@ qptrdiff MultiplexRecord::length() const {
     }
 }
 /*
+ */
+quint8 MultiplexIndexRecord::getFieldCount() const {
+
+    return count.value;
+}
+qptrdiff MultiplexIndexRecord::getFieldLength() const {
+
+    if (check()){
+
+        qptrdiff len = 0;
+
+        MultiplexRecordIterator<MultiplexIndexRecord> tgt(*this);
+
+        while (tgt.hasNext()){
+
+            len += tgt.next().length();
+        }
+        return len;
+    }
+    else {
+        return 0;
+    }
+}
+void MultiplexIndexRecord::init(){
+    this->gs = MX::GS;
+    this->rs = MX::RS;
+    this->object_size.init(MX::RecordBase);
+    this->ofs_first.init(MX::RecordIndexInit);
+    this->ofs_last.init(MX::RecordIndexInit);
+    this->count_temporal.init(1);
+    this->count_spatial.init(9);
+    this->count_user.init(3600);
+    this->alloc.init(MX::RecordIndexCount);
+    this->count.init(0);
+}
+bool MultiplexIndexRecord::check() const {
+    return (MX::GS == gs && MX::RS == rs &&
+            object_size.check() &&
+            ofs_first.check() &&
+            ofs_last.check() &&
+            count_temporal.check() &&
+            count_spatial.check() &&
+            count_user.check() &&
+            alloc.check() &&
+            count.check());
+}
+bool MultiplexIndexRecord::zero() const {
+    return (0 == gs && 0 == rs &&
+            object_size.zero() &&
+            ofs_first.zero() &&
+            ofs_last.zero() &&
+            count_temporal.zero() &&
+            count_spatial.zero() &&
+            count_user.zero() &&
+            alloc.zero() &&
+            count.zero());
+}
+qptrdiff MultiplexIndexRecord::length() const {
+
+    qptrdiff flen = getFieldLength();
+
+    if (0 != flen){
+
+        return (flen + MX::RecordIndexBase);
+    }
+    else if (0 != alloc.value){
+
+        flen = MX::RecordIndexBase;
+        flen += (alloc.value * MX::FieldSizeV);
+        flen += (alloc.value * 255);
+
+        return flen;
+    }
+    else {
+
+        return MX::RecordIndexInit;
+    }
+}
+/*
  * MultiplexFieldL
  */
 void MultiplexFieldL::init(const qint64 value){
@@ -112,14 +191,77 @@ qptrdiff MultiplexFieldL::length() const {
     }
 }
 /*
+ * MultiplexFieldP
+ */
+void MultiplexFieldP::init(const qptrdiff value){
+    this->fs = MX::FS;
+    this->value = value;
+}
+void MultiplexFieldP::init(const MultiplexFieldP& copy){
+    this->fs = MX::FS;
+    this->value = copy.value;
+}
+bool MultiplexFieldP::validate(const qptrdiff value) const {
+    return (MX::FS == this->fs && value == this->value);
+}
+bool MultiplexFieldP::check() const {
+    return (MX::FS == this->fs);
+}
+bool MultiplexFieldP::zero() const {
+    return (0 == this->fs);
+}
+qptrdiff MultiplexFieldP::length() const {
+    if (MX::FS == this->fs){
+
+        return MX::FieldSizeL;
+    }
+    else {
+        return 0;
+    }
+}
+/*
+ * MultiplexFieldI
+ */
+void MultiplexFieldI::init(const quint32 value){
+    this->fs = MX::FS;
+    this->value = value;
+}
+void MultiplexFieldI::init(const MultiplexFieldI& copy){
+    this->fs = MX::FS;
+    this->value = copy.value;
+}
+bool MultiplexFieldI::validate(const quint32 value) const {
+    return (MX::FS == this->fs && value == this->value);
+}
+bool MultiplexFieldI::check() const {
+    return (MX::FS == this->fs);
+}
+bool MultiplexFieldI::zero() const {
+    return (0 == this->fs);
+}
+qptrdiff MultiplexFieldI::length() const {
+    if (MX::FS == this->fs){
+
+        return MX::FieldSizeL;
+    }
+    else {
+        return 0;
+    }
+}
+/*
  * MultiplexFieldV
  */
 bool MultiplexFieldV::setValue(const QVariant& value){
+
+    if (0 == this->alloc){
+
+        return false;
+    }
     /*
      * This proceedure depends on (uses) the value of 'alloc' defined
      * by 'init(QVariant)'
      */
-    if (value.isNull()){
+    else if (value.isNull()){
         this->storage = 0;
         int cc;
         for (cc = 0; cc < alloc; cc++){
@@ -187,11 +329,23 @@ bool MultiplexFieldV::init(const QVariant& value){
         return true;
     }
     else {
+
         const QByteArray bary = value.toByteArray();
 
         const quint32 count = bary.count();
 
-        if (StorageLimit >= count){
+        if (0 == count){
+
+            this->alloc = DefaultAlloc;
+            this->storage = 0;
+
+            int cc = 0;
+            for (; cc < alloc; cc++){
+                this->value[cc] = 0;
+            }
+            return true;
+        }
+        else if (StorageLimit >= count){
 
             const quint8 valloc = (quint8)count;
 
@@ -201,11 +355,11 @@ bool MultiplexFieldV::init(const QVariant& value){
                  */
                 this->alloc = valloc;
             }
-            else if ((count + 4) <= StorageLimit){
+            else if ((count + DefaultAlloc) <= StorageLimit){
                 /*
                  * Quota safety
                  */
-                this->alloc = (valloc+4);
+                this->alloc = (valloc+DefaultAlloc);
             }
             else {
                 /*

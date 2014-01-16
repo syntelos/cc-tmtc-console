@@ -13,7 +13,6 @@ SOURCES += Multiplex.cpp \
            MultiplexIndex.cpp \
            MultiplexObject.cpp \
            MultiplexRecord.cpp \
-           MultiplexRecordIterator.cpp \
            MultiplexSelect.cpp \
            MultiplexTable.cpp \
            MultiplexTableIterator.cpp \

@@ -21,7 +21,7 @@ const static char* TEST_NAMES[] = {
 };
 const static int TEST_NAMES_COUNT = 3;
 
-const static QByteArray SID("192.168.2.2:0");
+const static QByteArray SID("192.168.2.2:10001");
 
 static QTextStream sout(stdout);
 static QTextStream serr(stderr);
@@ -38,26 +38,68 @@ int main(int argc, char** argv){
 
     SystemDeviceIdentifier sid(SID);
 
-    MultiplexIndex index(sid);
+    QFile file(sid.toString("table"));
 
-    int cc;
-    for (cc = 0; cc < TEST_NAMES_COUNT; cc++){
+    MultiplexIndex index(sid,file);
 
-        TMTCName name(TEST_NAMES[cc]);
+    if (index.hasStorage()){
 
-        index[name] = cc;
+        int failures = 0;
+
+        if (1 < argc && QString(argv[1]) == "--list"){
+
+            QList<TMTCName> list = index.list();
+            const int count = list.size();
+            int cc;
+            for (cc = 0; cc < count; cc++){
+
+                TMTCName name = list.at(cc);
+
+                sout << name.toString() << endl;
+            }
+        }
+        else {
+
+            int cc;
+            for (cc = 0; cc < TEST_NAMES_COUNT; cc++){
+
+                TMTCName name(TEST_NAMES[cc]);
+
+                int ix = index.index(name);
+
+                if (-1 < ix){
+
+                    sout << "OK " << name.toString() << " [index] " << ix << endl;
+                }
+                else {
+                    failures += 1;
+
+                    sout << "ER " << name.toString() << " [index] " << ix << endl;
+                }
+            }
+
+            for (cc = 0; cc < TEST_NAMES_COUNT; cc++){
+
+                TMTCName name(TEST_NAMES[cc]);
+
+                int ix = index.query(name);
+
+                if (-1 < ix){
+
+                    sout << "OK " << name.toString() << " [query] " << ix << endl;
+                }
+                else {
+                    failures += 1;
+
+                    sout << "ER " << name.toString() << " [query] " << ix << endl;
+                }
+            }
+        }
+        return failures;
     }
+    else {
+        serr << prog_name << ": error opening file " << file.fileName() << endl;
 
-    for (cc = 0; cc < TEST_NAMES_COUNT; cc++){
-
-        TMTCName name(TEST_NAMES[cc]);
-
-        bool c = index.contains(name);
-
-        int i = index[name];
-
-        sout << name.toString() << ": (" << c << ") " << i << endl;
+        return 1;
     }
-
-    return 0;
 }
