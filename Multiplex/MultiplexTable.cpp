@@ -23,20 +23,18 @@ MultiplexTable::MultiplexTable(const SystemDeviceIdentifier& id)
 MultiplexTable::~MultiplexTable(){
 
     if (IsOpen){
-        {
-            unsigned char* data = (unsigned char*)this->data;
-            file.unmap(data);
-        }
+
+        file.unmap((unsigned char*)data);
+
         data = 0;
     }
 }
 void MultiplexTable::close(){
 
     if (IsOpen){
-        {
-            unsigned char* data = (unsigned char*)this->data;
-            file.unmap(data);
-        }
+
+        file.unmap((unsigned char*)data);
+
         data = 0;
     }
 }
@@ -49,7 +47,7 @@ bool MultiplexTable::open(){
 
         if (file.open(QIODevice::ReadWrite)){
             /*
-             * Table discovery
+             * Table open/create
              */
             qint64 required_size = index.getTableSize();
             if (required_size > file.size()){
@@ -63,7 +61,7 @@ bool MultiplexTable::open(){
 
                 index.init(data);
                 /*
-                 * Table definition
+                 * Table redefinition
                  */
                 required_size = index.getTableSize();
 
@@ -106,8 +104,9 @@ void MultiplexTable::reopen(){
     if (required_size > file.size()){
 
         if (IsOpen){
-            unsigned char* data = (unsigned char*)this->data;
-            file.unmap(data);
+
+            file.unmap((unsigned char*)data);
+
             data = 0;
         }
 
