@@ -2,8 +2,6 @@
  * Copyright 2014 John Pritchard, Syntelos.  All rights reserved.
  */
 #include <QDebug> 
-#include <QString>
-#include <QTextStream>
 
 #include "MultiplexObject.h"
 

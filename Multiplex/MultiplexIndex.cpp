@@ -4,6 +4,7 @@
 #include <QDebug>
 #include <QIODevice>
 
+#include "System/SystemTextBuffer.h"
 #include "MultiplexIndex.h"
 #include "MultiplexRecordIterator.h"
 
@@ -330,49 +331,45 @@ QList<TMTCName> MultiplexIndex::list() const {
     return re;
 }
 void MultiplexIndex::print(){
-    QString strbuf;
-    QTextStream str(&strbuf);
+    SystemTextBuffer strbuf;
 
-    str.setIntegerBase(16);
 
-    str << "MultiplexIndex object_size: 0x" << getObjectSize();
-    qDebug() << strbuf.toAscii().data();
+    strbuf.hex() << "MultiplexIndex object_size: 0x" << getObjectSize();
+    qDebug() << strbuf.data();
     strbuf.clear();
 
-    str << "MultiplexIndex ofs_first: 0x" << getFirst();
-    qDebug() << strbuf.toAscii().data();
+    strbuf.hex() << "MultiplexIndex ofs_first: 0x" << getFirst();
+    qDebug() << strbuf.data();
     strbuf.clear();
 
-    str << "MultiplexIndex ofs_last: 0x" << getLast();
-    qDebug() << strbuf.toAscii().data();
+    strbuf.hex() << "MultiplexIndex ofs_last: 0x" << getLast();
+    qDebug() << strbuf.data();
     strbuf.clear();
 
-    str << "MultiplexIndex count_temporal: 0x" << getCountTemporal();
-    qDebug() << strbuf.toAscii().data();
+    strbuf.hex() << "MultiplexIndex count_temporal: 0x" << getCountTemporal();
+    qDebug() << strbuf.data();
     strbuf.clear();
 
-    str << "MultiplexIndex count_spatial: 0x" << getCountSpatial();
-    qDebug() << strbuf.toAscii().data();
+    strbuf.hex() << "MultiplexIndex count_spatial: 0x" << getCountSpatial();
+    qDebug() << strbuf.data();
     strbuf.clear();
 
-    str << "MultiplexIndex count_user: 0x" << getCountUser();
-    qDebug() << strbuf.toAscii().data();
+    strbuf.hex() << "MultiplexIndex count_user: 0x" << getCountUser();
+    qDebug() << strbuf.data();
     strbuf.clear();
 
-    str << "MultiplexIndex record_count: 0x" << getRecordCount();
-    qDebug() << strbuf.toAscii().data();
+    strbuf.hex() << "MultiplexIndex record_count: 0x" << getRecordCount();
+    qDebug() << strbuf.data();
     strbuf.clear();
 
-    str << "MultiplexIndex index_size: 0x" << getIndexSize();
-    qDebug() << strbuf.toAscii().data();
+    strbuf.hex() << "MultiplexIndex index_size: 0x" << getIndexSize();
+    qDebug() << strbuf.data();
     strbuf.clear();
 
-    str << "MultiplexIndex table_size: 0x" << getTableSize();
-    qDebug() << strbuf.toAscii().data();
+    strbuf.hex() << "MultiplexIndex table_size: 0x" << getTableSize();
+    qDebug() << strbuf.data();
     strbuf.clear();
 
-
-    str.setIntegerBase(10);
 
     QList<TMTCName> list = this->list();
     const int count = list.count();
@@ -381,8 +378,8 @@ void MultiplexIndex::print(){
 
         TMTCName name = list.at(cc);
 
-        str << "MultiplexIndex [" << cc << "]: " << name.toString();
-        qDebug() << strbuf.toAscii().data();
+        strbuf.dec() << "MultiplexIndex [" << cc << "]: " << name.toString();
+        qDebug() << strbuf.data();
         strbuf.clear();
     }
 }

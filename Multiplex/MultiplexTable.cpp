@@ -8,6 +8,7 @@
 #include <QWriteLocker>
 
 #include "TMTC/TMTCNameValue.h"
+#include "System/SystemTextBuffer.h"
 #include "MultiplexTable.h"
 #include "MultiplexTableIterator.h"
 #include "MultiplexObject.h"
@@ -151,6 +152,7 @@ inline MultiplexRecord* MultiplexTable::record(quintptr p){
     return reinterpret_cast<MultiplexRecord*>(p);
 }
 MultiplexRecord* MultiplexTable::recordNew(){
+    SystemTextBuffer strbuf;
 
     if (IsOpen){
 
@@ -164,7 +166,9 @@ MultiplexRecord* MultiplexTable::recordNew(){
 
             prev->init();
 
-            qDebug().nospace() << "MultiplexTable.recordNew [top] " << prev;
+            strbuf.hex() << "MultiplexTable.recordNew [top] 0x" << (cursor_last-data);
+            qDebug() << strbuf.data();
+            strbuf.clear();
 
             return prev;
         }
@@ -180,35 +184,46 @@ MultiplexRecord* MultiplexTable::recordNew(){
 
             const qptrdiff buffer = (object_size<<1);
 
-            quintptr cursor = (cursor_last + object_size);
+            quintptr cursor_next = (cursor_last + object_size);
 
-            if ((cursor + buffer) > cursor_end){
+            if ((cursor_next + buffer) > cursor_end){
 
-                cursor = cursor_start;
+                cursor_next = cursor_start;
 
-                if (cursor >= cursor_first){
+                if (cursor_next >= cursor_first){
+
+                    strbuf.hex() << "MultiplexTable.recordNew [prev] (cursor_next 0x" << (cursor_next-data) << " >= cursor_first 0x" << (cursor_first-data) << ")";
+                    qDebug() << strbuf.data();
+                    strbuf.clear();
+
                     /*
                      * Establish "pushing first" case on wrap of last
                      */
-                    index.setFirst(cursor,object_size,data);
+                    index.setFirst(cursor_next,object_size,data);
                 }
             }
             else if (cursor_first > cursor_start){
+
+                strbuf.hex() << "MultiplexTable.recordNew [prev] (cursor_first 0x" << (cursor_first-data) << " > cursor_start 0x" << (cursor_start-data) << ")";
+                qDebug() << strbuf.data();
+                strbuf.clear();
+
                 /*
                  * Use "pushing first" case
                  */
-                index.setFirst(cursor,object_size,data);
+                index.setFirst(cursor_next,object_size,data);
             }
 
-            MultiplexRecord* next = reinterpret_cast<MultiplexRecord*>(cursor);
+            MultiplexRecord* next = reinterpret_cast<MultiplexRecord*>(cursor_next);
 
             next->init(*prev);
 
             index.setObjectSize(object_size);
 
-            index.setLast(cursor,data);
+            index.setLast(cursor_next,data);
 
-            qDebug().nospace() << "MultiplexTable.recordNew [prev] " << next;
+            strbuf.hex() << "MultiplexTable.recordNew [prev] 0x" << (next-data);
+            qDebug() << strbuf.data();
 
             return next;
         }

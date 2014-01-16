@@ -18,6 +18,10 @@ then
  */
 class ${class} {
 
+ public:
+    ${class}();
+    ~${class}();
+
 };
 #endif
 EOF
@@ -27,6 +31,9 @@ EOF
 #include "${class}.h"
 
 ${class}::${class}()
+{
+}
+${class}::~${class}()
 {
 }
 EOF
