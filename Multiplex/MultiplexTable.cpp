@@ -154,8 +154,6 @@ MultiplexRecord* MultiplexTable::recordNew(){
 
     if (IsOpen){
 
-        qDebug().nospace() << "MultiplexTable.recordNew";
-
         index.print();
 
         const quintptr cursor_last = index.last(data);
@@ -315,7 +313,13 @@ QVariant MultiplexTable::query(const TMTCName& name){
  * Create a new record.  If not open, populate index.
  */
 void MultiplexTable::update(const TMTCMessage& m){
+    {
+        QByteArray* output = m.createOutput();
 
+        qDebug().nospace() << "MultiplexTable.update( DCN=" << id.toString().toAscii().data() << " " << output->data() << ")";
+
+        delete output;
+    }
     const int count = m.size();
 
     if (IsOpen && 256 > count){
@@ -340,11 +344,11 @@ void MultiplexTable::update(const TMTCMessage& m){
 
                     const QVariant& value = nvp->getValue();
 
-                    if (!object.setValue(name,value)){
-                        qDebug().nospace() << "MultiplexTable.update(TMTCMessage): record has ignored (name: " << name.toString() << ", value: " << value.toString() << ")";
+                    if (object.setValue(name,value)){
+                        qDebug().nospace() << "MultiplexTable.update(TMTCMessage): updated (name: " << name.toString() << ", value: " << value.toString() << ")";
                     }
                     else {
-                        qDebug().nospace() << "MultiplexTable.update(TMTCMessage): record updated with (name: " << name.toString() << ", value: " << value.toString() << ")";
+                        qDebug().nospace() << "MultiplexTable.update(TMTCMessage): dropped (name: " << name.toString() << ", value: " << value.toString() << ")";
                     }
                 }
             }
@@ -370,9 +374,11 @@ void MultiplexTable::update(const TMTCNameValue& nvp){
 
             const QVariant& value = nvp.getValue();
 
-            if (!object.setValue(name,value)){
-
-                qDebug().nospace() << "MultiplexTable.update(TMTCNameValue): Value has been ignored in (name: " << name.toString() << ", value: " << value.toString() << ")";
+            if (object.setValue(name,value)){
+                qDebug().nospace() << "MultiplexTable.update(TMTCNameValue): updated (name: " << name.toString() << ", value: " << value.toString() << ")";
+            }
+            else {
+                qDebug().nospace() << "MultiplexTable.update(TMTCNameValue): dropped (name: " << name.toString() << ", value: " << value.toString() << ")";
             }
 
             reopen();
