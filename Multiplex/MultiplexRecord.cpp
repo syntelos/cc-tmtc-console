@@ -15,11 +15,11 @@ quint8 MultiplexRecord::getFieldCount() const {
 
     return count.getValue();
 }
-qptrdiff MultiplexRecord::getFieldLength() const {
+quint32 MultiplexRecord::getFieldLength() const {
 
     if (check()){
 
-        qptrdiff len = 0;
+        quint32 len = 0;
 
         MultiplexRecordIterator<MultiplexRecord> tgt(*this);
 
@@ -66,9 +66,9 @@ bool MultiplexRecord::zero() const {
     return (0 == gs && 0 == rs &&
             time.zero() && count.zero());
 }
-qptrdiff MultiplexRecord::length() const {
+quint32 MultiplexRecord::length() const {
 
-    qptrdiff flen = getFieldLength();
+    quint32 flen = getFieldLength();
 
     if (0 != flen){
 
@@ -88,11 +88,11 @@ quint8 MultiplexIndexRecord::getFieldCount() const {
 
     return count.getValue();
 }
-qptrdiff MultiplexIndexRecord::getFieldLength() const {
+quint32 MultiplexIndexRecord::getFieldLength() const {
 
     if (check()){
 
-        qptrdiff len = 0;
+        quint32 len = 0;
 
         MultiplexRecordIterator<MultiplexIndexRecord> tgt(*this);
 
@@ -140,9 +140,9 @@ bool MultiplexIndexRecord::zero() const {
             alloc.zero() &&
             count.zero());
 }
-qptrdiff MultiplexIndexRecord::length() const {
+quint32 MultiplexIndexRecord::length() const {
 
-    qptrdiff flen = getFieldLength();
+    quint32 flen = getFieldLength();
 
     if (0 != flen){
 
@@ -185,7 +185,7 @@ bool MultiplexFieldL::check() const {
 bool MultiplexFieldL::zero() const {
     return (0 == this->fs);
 }
-qptrdiff MultiplexFieldL::length() const {
+quint32 MultiplexFieldL::length() const {
     if (MX::FS == this->fs){
 
         return MX::FieldSizeL;
@@ -236,7 +236,7 @@ bool MultiplexFieldP::check() const {
 bool MultiplexFieldP::zero() const {
     return (0 == this->fs);
 }
-qptrdiff MultiplexFieldP::length() const {
+quint32 MultiplexFieldP::length() const {
     if (MX::FS == this->fs){
 
         return MX::FieldSizeL;
@@ -288,7 +288,7 @@ bool MultiplexFieldI::check() const {
 bool MultiplexFieldI::zero() const {
     return (0 == this->fs);
 }
-qptrdiff MultiplexFieldI::length() const {
+quint32 MultiplexFieldI::length() const {
     if (MX::FS == this->fs){
 
         return MX::FieldSizeL;
@@ -447,7 +447,7 @@ bool MultiplexFieldV::check() const {
 bool MultiplexFieldV::zero() const {
     return (0 == this->fs);
 }
-qptrdiff MultiplexFieldV::length() const {
+quint32 MultiplexFieldV::length() const {
     if (MX::FS == this->fs){
 
         return MX::FieldSizeV + alloc;
@@ -526,7 +526,7 @@ bool MultiplexFieldB::check() const {
 bool MultiplexFieldB::zero() const {
     return (0 == this->fs);
 }
-qptrdiff MultiplexFieldB::length() const {
+quint32 MultiplexFieldB::length() const {
     if (MX::FS == this->fs){
 
         return MX::FieldSizeB;

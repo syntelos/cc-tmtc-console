@@ -11,6 +11,7 @@
 
 #include "System/SystemDeviceIdentifier.h"
 #include "TMTC/TMTCName.h"
+#include "MultiplexRecord.h"
 
 /*!
  * 
@@ -27,6 +28,8 @@ class MultiplexIndex {
      * Disable Copy
      */
     MultiplexIndex(const MultiplexIndex& copy);
+
+    MultiplexIndexRecord* getStorage() const;
 
  public:
     /*!
@@ -53,9 +56,9 @@ class MultiplexIndex {
      * recent record.  This value never decreases over the life of a
      * table file.
      */
-    qptrdiff getObjectSize() const;
+    quint32 getObjectSize() const;
 
-    void setObjectSize(qptrdiff);
+    void setObjectSize(quint32);
     /*!
      * Offset to address
      */
@@ -133,6 +136,9 @@ class MultiplexIndex {
     /*!
      */
     QList<TMTCName> list() const;
+    /*!
+     */
+    void print();
 
 };
 #endif

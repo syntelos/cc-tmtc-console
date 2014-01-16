@@ -5,7 +5,6 @@
 #include <QIODevice>
 
 #include "MultiplexIndex.h"
-#include "MultiplexRecord.h"
 #include "MultiplexRecordIterator.h"
 
 MultiplexIndex::MultiplexIndex(const SystemDeviceIdentifier& id)
@@ -44,78 +43,36 @@ void MultiplexIndex::init(quintptr data){
 
             ir->init();
         }
-
-        QString strbuf;
-        QTextStream str(&strbuf);
-        str.setIntegerBase(16);
-
-        str << "MultiplexIndex.init object_size: 0x" << getObjectSize();
-        qDebug() << strbuf.toAscii().data();
-        strbuf.clear();
-
-        str << "MultiplexIndex.init ofs_first: 0x" << getFirst();
-        qDebug() << strbuf.toAscii().data();
-        strbuf.clear();
-
-        str << "MultiplexIndex.init ofs_last: 0x" << getLast();
-        qDebug() << strbuf.toAscii().data();
-        strbuf.clear();
-
-        str << "MultiplexIndex.init count_temporal: 0x" << getCountTemporal();
-        qDebug() << strbuf.toAscii().data();
-        strbuf.clear();
-
-        str << "MultiplexIndex.init count_spatial: 0x" << getCountSpatial();
-        qDebug() << strbuf.toAscii().data();
-        strbuf.clear();
-
-        str << "MultiplexIndex.init count_user: 0x" << getCountUser();
-        qDebug() << strbuf.toAscii().data();
-        strbuf.clear();
-
-        str << "MultiplexIndex.init record_count: 0x" << getRecordCount();
-        qDebug() << strbuf.toAscii().data();
-        strbuf.clear();
-
-        str << "MultiplexIndex.init index_size: 0x" << getIndexSize();
-        qDebug() << strbuf.toAscii().data();
-        strbuf.clear();
-
-        str << "MultiplexIndex.init table_size: 0x" << getTableSize();
-        qDebug() << strbuf.toAscii().data();
-        strbuf.clear();
     }
 }
 void MultiplexIndex::clearStorage(){
 
     storage = 0;
 }
-qptrdiff MultiplexIndex::getObjectSize() const {
-    if (0 != storage){
-        MultiplexIndexRecord* storage = reinterpret_cast<MultiplexIndexRecord*>(this->storage);
+MultiplexIndexRecord* MultiplexIndex::getStorage() const {
 
-        return storage->object_size.getValue();
-    }
-    return MX::RecordBase;
+    return reinterpret_cast<MultiplexIndexRecord*>(this->storage);
 }
-void MultiplexIndex::setObjectSize(qptrdiff size){
-    if (0 != storage){
-        MultiplexIndexRecord* storage = reinterpret_cast<MultiplexIndexRecord*>(this->storage);
+quint32 MultiplexIndex::getObjectSize() const {
 
-        qptrdiff object_size = storage->object_size.getValue();
+    MultiplexIndexRecord* storage = getStorage();
+
+    if (storage)
+        return storage->object_size.getValue();
+    else
+        return MX::RecordBase;
+}
+void MultiplexIndex::setObjectSize(quint32 size){
+
+    MultiplexIndexRecord* storage = getStorage();
+
+    if (storage){
+
+        quint32 object_size = storage->object_size.getValue();
 
         if (0 < size && size > object_size){
 
             storage->object_size.setValue(size);
-
-            QString strbuf;
-            QTextStream str(&strbuf);
-            str.setIntegerBase(16);
-
-            str << "MultiplexIndex.setObjectSize 0x" << size;
-            qDebug() << strbuf.toAscii().data();
-            strbuf.clear();
-
         }
     }
 }
@@ -128,39 +85,23 @@ quintptr MultiplexIndex::first(quintptr start) const{
     qptrdiff ofs = getFirst();
     quintptr adr = (start + ofs);
 
-    QString strbuf;
-    QTextStream str(&strbuf);
-    str.setIntegerBase(16);
-
-    str << "MultiplexIndex.first 0x" << adr << " = 0x" << start << " + 0x" << ofs;
-    qDebug() << strbuf.toAscii().data();
-    strbuf.clear();
-
     return adr;
 }
 qptrdiff MultiplexIndex::getFirst() const {
-    if (0 != storage){
-        MultiplexIndexRecord* storage = reinterpret_cast<MultiplexIndexRecord*>(this->storage);
+    MultiplexIndexRecord* storage = getStorage();
 
+    if (storage)
         return storage->ofs_first.getValue();
-    }
-    return getIndexSize();
+    else
+        return getIndexSize();
 }
 void MultiplexIndex::setFirst(qptrdiff ofs){
-    if (0 != storage){
-        MultiplexIndexRecord* storage = reinterpret_cast<MultiplexIndexRecord*>(this->storage);
+    MultiplexIndexRecord* storage = getStorage();
 
+    if (storage){
         if (getIndexSize() <= ofs){
 
             storage->ofs_first.setValue(ofs);
-
-            QString strbuf;
-            QTextStream str(&strbuf);
-            str.setIntegerBase(16);
-
-            str << "MultiplexIndex.setFirst 0x" << ofs;
-            qDebug() << strbuf.toAscii().data();
-            strbuf.clear();
         }
     }
 }
@@ -173,11 +114,10 @@ void MultiplexIndex::setFirst(quintptr cursor, qptrdiff object_size, quintptr st
     setFirst( (cursor + object_size), start);
 }
 qptrdiff MultiplexIndex::getLast() const {
-    if (0 != storage){
-        MultiplexIndexRecord* storage = reinterpret_cast<MultiplexIndexRecord*>(this->storage);
+    MultiplexIndexRecord* storage = getStorage();
 
+    if (storage)
         return storage->ofs_last.getValue();
-    }
     else
         return getIndexSize();
 }
@@ -186,31 +126,15 @@ quintptr MultiplexIndex::last(quintptr start) const {
     qptrdiff ofs = getLast();
     quintptr adr = (start + ofs);
 
-    QString strbuf;
-    QTextStream str(&strbuf);
-    str.setIntegerBase(16);
-
-    str << "MultiplexIndex.last 0x" << adr << " = 0x" << start << " + 0x" << ofs;
-    qDebug() << strbuf.toAscii().data();
-    strbuf.clear();
-
     return adr;
 }
 void MultiplexIndex::setLast(qptrdiff ofs){
-    if (0 != storage){
-        MultiplexIndexRecord* storage = reinterpret_cast<MultiplexIndexRecord*>(this->storage);
+    MultiplexIndexRecord* storage = getStorage();
 
+    if (storage){
         if (getIndexSize() <= ofs){
 
             storage->ofs_last.setValue(ofs);
-
-            QString strbuf;
-            QTextStream str(&strbuf);
-            str.setIntegerBase(16);
-
-            str << "MultiplexIndex.setLast 0x" << ofs;
-            qDebug() << strbuf.toAscii().data();
-            strbuf.clear();
         }
     }
 }
@@ -219,82 +143,56 @@ void MultiplexIndex::setLast(quintptr cursor, quintptr start){
     setLast( cursor - start);
 }
 quint32 MultiplexIndex::getCountTemporal() const {
-    if (0 != storage){
-        MultiplexIndexRecord* storage = reinterpret_cast<MultiplexIndexRecord*>(this->storage);
+    MultiplexIndexRecord* storage = getStorage();
+
+    if (storage)
         return storage->count_temporal.getValue();
-    }
     else
         return 1;
 }
 void MultiplexIndex::setCountTemporal(quint32 count){
-    if (0 != storage){
-        MultiplexIndexRecord* storage = reinterpret_cast<MultiplexIndexRecord*>(this->storage);
+    MultiplexIndexRecord* storage = getStorage();
 
+    if (storage){
         if (0 != count && count > storage->count_temporal.getValue()){
 
             storage->count_temporal.setValue(count);
-
-            QString strbuf;
-            QTextStream str(&strbuf);
-            str.setIntegerBase(16);
-
-            str << "MultiplexIndex.setCountTemporal 0x" << count;
-            qDebug() << strbuf.toAscii().data();
-            strbuf.clear();
         }
     }
 }
 quint32 MultiplexIndex::getCountSpatial() const {
-    if (0 != storage){
-        MultiplexIndexRecord* storage = reinterpret_cast<MultiplexIndexRecord*>(this->storage);
+    MultiplexIndexRecord* storage = getStorage();
 
+    if (storage)
         return storage->count_spatial.getValue();
-    }
     else
         return 9;
 }
 void MultiplexIndex::setCountSpatial(quint32 count){
-    if (0 != storage){
-        MultiplexIndexRecord* storage = reinterpret_cast<MultiplexIndexRecord*>(this->storage);
+    MultiplexIndexRecord* storage = getStorage();
 
+    if (storage){
         if (0 != count && count > storage->count_spatial.getValue()){
 
             storage->count_spatial.setValue(count);
-
-            QString strbuf;
-            QTextStream str(&strbuf);
-            str.setIntegerBase(16);
-
-            str << "MultiplexIndex.setCountSpatial 0x" << count;
-            qDebug() << strbuf.toAscii().data();
-            strbuf.clear();
         }
     }
 }
 quint32 MultiplexIndex::getCountUser() const {
-    if (0 != storage){
-        MultiplexIndexRecord* storage = reinterpret_cast<MultiplexIndexRecord*>(this->storage);
+    MultiplexIndexRecord* storage = getStorage();
 
+    if (storage)
         return storage->count_user.getValue();
-    }
     else
         return 3600;
 }
 void MultiplexIndex::setCountUser(quint32 count){
-    if (0 != storage){
-        MultiplexIndexRecord* storage = reinterpret_cast<MultiplexIndexRecord*>(this->storage);
+    MultiplexIndexRecord* storage = getStorage();
 
+    if (storage){
         if (0 != count && count > storage->count_user.getValue()){
 
             storage->count_user.setValue(count);
-
-            QString strbuf;
-            QTextStream str(&strbuf);
-            str.setIntegerBase(16);
-
-            str << "MultiplexIndex.setCountUser 0x" << count;
-            qDebug() << strbuf.toAscii().data();
-            strbuf.clear();
         }
     }
 }
@@ -323,19 +221,14 @@ quintptr MultiplexIndex::end(quintptr start) const {
     qint64 ofs = getTableSize();
     quintptr adr = (start + ofs);
 
-    QString strbuf;
-    QTextStream str(&strbuf);
-    str.setIntegerBase(16);
-
-    str << "MultiplexIndex.end 0x" << adr << " = 0x" << start << " + 0x" << ofs;
-    qDebug() << strbuf.toAscii().data();
-    strbuf.clear();
-
     return adr;
 }
 int MultiplexIndex::query(const TMTCName & n) const {
-    if (0 != storage){
-        MultiplexIndexRecord* storage = reinterpret_cast<MultiplexIndexRecord*>(this->storage);
+    MultiplexIndexRecord* storage = getStorage();
+
+    if (storage){
+        QString name = n.toString();
+
         MultiplexRecordIterator<MultiplexIndexRecord> list(*storage);
 
         int index = 0;
@@ -346,9 +239,7 @@ int MultiplexIndex::query(const TMTCName & n) const {
 
             QVariant qv = fv.getValue();
 
-            TMTCName field(qv);
-
-            if (field == n)
+            if (name == qv.toString())
                 return index;
             else
                 index += 1;
@@ -357,8 +248,10 @@ int MultiplexIndex::query(const TMTCName & n) const {
     return -1;
 }
 int MultiplexIndex::index(const TMTCName & n) const {
-    if (0 != storage){
-        MultiplexIndexRecord* storage = reinterpret_cast<MultiplexIndexRecord*>(this->storage);
+    MultiplexIndexRecord* storage = getStorage();
+
+    if (storage){
+        QString name = n.toString();
 
         MultiplexFieldV* last = 0;
 
@@ -375,11 +268,7 @@ int MultiplexIndex::index(const TMTCName & n) const {
 
                 QVariant qv = fv->getValue();
 
-                TMTCName field(qv);
-
-                if (field == n){
-
-                    qDebug() << "MultiplexIndex.index(" << n.toString() << ") [found:" << index << "]";
+                if (name == qv.toString()){
 
                     return index;
                 }
@@ -394,8 +283,6 @@ int MultiplexIndex::index(const TMTCName & n) const {
          * Create new
          */
         if (storage->alloc.getValue() > storage->count.getValue()){
-
-            qDebug() << "MultiplexIndex.index(" << n.toString() << ") [create:" << index << "]";
 
             storage->count.setValue(storage->count.getValue() + 1);
 
@@ -424,8 +311,9 @@ QList<TMTCName> MultiplexIndex::list() const {
 
     QList<TMTCName> re;
 
-    if (0 != storage){
-        MultiplexIndexRecord* storage = reinterpret_cast<MultiplexIndexRecord*>(this->storage);
+    MultiplexIndexRecord* storage = getStorage();
+
+    if (storage){
         MultiplexRecordIterator<MultiplexIndexRecord> list(*storage);
 
         while (list.hasNext()){
@@ -440,4 +328,61 @@ QList<TMTCName> MultiplexIndex::list() const {
         }
     }
     return re;
+}
+void MultiplexIndex::print(){
+    QString strbuf;
+    QTextStream str(&strbuf);
+
+    str.setIntegerBase(16);
+
+    str << "MultiplexIndex object_size: 0x" << getObjectSize();
+    qDebug() << strbuf.toAscii().data();
+    strbuf.clear();
+
+    str << "MultiplexIndex ofs_first: 0x" << getFirst();
+    qDebug() << strbuf.toAscii().data();
+    strbuf.clear();
+
+    str << "MultiplexIndex ofs_last: 0x" << getLast();
+    qDebug() << strbuf.toAscii().data();
+    strbuf.clear();
+
+    str << "MultiplexIndex count_temporal: 0x" << getCountTemporal();
+    qDebug() << strbuf.toAscii().data();
+    strbuf.clear();
+
+    str << "MultiplexIndex count_spatial: 0x" << getCountSpatial();
+    qDebug() << strbuf.toAscii().data();
+    strbuf.clear();
+
+    str << "MultiplexIndex count_user: 0x" << getCountUser();
+    qDebug() << strbuf.toAscii().data();
+    strbuf.clear();
+
+    str << "MultiplexIndex record_count: 0x" << getRecordCount();
+    qDebug() << strbuf.toAscii().data();
+    strbuf.clear();
+
+    str << "MultiplexIndex index_size: 0x" << getIndexSize();
+    qDebug() << strbuf.toAscii().data();
+    strbuf.clear();
+
+    str << "MultiplexIndex table_size: 0x" << getTableSize();
+    qDebug() << strbuf.toAscii().data();
+    strbuf.clear();
+
+
+    str.setIntegerBase(10);
+
+    QList<TMTCName> list = this->list();
+    const int count = list.count();
+    int cc;
+    for (cc = 0; cc < count; cc++){
+
+        TMTCName name = list.at(cc);
+
+        str << "MultiplexIndex [" << cc << "]: " << name.toString();
+        qDebug() << strbuf.toAscii().data();
+        strbuf.clear();
+    }
 }

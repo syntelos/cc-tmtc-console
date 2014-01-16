@@ -53,7 +53,7 @@ struct MultiplexFieldB {
      * With integrity, return the non zero (byte) length of this
      * record (for address arithmetic).
      */
-    qptrdiff length() const;
+    quint32 length() const;
     /*!
      */
     quint8 getValue() const;
@@ -102,7 +102,7 @@ struct MultiplexFieldL {
      * With integrity, return the non zero (byte) length of this
      * record (for address arithmetic).
      */
-    qptrdiff length() const;
+    quint32 length() const;
     /*!
      */
     qint64 getValue() const;
@@ -150,7 +150,7 @@ struct MultiplexFieldP {
      * With integrity, return the non zero (byte) length of this
      * record (for address arithmetic).
      */
-    qptrdiff length() const;
+    quint32 length() const;
     /*!
      */
     qptrdiff getValue() const;
@@ -197,7 +197,7 @@ struct MultiplexFieldI {
      * With integrity, return the non zero (byte) length of this
      * record (for address arithmetic).
      */
-    qptrdiff length() const;
+    quint32 length() const;
     /*!
      */
     quint32 getValue() const;
@@ -250,7 +250,7 @@ struct MultiplexFieldV {
      * With integrity, return the non zero (byte) length of this
      * record (for address arithmetic).
      */
-    qptrdiff length() const;
+    quint32 length() const;
     /*!
      * This call has no effect when the argument byte array is too
      * long.  Return false for an argument that is ignored.
@@ -285,7 +285,7 @@ struct MultiplexRecord {
     /*!
      * Sum of space allocated to fields
      */
-    qptrdiff getFieldLength() const;
+    quint32 getFieldLength() const;
     /*!
      * Cleaning constructor
      */
@@ -306,7 +306,7 @@ struct MultiplexRecord {
      * With integrity, return the non zero (byte) length of this
      * record (for address arithmetic).
      */
-    qptrdiff length() const;
+    quint32 length() const;
 
 };
 /*!
@@ -318,7 +318,7 @@ struct MultiplexIndexRecord {
     volatile char gs;
     volatile char rs;
 
-    MultiplexFieldP object_size;
+    MultiplexFieldI object_size;
     MultiplexFieldP ofs_first;
     MultiplexFieldP ofs_last;
     MultiplexFieldI count_temporal;
@@ -335,7 +335,7 @@ struct MultiplexIndexRecord {
     /*!
      * Sum of space allocated to fields
      */
-    qptrdiff getFieldLength() const;
+    quint32 getFieldLength() const;
     /*!
      * Cleaning constructor
      */
@@ -352,7 +352,7 @@ struct MultiplexIndexRecord {
      * With integrity, return the non zero (byte) length of this
      * record (for address arithmetic).
      */
-    qptrdiff length() const;
+    quint32 length() const;
 
 };
 

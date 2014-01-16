@@ -103,6 +103,8 @@ void MultiplexTable::reopen(){
 
     if (required_size > file.size()){
 
+        index.clearStorage();
+
         if (IsOpen){
 
             file.unmap((unsigned char*)data);
@@ -118,6 +120,8 @@ void MultiplexTable::reopen(){
             data = reinterpret_cast<quintptr>(file.map(0,file.size()));
 
             file.close();
+
+            index.init(data);
         }
     }
 }
@@ -152,6 +156,8 @@ MultiplexRecord* MultiplexTable::recordNew(){
 
         qDebug().nospace() << "MultiplexTable.recordNew";
 
+        index.print();
+
         const quintptr cursor_last = index.last(data);
 
         MultiplexRecord* prev = reinterpret_cast<MultiplexRecord*>(cursor_last);
@@ -172,7 +178,7 @@ MultiplexRecord* MultiplexTable::recordNew(){
 
             const quintptr cursor_first = index.first(data);
 
-            const qptrdiff object_size = prev->length();
+            const quint32 object_size = prev->length();
 
             const qptrdiff buffer = (object_size<<1);
 
