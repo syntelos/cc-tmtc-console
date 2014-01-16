@@ -1,1 +1,1 @@
-valgrind --track-origins=yes --leak-check=full ./Main/Console
+valgrind --log-file=valgrind.log --track-origins=yes --leak-check=full tmtc-console
