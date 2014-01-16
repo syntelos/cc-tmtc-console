@@ -142,28 +142,17 @@ bool MultiplexIndexRecord::zero() const {
 }
 quint32 MultiplexIndexRecord::length() const {
 
-    quint32 flen = getFieldLength();
+    quint32 flen = MX::RecordIndexBase;
 
-    if (0 != flen){
+    const quint8 alloc = this->alloc.getValue();
 
-        return (flen + MX::RecordIndexBase);
+    if (0 != alloc){
+
+        flen = MX::RecordIndexBase;
+        flen += (alloc * MX::FieldSizeV);
+        flen += (alloc * 255);
     }
-    else {
-        const quint8 alloc = this->alloc.getValue();
-
-        if (0 != alloc){
-
-            flen = MX::RecordIndexBase;
-            flen += (alloc * MX::FieldSizeV);
-            flen += (alloc * 255);
-
-            return flen;
-        }
-        else {
-
-            return MX::RecordIndexInit;
-        }
-    }
+    return flen;
 }
 /*
  * MultiplexFieldL
