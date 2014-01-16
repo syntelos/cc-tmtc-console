@@ -1,6 +1,7 @@
 /*
  * Copyright 2014 John Pritchard, Syntelos.  All rights reserved.
  */
+#include <QDebug> 
 
 #include "MultiplexObject.h"
 
@@ -85,13 +86,16 @@ bool MultiplexObject::setValue(const TMTCName& n, const QVariant& v){
 
     if (field < fcount){
 
+        qDebug() << "MultiplexObject.setValue (" << n.toString() << "," << v.toString() << ") [found field:" << field << "]";
+
         MultiplexFieldV* fv = findex[field];
 
         return fv->setValue(v);
     }
     else {
+        qDebug() << "MultiplexObject.setValue (" << n.toString() << "," << v.toString() << ") [create field:" << field << "]";
 
-        mrecord.count.value += 1;
+        mrecord.count.setValue(mrecord.count.getValue() + 1);
 
         reindex();
 

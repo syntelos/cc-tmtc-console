@@ -69,7 +69,7 @@ class MultiplexRecordIterator {
 
 template<class Record>
 MultiplexRecordIterator<Record>::MultiplexRecordIterator(const Record& record)
-    : count(record.count.value), field(0)
+    : count(record.count.getValue()), field(0)
 {
     /*
      * Pointer arithmetic for field memory layout

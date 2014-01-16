@@ -9,11 +9,11 @@
 
 qint64 MultiplexRecord::getTime() const {
 
-    return time.value;
+    return time.getValue();
 }
 quint8 MultiplexRecord::getFieldCount() const {
 
-    return count.value;
+    return count.getValue();
 }
 qptrdiff MultiplexRecord::getFieldLength() const {
 
@@ -86,7 +86,7 @@ qptrdiff MultiplexRecord::length() const {
  */
 quint8 MultiplexIndexRecord::getFieldCount() const {
 
-    return count.value;
+    return count.getValue();
 }
 qptrdiff MultiplexIndexRecord::getFieldLength() const {
 
@@ -148,17 +148,21 @@ qptrdiff MultiplexIndexRecord::length() const {
 
         return (flen + MX::RecordIndexBase);
     }
-    else if (0 != alloc.value){
-
-        flen = MX::RecordIndexBase;
-        flen += (alloc.value * MX::FieldSizeV);
-        flen += (alloc.value * 255);
-
-        return flen;
-    }
     else {
+        const quint8 alloc = this->alloc.getValue();
 
-        return MX::RecordIndexInit;
+        if (0 != alloc){
+
+            flen = MX::RecordIndexBase;
+            flen += (alloc * MX::FieldSizeV);
+            flen += (alloc * 255);
+
+            return flen;
+        }
+        else {
+
+            return MX::RecordIndexInit;
+        }
     }
 }
 /*
@@ -166,14 +170,14 @@ qptrdiff MultiplexIndexRecord::length() const {
  */
 void MultiplexFieldL::init(const qint64 value){
     this->fs = MX::FS;
-    this->value = value;
+    this->setValue(value);
 }
 void MultiplexFieldL::init(const MultiplexFieldL& copy){
     this->fs = MX::FS;
-    this->value = copy.value;
+    this->setValue(copy.getValue());
 }
 bool MultiplexFieldL::validate(const qint64 value) const {
-    return (MX::FS == this->fs && value == this->value);
+    return (MX::FS == this->fs && value == getValue());
 }
 bool MultiplexFieldL::check() const {
     return (MX::FS == this->fs);
@@ -190,19 +194,41 @@ qptrdiff MultiplexFieldL::length() const {
         return 0;
     }
 }
+qint64 MultiplexFieldL::getValue() const {
+
+    Type type;
+
+    int cc;
+    for (cc = 0; cc < StorageLength; cc++){
+        type.data[cc] = this->data[cc];
+    }
+
+    return type.num;
+}
+void MultiplexFieldL::setValue(qint64 v){
+
+    Type type;
+
+    type.num = v;
+
+    int cc;
+    for (cc = 0; cc < StorageLength; cc++){
+        this->data[cc] = type.data[cc];
+    }
+}
 /*
  * MultiplexFieldP
  */
 void MultiplexFieldP::init(const qptrdiff value){
     this->fs = MX::FS;
-    this->value = value;
+    this->setValue(value);
 }
 void MultiplexFieldP::init(const MultiplexFieldP& copy){
     this->fs = MX::FS;
-    this->value = copy.value;
+    this->setValue(copy.getValue());
 }
 bool MultiplexFieldP::validate(const qptrdiff value) const {
-    return (MX::FS == this->fs && value == this->value);
+    return (MX::FS == this->fs && value == getValue());
 }
 bool MultiplexFieldP::check() const {
     return (MX::FS == this->fs);
@@ -219,19 +245,42 @@ qptrdiff MultiplexFieldP::length() const {
         return 0;
     }
 }
+qptrdiff MultiplexFieldP::getValue() const {
+
+    Type type;
+
+    int cc;
+    for (cc = 0; cc < StorageLength; cc++){
+        type.data[cc] = this->data[cc];
+    }
+
+    return type.num;
+}
+void MultiplexFieldP::setValue(qptrdiff v){
+
+    Type type;
+
+    type.num = v;
+
+    int cc;
+    for (cc = 0; cc < StorageLength; cc++){
+        this->data[cc] = type.data[cc];
+    }
+}
+
 /*
  * MultiplexFieldI
  */
 void MultiplexFieldI::init(const quint32 value){
     this->fs = MX::FS;
-    this->value = value;
+    this->setValue(value);
 }
 void MultiplexFieldI::init(const MultiplexFieldI& copy){
     this->fs = MX::FS;
-    this->value = copy.value;
+    this->setValue(copy.getValue());
 }
 bool MultiplexFieldI::validate(const quint32 value) const {
-    return (MX::FS == this->fs && value == this->value);
+    return (MX::FS == this->fs && value == getValue());
 }
 bool MultiplexFieldI::check() const {
     return (MX::FS == this->fs);
@@ -248,55 +297,32 @@ qptrdiff MultiplexFieldI::length() const {
         return 0;
     }
 }
+quint32 MultiplexFieldI::getValue() const {
+
+    Type type;
+
+    int cc;
+    for (cc = 0; cc < StorageLength; cc++){
+        type.data[cc] = this->data[cc];
+    }
+
+    return type.num;
+}
+void MultiplexFieldI::setValue(quint32 v){
+
+    Type type;
+
+    type.num = v;
+
+    int cc;
+    for (cc = 0; cc < StorageLength; cc++){
+        this->data[cc] = type.data[cc];
+    }
+}
+
 /*
  * MultiplexFieldV
  */
-bool MultiplexFieldV::setValue(const QVariant& value){
-
-    if (0 == this->alloc){
-
-        return false;
-    }
-    /*
-     * This proceedure depends on (uses) the value of 'alloc' defined
-     * by 'init(QVariant)'
-     */
-    else if (value.isNull()){
-        this->storage = 0;
-        int cc;
-        for (cc = 0; cc < alloc; cc++){
-            this->value[cc] = 0;
-        }
-        return true;
-    }
-    else {
-        QByteArray bary = value.toByteArray();
-
-        const int count = bary.count();
-
-        if (alloc >= count){
-
-            const char* bary_data = bary.data();
-
-            this->storage = (quint8)count;
-
-            int cc;
-            for (cc = 0; cc < count; cc++){
-                this->value[cc] = bary_data[cc];
-            }
-            for (; cc < alloc; cc++){
-                this->value[cc] = 0;
-            }
-            return true;
-        }
-        else {
-            /*
-             * Ignore (not truncate) long value
-             */
-            return false;
-        }
-    }
-}
 QVariant MultiplexFieldV::getValue() const {
     if (0 == this->storage){
         QVariant value;
@@ -430,19 +456,69 @@ qptrdiff MultiplexFieldV::length() const {
         return 0;
     }
 }
+bool MultiplexFieldV::setValue(const QVariant& value){
+
+    if (0 == this->alloc){
+
+        return false;
+    }
+    /*
+     * This proceedure depends on (uses) the value of 'alloc' defined
+     * by 'init(QVariant)'
+     */
+    else if (value.isNull()){
+        this->storage = 0;
+        int cc;
+        for (cc = 0; cc < alloc; cc++){
+            this->value[cc] = 0;
+        }
+        return true;
+    }
+    else {
+        QByteArray bary = value.toByteArray();
+
+        const int count = bary.count();
+
+        if (alloc >= count){
+
+            const char* bary_data = bary.data();
+
+            this->storage = (quint8)count;
+
+            int cc;
+            for (cc = 0; cc < count; cc++){
+                this->value[cc] = bary_data[cc];
+            }
+            for (; cc < alloc; cc++){
+                this->value[cc] = 0;
+            }
+            return true;
+        }
+        else {
+            /*
+             * Ignore (not truncate) long value
+             */
+            return false;
+        }
+    }
+}
+
 /*
  * MultiplexFieldB
  */
 void MultiplexFieldB::init(const quint8 value){
     this->fs = MX::FS;
-    this->value = value;
+    this->data = value;
 }
 void MultiplexFieldB::init(const MultiplexFieldB& copy){
     this->fs = MX::FS;
-    this->value = copy.value;
+    this->setValue(copy.getValue());
 }
 bool MultiplexFieldB::validate(const quint8 value) const {
-    return (MX::FS == this->fs && value == this->value);
+
+    const quint8 data = this->data;
+
+    return (MX::FS == this->fs && value == data);
 }
 bool MultiplexFieldB::check() const {
     return (MX::FS == this->fs);
@@ -458,4 +534,20 @@ qptrdiff MultiplexFieldB::length() const {
     else {
         return 0;
     }
+}
+quint8 MultiplexFieldB::getValue() const {
+
+    Type type;
+
+    type.data = this->data;
+
+    return type.num;
+}
+void MultiplexFieldB::setValue(quint8 v){
+
+    Type type;
+
+    type.num = v;
+
+    this->data = type.data;
 }

@@ -32,12 +32,12 @@ bool Multiplex::update(const TMTCMessage* m){
 
                 if (history->open()){
 
-                    qDebug().nospace() << "MultiplexTable.update(" << sid.toString() << ") [successful table open]";
+                    qDebug().nospace() << "Multiplex.update [open] " << sid.toString() << " OK";
 
                     this->state[sid] = history;
                 }
                 else {
-                    qDebug().nospace() << "MultiplexTable.update(" << sid.toString() << ") [failed table open]";
+                    qDebug().nospace() << "Multiplex.update [open] " << sid.toString() << " ERROR";
 
                     return false;
                 }

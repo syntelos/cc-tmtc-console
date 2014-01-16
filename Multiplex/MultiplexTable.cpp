@@ -150,6 +150,8 @@ MultiplexRecord* MultiplexTable::recordNew(){
 
     if (IsOpen){
 
+        qDebug().nospace() << "MultiplexTable.recordNew";
+
         const quintptr cursor_last = index.last(data);
 
         MultiplexRecord* prev = reinterpret_cast<MultiplexRecord*>(cursor_last);
@@ -317,7 +319,7 @@ void MultiplexTable::update(const TMTCMessage& m){
         MultiplexRecord* r = recordNew();
     
         if (r){
-            r->time.value = m.getTime();
+            r->time.setValue(m.getTime());
 
             MultiplexObject object(index,*r);
 

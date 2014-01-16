@@ -22,9 +22,17 @@ struct MultiplexFieldB {
     MultiplexFieldB(MultiplexFieldB&);
     ~MultiplexFieldB();
 
+    union Type {
+        char data;
+        quint8 num;
+    };
+    enum Storage {
+        StorageLength = 1
+    };
+
  public:
     volatile char fs;
-    volatile quint8 value;
+    volatile char data;
     /*!
      * Constructor
      */
@@ -46,6 +54,12 @@ struct MultiplexFieldB {
      * record (for address arithmetic).
      */
     qptrdiff length() const;
+    /*!
+     */
+    quint8 getValue() const;
+    /*!
+     */
+    void setValue(quint8);
 
 };
 /*!
@@ -57,9 +71,17 @@ struct MultiplexFieldL {
     MultiplexFieldL(MultiplexFieldL&);
     ~MultiplexFieldL();
 
+    union Type {
+        char data[8];
+        qint64 num;
+    };
+    enum Storage {
+        StorageLength = 8
+    };
+
  public:
     volatile char fs;
-    volatile qint64 value;
+    volatile char data[8];
     /*!
      * Constructor
      */
@@ -81,6 +103,11 @@ struct MultiplexFieldL {
      * record (for address arithmetic).
      */
     qptrdiff length() const;
+    /*!
+     */
+    qint64 getValue() const;
+
+    void setValue(qint64);
 
 };
 /*!
@@ -92,9 +119,17 @@ struct MultiplexFieldP {
     MultiplexFieldP(MultiplexFieldP&);
     ~MultiplexFieldP();
 
+    union Type {
+        char data[8];
+        qptrdiff num;
+    };
+    enum Storage {
+        StorageLength = 8
+    };
+
  public:
     volatile char fs;
-    volatile qptrdiff value;
+    volatile char data[8];
     /*!
      * Constructor
      */
@@ -116,7 +151,11 @@ struct MultiplexFieldP {
      * record (for address arithmetic).
      */
     qptrdiff length() const;
+    /*!
+     */
+    qptrdiff getValue() const;
 
+    void setValue(qptrdiff);
 };
 /*!
  * 
@@ -127,9 +166,17 @@ struct MultiplexFieldI {
     MultiplexFieldI(MultiplexFieldI&);
     ~MultiplexFieldI();
 
+    union Type {
+        char data[4];
+        quint32 num;
+    };
+    enum Storage {
+        StorageLength = 4
+    };
+
  public:
     volatile char fs;
-    volatile quint32 value;
+    volatile char data[4];
     /*!
      * Constructor
      */
@@ -151,7 +198,11 @@ struct MultiplexFieldI {
      * record (for address arithmetic).
      */
     qptrdiff length() const;
+    /*!
+     */
+    quint32 getValue() const;
 
+    void setValue(quint32);
 };
 
 /*!
@@ -173,17 +224,6 @@ struct MultiplexFieldV {
     volatile quint8 alloc;
     volatile quint8 storage;
     volatile quint8 value[];
-    /*!
-     * This call has no effect when the argument byte array is too
-     * long.  Return false for an argument that is ignored.
-     *
-     * This proceedure depends on (uses) the value of 'alloc' defined
-     * by 'init(const QVariant&)'
-     */
-    bool setValue(const QVariant& value);
-    /*!
-     */
-    QVariant getValue() const;
     /*!
      * Constructor
      *
@@ -211,7 +251,17 @@ struct MultiplexFieldV {
      * record (for address arithmetic).
      */
     qptrdiff length() const;
-
+    /*!
+     * This call has no effect when the argument byte array is too
+     * long.  Return false for an argument that is ignored.
+     *
+     * This proceedure depends on (uses) the value of 'alloc' defined
+     * by 'init(const QVariant&)'
+     */
+    bool setValue(const QVariant& value);
+    /*!
+     */
+    QVariant getValue() const;
 };
 /*!
  *
