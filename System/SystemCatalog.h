@@ -12,7 +12,14 @@
  */
 namespace SystemCatalog {
     /*!
-     * Canonical set of catalog I/O behavior types
+     * Catalog properties for XML documents
+     */
+    namespace XMLNS {
+        static const char* URI = "http://www.syntelos.com/tmtc-console";
+        static const char* PREFIX = "tmtc";
+    }
+    /*!
+     * Catalog I/O behavior types
      * 
      * \sa SystemCatalogNode
      */

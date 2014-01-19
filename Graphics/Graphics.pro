@@ -1,6 +1,10 @@
 TARGET   = Graphics
 TEMPLATE = lib
 
+QT      += script
+QT      += network
+QT      += xml
+
 CONFIG  += staticlib
 
 INCLUDEPATH += ../

@@ -5,7 +5,6 @@
 #include <QLabel>
 #include <QObjectList>
 #include <QScriptEngine>
-#include <QSqlQuery>
 #include <QString>
 
 #include "Scripts.h"
@@ -22,6 +21,8 @@ void scriptsFromScriptValue(const QScriptValue &object, Scripts* &out){
 
 void Scripts::InitScriptMetaType(QScriptEngine* engine){
     qScriptRegisterMetaType(engine, scriptsToScriptValue, scriptsFromScriptValue);
+
+    Script::InitScriptMetaType(engine);
 }
 
 Scripts::Scripts(QObject* parent)
@@ -85,9 +86,29 @@ bool Scripts::deconfigure(Script* script){
     }
     return false;
 }
+bool Scripts::deconfigure(const char* source){
+
+    deconfigure(find(source));
+}
+void Scripts::import(SystemScriptSymbol* source, SystemScriptSymbol* target){
+
+    if (source && target && source->isNotInert() && target->isNotInert()){
+
+        Script* script = find(*source);
+        if (0 == script){
+
+            script = new Script(this);
+            script->setLinkSource(source);
+            script->setLinkTarget(target);
+        }
+        script->importToObjectTreeNode();
+    }
+}
 void Scripts::start(){
+    SystemCatalogNode::start(this);
 }
 void Scripts::stop(){
+    SystemCatalogNode::stop(this);
 }
 void Scripts::read(const SystemCatalogInput& properties, const QDomElement& parent){
 
@@ -106,17 +127,14 @@ void Scripts::read(const SystemCatalogInput& properties, const QDomElement& pare
 }
 void Scripts::write(SystemCatalogOutput& properties, QDomElement& parent){
 
-
     const QObjectList& children = this->children();
 
-    const int sz = children.size();
+    const int count = children.size();
 
-    if (0 < sz){
-
-        //beginStoreNode
+    if (0 < count){
 
         int cc;
-        for (cc = 0; cc < sz; cc++){
+        for (cc = 0; cc < count; cc++){
 
             Script* child = qobject_cast<Script*>(children.at(cc));
 
@@ -126,8 +144,6 @@ void Scripts::write(SystemCatalogOutput& properties, QDomElement& parent){
 
             }
         }
-
-        //endStoreNode
     }
 }
 bool Scripts::insertObjectTreeList(){

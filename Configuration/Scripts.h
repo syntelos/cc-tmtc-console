@@ -59,6 +59,10 @@ class Scripts : public ObjectTreeNode,
      * null so the script will not bind and evalutate.
      */
     bool deconfigure(Script* script);
+
+    bool deconfigure(const char* source);
+
+    void import(SystemScriptSymbol* source, SystemScriptSymbol* target);
     /*!
      * Edit node, appending a new child: return success.
      */

@@ -5,6 +5,7 @@
 #include <QDebug>
 #include <QDesktopWidget>
 #include <QDialog>
+#include <QFileDialog>
 #include <QKeySequence>
 #include <QList>
 #include <QMenu>
@@ -17,14 +18,8 @@
 #include <QStatusBar>
 #include <QRect>
 
-
 #include "System/SystemScriptSymbol.h"
-#include "Graphics/GraphicsCanvas.h"
-#include "Terminal/Terminal.h"
-#include "XPORT/XportConnection.h"
-#include "TMTC/TMTCMessage.h"
 #include "Window.h"
-
 
 
 QScriptValue windowToScriptValue(QScriptEngine *engine, Window* const &in){
@@ -42,18 +37,23 @@ Window* Window::instance;
  */
 Window::Window(QScriptEngine* script)
     : QMainWindow(), 
-      configureOpen(false),
       engine(script),
       net(0),
       devices(new Devices(this)),
       libraries(new Libraries(this)),
-      scripts(new Scripts(this))
+      scripts(new Scripts(this)),
+      canvas(new GraphicsCanvas(this))
 {
     setObjectName("window");
 
     Window::instance = this;
 
     qScriptRegisterMetaType(script, windowToScriptValue, windowFromScriptValue);
+
+    Devices::InitScriptMetaType(script);
+    Libraries::InitScriptMetaType(script);
+    Scripts::InitScriptMetaType(script);
+    GraphicsCanvas::InitScriptMetaType(script);
 
     initSystemScriptable(this);
     /*
@@ -74,7 +74,6 @@ Window::Window(QScriptEngine* script)
         file->addAction("Edit",this,SLOT(edit()),ctrlE);
         file->addAction("Save",this,SLOT(save()),ctrlS);
         file->addAction("Close",this,SLOT(close()),ctrlC);
-        file->addAction("Configure",this,SLOT(configure()),ctrlF);
         file->addSeparator();
         {
             QList<QKeySequence> shortcuts;
@@ -87,8 +86,6 @@ Window::Window(QScriptEngine* script)
     }
     /*
      */
-    GraphicsCanvas* canvas = new GraphicsCanvas(this);
-
     this->setCentralWidget(canvas);
 
 
@@ -179,61 +176,65 @@ Scripts* Window::getScripts() const {
 
     return scripts;
 }
+GraphicsCanvas* Window::getCanvas() const {
+
+    return canvas;
+}
 QScriptEngine* Window::getScriptEngine() const {
 
     return engine;
 }
 void Window::open(){
 
-    Scripts* scripts = getScripts();
+    QString app_dir = QCoreApplication::applicationDirPath();
 
-    Script* init = scripts->find("Window::init");
-    if (!init){
-        /*
-         */
-        init = new Script(scripts);
-        init->setLinkSource(new SystemScriptSymbol("Window::init"));
-        init->setLinkTarget(new SystemScriptSymbol("init"));
+    QFileDialog dialog(this,"Open Window",app_dir,"XML files (*.xml)");
+
+    dialog.setAcceptMode(QFileDialog::AcceptOpen);
+    dialog.setFileMode(QFileDialog::ExistingFile);
+    dialog.selectFile("window.xml");
+
+    if (dialog.exec()){
+
+        QStringList list = dialog.selectedFiles();
+        if (1 == list.size()){
+
+            QFile file(list.at(0));
+
+            read(file);
+        }
     }
-    /*
-     */
-    init->importToObjectTreeNode();
 }
 void Window::edit(){
 
 }
 void Window::save(){
 
+    QString app_dir = QCoreApplication::applicationDirPath();
+
+    QFileDialog dialog(this,"Save Window",app_dir,"XML files (*.xml)");
+
+    dialog.setAcceptMode(QFileDialog::AcceptSave);
+    dialog.setFileMode(QFileDialog::AnyFile);
+    dialog.selectFile("window.xml");
+
+    if (dialog.exec()){
+
+        QStringList list = dialog.selectedFiles();
+        if (1 == list.size()){
+
+            QFile file(list.at(0));
+
+            write(file);
+        }
+    }
 }
 void Window::close(){
 
-    Scripts* scripts = getScripts();
-
-    Script* init = scripts->find("Window::init");
-    if (init){
-        /*
-         */
-        scripts->deconfigure(init);
-    }
-}
-void Window::configure(){
-    if (!configureOpen){
-        configureOpen = true;
-        //
-        // TODO -- ObjectTreeModel model(this);
-        //
-        // TreeEditorDialog* dialog = new TreeEditorDialog(this,this);
-        //
-        // dialog->connectFinishedTo(this,SLOT(configureDone(int)));
-    }
 }
 void Window::quit(){
 
     QApplication::exit();
-}
-void Window::configureDone(int error){
-
-    configureOpen = false;
 }
 QScriptValue Window::alert(QScriptContext* cx, QScriptEngine* se){
     if (Window::instance){
@@ -275,18 +276,40 @@ QScriptValue Window::status(QScriptContext* cx, QScriptEngine* se){
         return QScriptValue(false);
 }
 void Window::start(){
+    SystemCatalogNode::start(this);
 }
 void Window::stop(){
+    SystemCatalogNode::stop(this);
 }
 void Window::read(QFile& src){
-    QDomDocument doc;
-    if (doc.setContent(&src,true)){
+    if (src.open(QIODevice::ReadOnly)){
 
-        SystemCatalogInput properties(SystemCatalog::PropertyConfigureConcrete,true);
+        QDomDocument doc;
 
-        read(properties,doc.documentElement());
+        if (doc.setContent(&src,true)){
 
-        properties.postprocessing();
+            src.close();
+
+            SystemCatalogInput properties(SystemCatalog::PropertyConfigureConcrete,true);
+
+            read(properties,doc.documentElement());
+
+            properties.postprocessing();
+        }
+    }
+}
+void Window::write(QFile& tgt){
+    if (tgt.open(QIODevice::WriteOnly)){
+        QDomDocument doc;
+        QDomElement window = doc.createElementNS(SystemCatalog::XMLNS::URI,"tmtc:window");
+        doc.appendChild(window);
+
+        SystemCatalogOutput properties(SystemCatalog::PropertyPublishConcrete,true);
+
+        write(properties,window);
+
+        tgt.write(doc.toByteArray());
+        tgt.close();
     }
 }
 void Window::read(const QUrl& src){
@@ -312,9 +335,46 @@ void Window::read(const QUrl& src){
     p->close();
     p->deleteLater();
 }
-void Window::read(const SystemCatalogInput& properties, const QDomElement& parent){
+void Window::read(const SystemCatalogInput& properties, const QDomElement& node){
 
+    if (node.localName() == "window"){
+        QDomNodeList children = node.childNodes();
+        const uint count = children.length();
+        int cc;
+        for (cc = 0; cc < count; cc++){
+            QDomNode child = children.item(cc);
+            if (child.isElement()){
 
+                QString name = child.localName();
+
+                QDomElement cel = child.toElement();
+
+                if (name == "devices"){
+
+                    devices->read(properties,cel);
+                }
+                else if (name == "libraries"){
+
+                    libraries->read(properties,cel);
+                }
+                else if (name == "scripts"){
+
+                    scripts->read(properties,cel);
+                }
+                else if (name == "canvas"){
+
+                    canvas->read(properties,cel);
+                }
+                else {
+                    qDebug() << "Window.read: skipping unrecognized element" << name ;
+                }
+            }
+        }
+    }
+    else {
+        qDebug() << "Window.read: Unrecognized document element" << node.localName();
+    }
 }
-void Window::write(SystemCatalogOutput& properties, QDomElement& parent){
+void Window::write(SystemCatalogOutput& properties, QDomElement& node){
+
 }

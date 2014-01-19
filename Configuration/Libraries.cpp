@@ -19,6 +19,8 @@ void librariesFromScriptValue(const QScriptValue &object, Libraries* &out){
 
 void Libraries::InitScriptMetaType(QScriptEngine* engine){
     qScriptRegisterMetaType(engine, librariesToScriptValue, librariesFromScriptValue);
+
+    Library::InitScriptMetaType(engine);
 }
 
 Libraries::Libraries(QObject* parent)
@@ -52,8 +54,10 @@ void Libraries::clear(){
     }
 }
 void Libraries::start(){
+    SystemCatalogNode::start(this);
 }
 void Libraries::stop(){
+    SystemCatalogNode::stop(this);
 }
 void Libraries::read(const SystemCatalogInput& properties, const QDomElement& parent){
 

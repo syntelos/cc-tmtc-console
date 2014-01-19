@@ -11,7 +11,6 @@
 #include <QIODevice>
 #include <QPlainTextEdit>
 #include <QScriptEngine>
-#include <QSqlQuery>
 #include <QString>
 #include <QStringList>
 #include <QUuid>

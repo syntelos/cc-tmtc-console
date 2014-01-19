@@ -19,6 +19,8 @@ void devicesFromScriptValue(const QScriptValue &object, Devices* &out){
 
 void Devices::InitScriptMetaType(QScriptEngine* engine){
     qScriptRegisterMetaType(engine, devicesToScriptValue, devicesFromScriptValue);
+
+    Device::InitScriptMetaType(engine);
 }
 
 Devices::Devices(QObject* parent)
@@ -54,8 +56,10 @@ void Devices::clear(){
     }
 }
 void Devices::start(){
+    SystemCatalogNode::start(this);
 }
 void Devices::stop(){
+    SystemCatalogNode::stop(this);
 }
 void Devices::read(const SystemCatalogInput& properties, const QDomElement& parent){
 

@@ -17,6 +17,7 @@
 
 #include "System/SystemCatalog.h"
 #include "System/SystemScriptable.h"
+#include "Graphics/GraphicsCanvas.h"
 #include "Configuration/Configuration.h"
 #include "Configuration/ConfigurationScriptable.h"
 #include "Configuration/Devices.h"
@@ -32,18 +33,17 @@ class Window : public QMainWindow,
     public ConfigurationScriptable
 {
     Q_OBJECT;
-    Q_PROPERTY(Devices*   devices   READ getDevices    USER false FINAL);
-    Q_PROPERTY(Libraries* libraries READ getLibraries  USER false FINAL);
-    Q_PROPERTY(Scripts*   scripts   READ getScripts    USER false FINAL);
-    Q_PROPERTY(QWidget*   canvas    READ centralWidget USER false FINAL);
-
-    bool configureOpen;
+    Q_PROPERTY(Devices*        devices   READ getDevices    USER false FINAL);
+    Q_PROPERTY(Libraries*      libraries READ getLibraries  USER false FINAL);
+    Q_PROPERTY(Scripts*        scripts   READ getScripts    USER false FINAL);
+    Q_PROPERTY(GraphicsCanvas* canvas    READ getCanvas USER false FINAL);
 
     QScriptEngine* engine;
     QNetworkAccessManager* net;
     Devices* devices;
     Libraries* libraries;
     Scripts* scripts;
+    GraphicsCanvas* canvas;
 
     static Window* instance; //< For alert and status script global functions
 
@@ -75,6 +75,9 @@ class Window : public QMainWindow,
      */
     Scripts* getScripts() const;
     /*!
+     */
+    GraphicsCanvas* getCanvas() const;
+    /*!
      * One argument is the message body, two arguments is title and
      * body.
      */
@@ -94,54 +97,53 @@ class Window : public QMainWindow,
 
  public slots:
      /*!
-      * Select and configure file for "Window::init".
+      * Open Window
       */
     void open();
      /*!
-      * Select script file for debugging.  The selected file is not
-      * configured to "Window::init".
+      * Edit Window
       */
     void edit();
      /*!
-      * Configure file within edit process to "Window::init".
+      * Save Window
       */
     void save();
      /*!
-      * Deconfigure "Window::init".
+      * Close Window
       */
     void close();
      /*!
-      * Run the configuration tool.
-      */
-    void configure();
-     /*!
-      * Quit the window.
+      * Quit Window
       */
     void quit();
     /*!
+      * Begin window system processing
      */
     virtual void start();
     /*!
+      * Halt window system processing
      */
     virtual void stop();
      /*!
-      * Configure system from XML file
+      * Configure window system from file
       */
     void read(QFile&);
+    /*!
+     * Publish window system to file
+     */
+    void write(QFile&);
      /*!
       * Configure system from XML reference
       */
     void read(const QUrl&);
     /*!
+      * Configure window system 
      */
     virtual void read(const SystemCatalogInput&, const QDomElement&);
     /*!
+     * Publish window system 
      */
     virtual void write(SystemCatalogOutput&, QDomElement&);
-
- private slots:
-
-   void configureDone(int);
 
  private:
     Q_DISABLE_COPY(Window)

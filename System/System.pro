@@ -24,7 +24,8 @@ HEADERS += SystemCatalog.h \
            SystemTextBuffer.h
 
 SOURCES += SystemCatalogInput.cpp \
-           SystemCatalogOutput.h \
+           SystemCatalogNode.cpp \
+           SystemCatalogOutput.cpp \
            SystemCatalogProperties.cpp \
            SystemConnector.cpp \
            SystemDeviceConnection.cpp \

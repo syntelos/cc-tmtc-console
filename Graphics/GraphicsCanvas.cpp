@@ -1,12 +1,27 @@
 /*
  * Copyright 2013 John Pritchard, Syntelos.  All rights reserved.
  */
+#include <QDebug>
 
 #include "GraphicsCanvas.h"
+
+QScriptValue graphicsCanvasToScriptValue(QScriptEngine *engine, GraphicsCanvas* const &in){
+    return engine->newQObject(in);
+}
+
+void graphicsCanvasFromScriptValue(const QScriptValue &object, GraphicsCanvas* &out){
+    out = qobject_cast<GraphicsCanvas*>(object.toQObject());
+}
+
+void GraphicsCanvas::InitScriptMetaType(QScriptEngine* engine){
+    qScriptRegisterMetaType(engine, graphicsCanvasToScriptValue, graphicsCanvasFromScriptValue);
+}
 
 GraphicsCanvas::GraphicsCanvas(QWidget* parent)
     : QGraphicsView(new GraphicsScene(), parent)
 {
+    initSystemScriptable(this);
+
 }
 GraphicsCanvas::~GraphicsCanvas(){
 
@@ -26,4 +41,20 @@ GraphicsScene& GraphicsCanvas::add(GraphicsBranch* item){
 GraphicsScene& GraphicsCanvas::debugPrintChildren(){
 
     return this->scene()->debugPrintChildren();
+}
+void GraphicsCanvas::start(){
+}
+void GraphicsCanvas::stop(){
+}
+void GraphicsCanvas::read(const SystemCatalogInput& properties, const QDomElement& node){
+
+    if (node.localName() == "canvas"){
+
+    }
+    else {
+        qDebug() << "GraphicsCanvas.read: Unrecognized catalog node" << node.localName();
+    }
+}
+void GraphicsCanvas::write(SystemCatalogOutput& properties, QDomElement& node){
+
 }

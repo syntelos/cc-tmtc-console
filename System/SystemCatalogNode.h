@@ -4,6 +4,7 @@
 #ifndef _CONSOLE_SYSTEM_SystemCatalogNode_H
 #define _CONSOLE_SYSTEM_SystemCatalogNode_H
 
+#include <QObject>
 #include <QDomElement>
 
 #include "SystemCatalogInput.h"
@@ -26,6 +27,16 @@
  * \sa SystemCatalogProperties
  */
 class SystemCatalogNode {
+
+ protected:
+    /*!
+     * Propagate start event to children
+     */
+    void start(QObject* subclass);
+    /*!
+     * Propagate stop event to children
+     */
+    void stop(QObject* subclass);
 
  public slots:
     /*!
