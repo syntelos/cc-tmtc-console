@@ -2,15 +2,12 @@
  * Copyright 2013 John Pritchard, Syntelos.  All rights reserved.
  */
 #include <QLabel>
-#include <QScriptEngine>
-#include <QSqlQuery>
+#include <QList>
 #include <QString>
 #include <QUuid>
 
 #include "Device.h"
 #include "Devices.h"
-#include "Configuration.h"
-#include "ConfigurationError.h"
 #include "XPORT/XportConnection.h"
 
 #define XPORT_SUFFIX 10001
@@ -24,25 +21,14 @@ void deviceFromScriptValue(const QScriptValue &object, Device* &out){
     out = qobject_cast<Device*>(object.toQObject());
 }
 
-
-Device::Device(QObject* parent)
-    : StorageListItem(parent), libraryUuid(0), connectionIdentifier(0)
-{
-    qScriptRegisterMetaType(Configuration::Instance()->getScriptEngine(), deviceToScriptValue, deviceFromScriptValue);
+void Device::InitScriptMetaType(QScriptEngine* engine){
+    qScriptRegisterMetaType(engine, deviceToScriptValue, deviceFromScriptValue);
 }
-Device::Device(QSqlQuery& query, int start, QObject* parent)
-    : StorageListItem(parent), libraryUuid(0), connectionIdentifier(0)
-{
-    this->read(query,start);
 
-    qScriptRegisterMetaType(Configuration::Instance()->getScriptEngine(), deviceToScriptValue, deviceFromScriptValue);
-}
-Device::Device(QSqlQuery& query, QObject* parent)
-    : StorageListItem(parent), libraryUuid(0), connectionIdentifier(0)
+Device::Device(const SystemDeviceIdentifier& sid, QObject* parent)
+    : ObjectTreeNode(parent), libraryUuid(0), identifier(sid)
 {
-    this->read(query);
-
-    qScriptRegisterMetaType(Configuration::Instance()->getScriptEngine(), deviceToScriptValue, deviceFromScriptValue);
+    setObjectName(sid.toString("device"));
 }
 Device::~Device(){
 
@@ -51,51 +37,20 @@ Device::~Device(){
         delete libraryUuid;
     }
 
-    if (connectionIdentifier){
-
-        delete connectionIdentifier;
-    }
+    delete &identifier;
 }
-void Device::read(QSqlQuery& select, int start){
-
-    QString s0 = select.value(start++).toString();
-
-    this->setLibraryUuid(s0);
-
-    QString s1 = select.value(start++).toString();
-
-    this->setConnectionIdentifier(s1);
-
-}
-void Device::write(QSqlQuery& insert, int start){
-
-
-    if (libraryUuid)
-        insert.bindValue(start++,*libraryUuid);
-    else
-        insert.bindValue(start++,QVariant(QVariant::String));
-
-
-    if (connectionIdentifier)
-        insert.bindValue(start++,*connectionIdentifier);
-    else
-        insert.bindValue(start++,QVariant(QVariant::String));
-
-
-}
-const QString* Device::getHostUuid() const {
-
-    Devices* parent = qobject_cast<Devices*>(this->parent());
-
-    return parent->getHostUuid();
-}
-const QString* Device::getLibraryUuid() const {
+QString* Device::getLibraryUuid() const {
 
     return this->libraryUuid;
 }
 void Device::setLibraryUuid(QString* libraryUuid){
+
     if (this->libraryUuid){
-        delete this->libraryUuid;
+
+        if (libraryUuid != this->libraryUuid)
+            delete this->libraryUuid;
+        else
+            return;
     }
 
     if (libraryUuid){
@@ -116,8 +71,13 @@ void Device::setLibraryUuid(QString* libraryUuid){
     }
 }
 void Device::setLibraryUuid(QString& libraryUuid){
+
     if (this->libraryUuid){
-        delete this->libraryUuid;
+
+        if (&libraryUuid != this->libraryUuid)
+            delete this->libraryUuid;
+        else
+            return;
     }
 
     if (0 < libraryUuid.length()){
@@ -129,20 +89,41 @@ void Device::setLibraryUuid(QString& libraryUuid){
         this->libraryUuid = 0;
     }
 }
-const SystemDeviceIdentifier* Device::getSystemDeviceIdentifier() const {
-    QString* cid = this->connectionIdentifier;
-    if (cid){
+MultiplexTable* Device::createMultiplexTable(){
 
-        quint16 defaultSuffix = XPORT_SUFFIX;
+    MultiplexTable* table = findMultiplexTable();
 
-        if (this->libraryUuid){
-            // [TODO] library defaultSuffix
+    if (0 != table)
+        return table;
+    else {
+
+        table = new MultiplexTable(identifier,this);
+
+        if (table->open()){
+            qDebug().nospace() << "Device.createMultiplexTable [open] " << identifier.toString() << " OK";
         }
-
-        return new SystemDeviceIdentifier(*cid,defaultSuffix);
+        else {
+            qDebug().nospace() << "Device.createMultiplexTable [open] " << identifier.toString() << " ERROR";
+        }
+        return table;
     }
-    else
-        return 0;
+}
+MultiplexTable* Device::findMultiplexTable() const {
+
+    const QObjectList& children = this->children();
+    foreach(QObject* child, children){
+
+        MultiplexTable* table = dynamic_cast<MultiplexTable*>(child);
+        if (table){
+
+            return table;
+        }
+    }
+    return 0;
+}
+const SystemDeviceIdentifier& Device::getSystemDeviceIdentifier() const {
+
+    return identifier;
 }
 const SystemDeviceConnection* Device::getSystemDeviceConnection() const {
 
@@ -164,7 +145,7 @@ const SystemDeviceConnection* Device::createSystemDeviceConnection(){
         return test;
     else {
         /*
-         * [TODO] library
+         * [TODO] re/arch connection {tcp,fsdev,http,xmpp}
          */
         return new XportConnection(this);
     }
@@ -174,64 +155,6 @@ void Device::shutdownSystemDeviceConnection(){
     if (test){
         test->shutdown();
     }
-}
-const QString* Device::getConnectionIdentifier() const {
-
-    return this->connectionIdentifier;
-}
-void Device::setConnectionIdentifier(QString* connectionIdentifier){
-    if (this->connectionIdentifier){
-        delete this->connectionIdentifier;
-    }
-
-    if (connectionIdentifier){
-
-        if (0 < connectionIdentifier->length()){
-
-            this->connectionIdentifier = connectionIdentifier;
-
-            this->setObjectName(*connectionIdentifier);
-        }
-        else {
-            delete connectionIdentifier;
-
-            this->connectionIdentifier = 0;
-
-            QString empty;
-
-            this->setObjectName(empty);
-        }
-    }
-    else {
-
-        this->connectionIdentifier = 0;
-
-        QString empty;
-
-        this->setObjectName(empty);
-    }
-    this->nodeDataChanged("connectionIdentifier");
-}
-void Device::setConnectionIdentifier(QString& connectionIdentifier){
-    if (this->connectionIdentifier){
-        delete this->connectionIdentifier;
-    }
-
-    if (0 < connectionIdentifier.length()){
-
-        this->connectionIdentifier = new QString(connectionIdentifier);
-
-        this->setObjectName(connectionIdentifier);
-    }
-    else {
-
-        this->connectionIdentifier = 0;
-
-        QString empty;
-
-        this->setObjectName(empty);
-    }
-    this->nodeDataChanged("connectionIdentifier");
 }
 QWidget* Device::createPropertyFormEditor(int index, const QMetaProperty& property){
     /*
@@ -247,9 +170,9 @@ QWidget* Device::createPropertyFormLabel(int index, const QMetaProperty& propert
 
         return new QLabel("Library UUID");
     }
-    else if ( 0 == strcmp("connectionIdentifier",propName)){
+    else if ( 0 == strcmp("systemDeviceIdentifier",propName)){
 
-        return new QLabel("Connect to");
+        return new QLabel("Connected to");
     }
     else {
         /*
@@ -261,8 +184,4 @@ QWidget* Device::createPropertyFormLabel(int index, const QMetaProperty& propert
 bool Device::setPropertyForEditor(int index, const QMetaProperty& property, const QWidget& editor){
 
     return false;
-}
-bool Device::isInert(){
-
-    return (0 == connectionIdentifier);
 }

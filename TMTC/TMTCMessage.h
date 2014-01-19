@@ -28,33 +28,29 @@
  */
 class TMTCMessage : public QObject, public QList<TMTCNameValue*> {
     Q_OBJECT;
-    /*!
-     * Message send or receipt time.
-     */
-    qint64 time;
-
-    SystemDeviceIdentifier* sid;
-
 
  public:
     /*!
+     * Message send or receipt time.
+     */
+    const qint64 time;
+    /*!
+     * Message send target, or receipt source
+     */
+    const SystemDeviceIdentifier& identifier;
+
+    /*!
      * Construct an empty message 
      */
-    TMTCMessage();
-
-    TMTCMessage(SystemDeviceIdentifier* sid);
+    TMTCMessage(const SystemDeviceIdentifier& sid);
     /*!
      * Construct an empty message with the argument message time
      */
-    TMTCMessage(qint64 t);
-
-    TMTCMessage(SystemDeviceIdentifier* sid, qint64 t);
+    TMTCMessage(const SystemDeviceIdentifier& sid, qint64 t);
     /*!
      * Parse "NV( NV)*" as {NV,(NV)*}
      */
-    TMTCMessage(const QByteArray& in);
-
-    TMTCMessage(SystemDeviceIdentifier* sid, const QByteArray& in);
+    TMTCMessage(const SystemDeviceIdentifier& sid, const QByteArray& in);
     /*!
      * Copy a message from a signal when the use of it is not
      * immediate (spans multiple threads).
@@ -64,20 +60,9 @@ class TMTCMessage : public QObject, public QList<TMTCNameValue*> {
      */
     ~TMTCMessage();
     /*!
-     * Field has a value
-     */
-    bool hasIdentifier() const; 
-
-    bool hasNotIdentifier() const; 
-    /*!
      * Return the field value, or the broadcast identifier
      */
     const SystemDeviceIdentifier& getIdentifier() const; 
-    /*!
-     * Set once (non - null) or unset (null).  Returns false when
-     * setting the field that has a non - null value.
-     */
-    bool setIdentifier(SystemDeviceIdentifier*); 
     /*!
      * The names contained are all special
      */

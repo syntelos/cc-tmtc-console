@@ -3,14 +3,10 @@
  */
 #include <QDebug>
 #include <QLabel>
-#include <QObjectList>
-#include <QScriptEngine>
-#include <QSqlQuery>
 #include <QString>
 
 #include "Devices.h"
 #include "Configuration.h"
-#include "ConfigurationError.h"
 
 
 QScriptValue devicesToScriptValue(QScriptEngine *engine, Devices* const &in){
@@ -21,70 +17,17 @@ void devicesFromScriptValue(const QScriptValue &object, Devices* &out){
     out = qobject_cast<Devices*>(object.toQObject());
 }
 
+void Devices::InitScriptMetaType(QScriptEngine* engine){
+    qScriptRegisterMetaType(engine, devicesToScriptValue, devicesFromScriptValue);
+}
 
-Devices::Devices(QSqlDatabase* db, QObject* parent)
-    : StorageList(parent), hcdb(db)
+Devices::Devices(QObject* parent)
+    : ObjectTreeNode(parent)
 {
-    if (hcdb->isValid()){
-
-        if (!read()){
-
-            init();
-        }
-    }
-    else {
-        throw ConfigurationError::DatabaseDriver("HCDB/Devices");
-    }
-    qScriptRegisterMetaType(Configuration::Instance()->getScriptEngine(), devicesToScriptValue, devicesFromScriptValue);
-
 }
 Devices::~Devices(){
 
     this->clear();
-
-    hcdb = 0;
-
-}
-void Devices::init(){
-
-    this->clear();
-
-    /*
-     * DROP
-     */
-    QString dsql("DROP TABLE ");
-    dsql += HcdbDeviceTableName;
-    dsql += ";";
-
-    QSqlQuery drop(dsql,*hcdb);
-
-    bool dropExec = drop.exec();
-    /*
-     * CREATE
-     */
-    QString csql("CREATE TABLE ");
-    csql += HcdbDeviceTableName;
-    /*
-     * There's many device records per host in this table, so the
-     * HOST_UUID is not UNIQUE.
-     * 
-     * The LIBRARY_UUID may be null, indicating the default builtin
-     * connectivity library.
-     * 
-     * The CONNECTION_IDENTIFIER is an IP Address or Port Name string
-     * for the library's connection class constructor.
-     */
-    csql += " ( HOST_UUID CHARACTER(38), LIBRARY_UUID CHARACTER(38), CONNECTION_IDENTIFIER VARCHAR, PRIMARY KEY ( HOST_UUID, CONNECTION_IDENTIFIER ) );";
-
-    QSqlQuery create(csql,*hcdb);
-
-    bool createExec = create.exec();/* This returns false even when it's functionally
-                                     * operating.
-                                     */
-    if (createExec)
-        qDebug() << "Libraries init success";
-    else
-        qDebug() << "Libraries init failure";
 }
 void Devices::clear(){
 
@@ -110,128 +53,60 @@ void Devices::clear(){
         endRemoveNode();
     }
 }
-bool Devices::read(){
+void Devices::start(){
+}
+void Devices::stop(){
+}
+void Devices::read(const SystemCatalogInput& properties, const QDomElement& parent){
 
     this->clear();
 
-    const QString* hostUuid = this->getHostUuid();
-    /*
-     * Many device records per host
-     */
-    QString sql = "SELECT LIBRARY_UUID, CONNECTION_IDENTIFIER FROM ";
-    sql += HcdbDeviceTableName;
-    sql += " WHERE HOST_UUID = '";
-    sql += *hostUuid;
-    sql += "';";
 
-    QSqlQuery select(sql,*hcdb);
+    // beginInsertNode(0,(count-1));
 
-    if (select.exec()){
+    // while (select.next()){
 
-        const int count = select.size();
+    //     new Device(this);
+    // }
 
-        qDebug() << "Devices read [exec true] [count " << count << "]";
+    // Device* device = static_cast<Device*>(children.at(cc));
 
-        beginInsertNode(0,(count-1));
+    // SystemDeviceConnection* connection = const_cast<SystemDeviceConnection*>(device->createSystemDeviceConnection());
 
-        while (select.next()){
+    // if (connection &&
+    //     QObject::connect(connection,SIGNAL(received(const TMTCMessage*)),multiplex,SLOT(receivedFromDevice(const TMTCMessage*))) &&
+    //     QObject::connect(multiplex,SIGNAL(sendToDevice(const TMTCMessage*)),connection,SLOT(send(const TMTCMessage*)))
+    //     )
 
-            new Device(select,this);
-        }
 
-        endInsertNode();
+    // endInsertNode();
 
-        qDebug() << "Devices read success";
-
-        emit readSuccess();
-
-        return true;
-    }
-    else {
-        qDebug() << "Devices read failure";
-
-        emit readFailure();
-
-        return false;
-    }
 }
-bool Devices::write(){
-
-    const QString* hostUuid = this->getHostUuid();
-
-    QSqlQuery op(*hcdb);
-    /*
-     * Delete everything
-     */
-    QString dsql("DELETE FROM ");
-    dsql += HcdbDeviceTableName;
-    dsql += " WHERE HOST_UUID = '";
-    dsql += *hostUuid;
-    dsql += "';";
-
-    if (op.prepare(dsql) && op.exec()){
-        /*
-         * Insert what we have
-         */
-        QString isql("INSERT INTO ");
-        isql += HcdbDeviceTableName;
-        isql += " ( HOST_UUID, LIBRARY_UUID, CONNECTION_IDENTIFIER ) VALUES ( '";
-        isql += *hostUuid;
-        isql += "',  ?, ? );";
+void Devices::write(SystemCatalogOutput& properties, QDomElement& parent){
 
 
-        if (op.prepare(isql)){
+    const QObjectList& children = this->children();
 
-            const QObjectList& children = this->children();
+    const int sz = children.size();
 
-            const int sz = children.size();
+    if (0 < sz){
 
-            if (0 < sz){
+        //beginStoreNode
 
-                //beginStoreNode
+        int cc;
+        for (cc = 0; cc < sz; cc++){
 
-                int cc;
-                for (cc = 0; cc < sz; cc++){
+            Device* child = qobject_cast<Device*>(children.at(cc));
 
-                    Device* child = qobject_cast<Device*>(children.at(cc));
+            if (child){
 
-                    if (child){
+                //child->write();
 
-                        child->write(op);
-
-                        bool insertExec = op.exec();
-                    }
-                }
-
-                //endStoreNode
             }
-
-            emit writeSuccess();
-
-            return true;
         }
+
+        //endStoreNode
     }
-
-    emit readFailure();
-
-    return false;
-}
-bool Devices::done(int write){
-
-    if (0 == write){
-
-        return Devices::write();
-    }
-    else {
-
-        return false;
-    }
-}
-const QString* Devices::getHostUuid() const {
-
-    HCDB* parent = qobject_cast<HCDB*>(this->parent());
-
-    return parent->getHostUuid();
 }
 bool Devices::insertObjectTreeList(){
     const QObjectList& children = this->children();
@@ -240,28 +115,21 @@ bool Devices::insertObjectTreeList(){
 
         beginInsertNode(index,index);
 
-        (new Device(this));
+        //(new Device(this));
 
         endInsertNode();
 
         return true;
     }
     else {
-        Device* last = static_cast<Device*>(children.last());
 
-        if (last->isInert()){
+        beginInsertNode(index,index);
 
-            return false;
-        }
-        else {
-            beginInsertNode(index,index);
+        //(new Device(this));
 
-            (new Device(this));
+        endInsertNode();
 
-            endInsertNode();
-
-            return true;
-        }
+        return true;
     }
 }
 bool Devices::removeObjectTreeList(int idx){
@@ -279,4 +147,258 @@ bool Devices::removeObjectTreeList(int idx){
         }
     }
     return false;
+}
+
+Device* Devices::findDevice(const SystemDeviceIdentifier& sid) const {
+
+    const Device* device = findChild<Device*>(sid.getPrefix());
+
+    return const_cast<Device*>(device);
+}
+MultiplexTable* Devices::findMultiplexTable(const SystemDeviceIdentifier& sid) const {
+
+    const Device* device = findDevice(sid);
+
+    if (device)
+        return device->findMultiplexTable();
+    else
+        return 0;
+}
+MultiplexTable* Devices::createMultiplexTable(const SystemDeviceIdentifier& sid){
+
+    Device* device = findDevice(sid);
+
+    if (device)
+        return device->createMultiplexTable();
+    else
+        return 0;
+}
+QList<Device*> Devices::listDevices(){
+    QList<Device*> re;
+    const QObjectList& children = this->children();
+    foreach(QObject* child, children){
+        Device* device = dynamic_cast<Device*>(child);
+        if (device){
+
+            re += device;
+        }
+    }
+    return re;
+}
+QList<SystemDeviceIdentifier> Devices::findMultiplexTableIdentifiers(){
+    QList<SystemDeviceIdentifier> re;
+    const QObjectList& children = this->children();
+    foreach(QObject* child, children){
+        Device* device = dynamic_cast<Device*>(child);
+        if (device){
+            MultiplexTable* table = device->findMultiplexTable();
+
+            if (table){
+
+                re += table->getSystemDeviceIdentifier();
+            }
+        }
+    }
+    return re;
+}
+bool Devices::update(const TMTCMessage* m){
+    if (m){
+
+        const SystemDeviceIdentifier& sid = m->getIdentifier();
+
+        if (sid.isValid() || sid.isSpecial()){
+
+            MultiplexTable* history = createMultiplexTable(sid);
+            /*
+             * An invalid (special) ID will deposit values into the
+             * referenced data set.  The values in the "special" data
+             * set have "desktop" semantics: they cannot be proxied to
+             * an Instrument Device (Connection).
+             */
+            history->update(*m);
+
+            return true;
+        }
+    }
+    return false;
+}
+TMTCMessage* Devices::query(const TMTCMessage* m){
+    if (m){
+
+        const SystemDeviceIdentifier& sid = m->getIdentifier();
+
+        if (sid.isValid()){
+
+            MultiplexTable* history = findMultiplexTable(sid);
+
+            if (history)
+                return history->query(*m);
+            else
+                return 0;
+        }
+        else if (sid.isSpecial()){
+
+            TMTCMessage* re = new TMTCMessage(sid);
+
+            if (m->isSpecial()){
+                /*
+                 * Use desktop semantics
+                 */
+                MultiplexTable* special = createMultiplexTable(sid);
+
+                QList<TMTCNameValue*>::const_iterator p, z;
+                for (p = m->constBegin(), z = m->constEnd(); p != z; ++p){
+                    const TMTCNameValue* nvp = *p;
+
+                    if (nvp->hasValue()){
+                        /*
+                         * Update
+                         */
+                        special->update(*nvp);
+                    }
+                    /*
+                     * Query
+                     */
+                    const TMTCName& n = nvp->getName();
+                    QVariant v = special->query(n);
+
+                    if (v.isValid()){
+                        /*
+                         * Query response
+                         */
+                        re->append(new TMTCNameValue(n,v));
+                    }
+                }
+            }
+            else {
+                /*
+                 * Use broadcast semantics
+                 */
+                QList<Device*> devices = listDevices();
+                QList<Device*>::const_iterator dp, dz;
+                for (dp = devices.constBegin(), dz = devices.constEnd(); dp != dz; ++dp){
+
+                    MultiplexTable* history = (*dp)->findMultiplexTable();
+
+                    if (history){
+
+                        QList<TMTCNameValue*>::const_iterator p, z;
+                        for (p = m->constBegin(), z = m->constEnd(); p != z; ++p){
+                            const TMTCNameValue* nvp = *p;
+
+                            if (nvp->hasNotValue()){
+
+                                const TMTCName& n = nvp->getName();
+                                QVariant v = history->query(n);
+
+                                if (v.isValid()){
+
+                                    re->append(new TMTCNameValue(n,v));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return re;
+        }
+    }
+    return 0;
+}
+QVariant Devices::query(const SystemDeviceIdentifier& sid, const TMTCName& n){
+
+    if (sid.isValid()){
+
+        MultiplexTable* history = findMultiplexTable(sid);
+
+        if (history){
+            return history->query(n);
+        }
+    }
+    QVariant nil;
+    return nil;
+}
+void Devices::select(int count, MultiplexSelect** query, const QRectF& window){
+    if (0 < count){
+
+        int cc;
+        for (cc = 0; cc < count; cc++){
+
+            MultiplexSelect& select = *query[cc];
+
+            const SystemDeviceIdentifier& sid = select.id;
+
+            if (sid.isValid()){
+
+                MultiplexTable* history = findMultiplexTable(sid);
+
+                if (history){
+                    history->select(select);
+                }
+            }
+        }
+        /*
+         * Determine boundaries of results
+         */
+        qreal min_x = MultiplexSelect::InitMin;
+        qreal min_y = MultiplexSelect::InitMin;
+        qreal max_x = MultiplexSelect::InitMax;
+        qreal max_y = MultiplexSelect::InitMax;
+
+        for (cc = 0; cc < count; cc++){
+
+            MultiplexSelect& select = *query[cc];
+
+            if (select.local_min_x < min_x)
+                min_x = select.local_min_x;
+            else if (select.local_max_x > max_x)
+                max_x = select.local_max_x;
+
+            if (select.local_min_y < min_y)
+                min_y = select.local_min_y;
+            else if (select.local_max_y > max_y)
+                max_y = select.local_max_y;
+        }
+
+
+        //const qreal wx = window.x();
+        //const qreal wy = window.y();
+        const qreal ww = window.width();
+        const qreal wh = window.height();
+        /*
+         * Autoscaling all results into one scale
+         */
+        const qreal sx = (ww/(max_x-min_x));
+        const qreal sy = (wh/(max_y-min_y));
+
+        for (cc = 0; cc < count; cc++){
+
+            MultiplexSelect& select = *query[cc];
+
+            select.global_min_x = min_x;
+            select.global_max_x = max_x;
+            select.global_min_y = min_y;
+            select.global_max_y = max_y;
+
+            select.visualization(window,sx,sy);
+        }
+    }
+}
+void Devices::receivedFromDevice(const TMTCMessage* m){
+
+    if (m && this->update(m)){
+
+        emit sendToUser(m);
+    }
+}
+void Devices::receivedFromUser(const TMTCMessage* m){
+
+    TMTCMessage* re = this->query(m);
+    if (re){
+
+        emit sendToUser(re);
+
+        re->deleteLater();
+    }
 }

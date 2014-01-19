@@ -4,7 +4,7 @@ TEMPLATE = app
 QT      += network
 QT      += sql
 QT      += script
-QT      += svg
+QT      += xml
 
 INCLUDEPATH += ../
 
@@ -12,11 +12,9 @@ CONFIG  += staticlib
 CONFIG  += debug
 
 SOURCES += Window.cpp \
-           Init.cpp \
            Main.cpp
 
-HEADERS += Window.h \
-           Init.h
+HEADERS += Window.h
 
 unix { 
     LIBS += -L../Configuration

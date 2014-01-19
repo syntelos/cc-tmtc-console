@@ -6,31 +6,30 @@
 
 #include <QMetaProperty>
 #include <QObject>
-#include <QSqlDatabase>
+#include <QScriptEngine>
 #include <QUuid>
 #include <QWidget>
 
-#include "Storage/StorageList.h"
+#include "ObjectTree/ObjectTreeNode.h"
+#include "ObjectTree/ObjectTreeList.h"
+#include "System/SystemCatalogNode.h"
 #include "System/SystemScriptSymbol.h"
 #include "Script.h"
 
 /*!
  * 
  */
-class Scripts : public StorageList<Script*> {
+class Scripts : public ObjectTreeNode,
+    public ObjectTreeList,
+    public SystemCatalogNode
+{
     Q_OBJECT;
-    Q_PROPERTY(QString hostUuid READ getHostUuid USER false FINAL);
-
-    QSqlDatabase* hcdb;
-    /*!
-     * Create table and populate with default values
-     */
-    void init();
 
  public:
+    static void InitScriptMetaType(QScriptEngine* engine);
     /*!
      */
-    Scripts(QSqlDatabase* db, QObject* parent = 0);
+    Scripts(QObject* parent = 0);
     /*!
      */
     ~Scripts();
@@ -69,37 +68,22 @@ class Scripts : public StorageList<Script*> {
      */
     virtual bool removeObjectTreeList(int idx);
 
- signals:
-    /*!
-     */
-    void readSuccess();
-    /*!
-     */
-    void readFailure();
-    /*!
-     */
-    void writeSuccess();
-    /*!
-     */
-    void writeFailure();
-
  public slots:
     /*!
-     * Clear values
      */
-    virtual void clear();
+    void clear();
     /*!
-     * Read table values
      */
-    virtual bool read();
+    virtual void start();
     /*!
-     * Write table values
      */
-    virtual bool write();
+    virtual void stop();
     /*!
-     * Write for argument zero, otherwise ignore
      */
-    virtual bool done(int error);
+    virtual void read(const SystemCatalogInput&, const QDomElement&);
+    /*!
+     */
+    virtual void write(SystemCatalogOutput&, QDomElement&);
 
  private:
     Q_DISABLE_COPY(Scripts)

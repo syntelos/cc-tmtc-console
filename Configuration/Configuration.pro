@@ -4,15 +4,14 @@ TEMPLATE = lib
 QT      += network
 QT      += sql
 QT      += script
+QT      += xml
 
 CONFIG  += staticlib
+CONFIG  += debug
 
 INCLUDEPATH += ../
 
-SOURCES += Configuration.cpp \
-           ConfigurationScriptable.cpp \
-           CCDB.cpp \
-           HCDB.cpp \
+SOURCES += ConfigurationScriptable.cpp \
            Device.cpp \
            Devices.cpp \
            Library.cpp \
@@ -23,10 +22,7 @@ SOURCES += Configuration.cpp \
 
 HEADERS += Configuration.h \
            ConfigurationInterface.h \
-           ConfigurationError.h \
            ConfigurationScriptable.h \
-           CCDB.h \
-           HCDB.h \
            Device.h \
            Devices.h \
            Library.h \

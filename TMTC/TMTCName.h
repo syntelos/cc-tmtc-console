@@ -15,7 +15,7 @@
  */
 class TMTCName : public QVariant {
 
-    static int InitMetaTypeId;
+    static const int InitMetaTypeId;
 
     mutable QString prefix;
     mutable QString suffix;

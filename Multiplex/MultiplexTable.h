@@ -4,9 +4,9 @@
 #ifndef _CONSOLE_DATABASE_MultiplexTable_H
 #define _CONSOLE_DATABASE_MultiplexTable_H
 
-#include <Qt>
 #include <QFile>
 #include <QHash>
+#include <QObject>
 #include <QReadWriteLock>
 #include <QVariant>
 
@@ -73,7 +73,7 @@
  * overhead.
  *
  */
-class MultiplexTable {
+class MultiplexTable : public QObject {
 
     const SystemDeviceIdentifier& id;
 
@@ -85,10 +85,6 @@ class MultiplexTable {
 
     QReadWriteLock lock;
 
-    /*!
-     * DISABLE COPY -- destructor unmaps data
-     */
-    MultiplexTable(const MultiplexTable& copy);
     /*!
      * Expand file map as required by record count and object size.
      * Implicitly (unsafely) depends on positive object-size and open
@@ -111,10 +107,12 @@ class MultiplexTable {
  public:
     /*!
      */
-    MultiplexTable(const SystemDeviceIdentifier& id);
+    MultiplexTable(const SystemDeviceIdentifier& id, QObject* parent = 0);
     /*!
      */
     ~MultiplexTable();
+
+    const SystemDeviceIdentifier& getSystemDeviceIdentifier() const;
     /*!
      * Table is open
      */
@@ -164,5 +162,7 @@ class MultiplexTable {
 
     void select(MultiplexSelect& select);
 
+ private:
+    Q_DISABLE_COPY(MultiplexTable);
 };
 #endif

@@ -9,15 +9,13 @@ CONFIG  += staticlib
 INCLUDEPATH += ../
 
 
-SOURCES += Multiplex.cpp \
-           MultiplexIndex.cpp \
+SOURCES += MultiplexIndex.cpp \
            MultiplexObject.cpp \
            MultiplexRecord.cpp \
            MultiplexSelect.cpp \
            MultiplexTable.cpp \
            MultiplexTableIterator.cpp \
-           MultiplexTableSearch.cpp \
-           MultiplexTables.cpp
+           MultiplexTableSearch.cpp
 
 
 HEADERS += Multiplex.h \
@@ -28,5 +26,5 @@ HEADERS += Multiplex.h \
            MultiplexSelect.h \
            MultiplexTable.h \
            MultiplexTableIterator.h \
-           MultiplexTableSearch.h \
-           MultiplexTables.h
+           MultiplexTableSearch.h
+

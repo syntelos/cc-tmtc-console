@@ -6,77 +6,64 @@
 
 #include <QMetaProperty>
 #include <QObject>
-#include <QSqlQuery>
+#include <QScriptEngine>
 #include <QUuid>
 #include <QWidget>
 
+#include "Multiplex/MultiplexTable.h"
 #include "System/SystemDevice.h"
 #include "System/SystemDeviceConnection.h"
 #include "System/SystemDeviceIdentifier.h"
-#include "Storage/StorageListItem.h"
+#include "ObjectTree/ObjectTreeNode.h"
 
-class Device : public StorageListItem, public SystemDevice {
+class Device : public ObjectTreeNode, public SystemDevice {
     Q_OBJECT;
-    Q_PROPERTY(QString hostUuid READ getHostUuid USER false FINAL);
-    Q_PROPERTY(QString libraryUuid READ getLibraryUuid WRITE setLibraryUuid USER true FINAL);
-    Q_PROPERTY(QString connectionIdentifier READ getConnectionIdentifier WRITE setConnectionIdentifier USER true FINAL);
-    Q_CLASSINFO("Object Name", "connectionIdentifier");
+    Q_PROPERTY(QString* libraryUuid READ getLibraryUuid WRITE setLibraryUuid USER true FINAL);
+    Q_PROPERTY(const SystemDeviceIdentifier& systemDeviceIdentifier READ getSystemDeviceIdentifier USER true FINAL);
+    Q_CLASSINFO("Object Name", "systemDeviceIdentifier");
 
     QString* libraryUuid;
-    QString* connectionIdentifier;
-    /*!
-     * Create table and populate with default values
-     */
-    void init();
 
  public:
+    static void InitScriptMetaType(QScriptEngine* engine);
+
+    const SystemDeviceIdentifier& identifier;
     /*!
      * User constructor for emitting new values via database write.
+     * 
+     * This instance takes responsibility for the heap allocation of
+     * the identifier (\a sid) instance object.
      */
-    Device(QObject* parent);
-    /*!
-     * Database read constructor
-     */
-    Device(QSqlQuery& query, int start, QObject* parent);
-    /*!
-     * Database read constructor
-     */
-    Device(QSqlQuery& query, QObject* parent);
+    Device(const SystemDeviceIdentifier& sid, QObject* parent);
     /*!
      */
     ~Device();
     /*!
      */
-    virtual bool isInert();
-    /*!
-     * Retrieve bindings by index as for declared user properties.
-     */
-    virtual void read(QSqlQuery& query, int start = 0);
-    /*!
-     * Store bindings by index as for declared user properties.
-     */
-    virtual void write(QSqlQuery& query, int start = 0);
-    /*!
-     * Read-only host UUID
-     */
-    const QString* getHostUuid() const;
+    bool isInert();
     /*!
      * Reference to library by its own UUID.  A null value here
      * defaults to the builtin library.
      */
-    const QString* getLibraryUuid() const;
+    QString* getLibraryUuid() const;
     /*!
+     * The instance object (of this class) will take responsibility
+     * for the heap allocation of the argument.
      */
     void setLibraryUuid(QString* libraryUuid);
     /*!
+     * Copy the argument.
      */
     void setLibraryUuid(QString& libraryUuid);
     /*!
-     * Connection identifier parsed for its components.
-     * 
-     * The caller is responsible for the returned heap allocation.
      */
-    virtual const SystemDeviceIdentifier* getSystemDeviceIdentifier() const;
+    MultiplexTable* createMultiplexTable();
+    /*!
+     */
+    MultiplexTable* findMultiplexTable() const;
+    /*!
+     */
+    virtual const SystemDeviceIdentifier& getSystemDeviceIdentifier() const;
     /*!
      * Return an existing connection, may be null.
      */
@@ -87,16 +74,6 @@ class Device : public StorageListItem, public SystemDevice {
     const SystemDeviceConnection* createSystemDeviceConnection();
 
     void shutdownSystemDeviceConnection();
-    /*!
-     * Connection address/port identifier string
-     */
-    virtual const QString* getConnectionIdentifier() const;
-    /*!
-     */
-    void setConnectionIdentifier(QString* connectionIdentifier);
-    /*!
-     */
-    void setConnectionIdentifier(QString& connectionIdentifier);
     /*!
      */
     virtual QWidget* createPropertyFormEditor(int index, const QMetaProperty& property);

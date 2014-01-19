@@ -10,41 +10,35 @@
 #include "System/SystemDeviceIdentifier.h"
 #include "TMTC/TMTCMessage.h"
 #include "TMTC/TMTCName.h"
-#include "MultiplexTables.h"
 #include "MultiplexSelect.h"
 
 /*!
  * 
  */
-class Multiplex : public QObject {
-    Q_OBJECT
-
-    MultiplexTables state;
+class Multiplex {
 
  public:
-    Multiplex(QObject* parent = 0);
-    ~Multiplex();
     /*!
      * Update the time series data set.  The caller is responsible for
      * the heap allocation of the arguments, which are copied by this
      * method.
      */
-    bool update(const TMTCMessage*);
+    virtual bool update(const TMTCMessage*) = 0;
     /*!
      * Query the time series data set.  The caller is responsible for
      * the returned heap allocation.
      */
-    TMTCMessage* query(const TMTCMessage*);
+    virtual TMTCMessage* query(const TMTCMessage*) = 0;
     /*!
      * If the returned value is not a "null qvariant", then the const
      * may be lowered.
      */
-    QVariant query(const SystemDeviceIdentifier&, const TMTCName&);
+    virtual QVariant query(const SystemDeviceIdentifier&, const TMTCName&) = 0;
     /*!
      * Plot selector builds the requested set of path structures with
      * visualization into the requested window.
      */
-    void select(int count, MultiplexSelect** query, const QRectF& window);
+    virtual void select(int count, MultiplexSelect** query, const QRectF& window) = 0;
 
  signals:
     /*!
@@ -63,7 +57,7 @@ class Multiplex : public QObject {
      * The database receives this signal from a device connection to
      * update the time series.
      */
-    void receivedFromDevice(const TMTCMessage*);
+    virtual void receivedFromDevice(const TMTCMessage*) = 0;
     /*!
      * The database receives this signal from a user interface
      * (e.g. Terminal Input) to query the time series.  
@@ -71,11 +65,8 @@ class Multiplex : public QObject {
      * The identifier is assumed to have persistent allocation, and
      * will be employed in the response signal sent to users.
      */
-    void receivedFromUser(const TMTCMessage*);
+    virtual void receivedFromUser(const TMTCMessage*) = 0;
 
-
- private:
-    Q_DISABLE_COPY(Multiplex);
 };
 
 #endif

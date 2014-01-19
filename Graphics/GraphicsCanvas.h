@@ -1,8 +1,8 @@
 /*
  * Copyright 2013 John Pritchard, Syntelos.  All rights reserved.
  */
-#ifndef _CONSOLE_GRAPHICS_GraphicsBody_H
-#define _CONSOLE_GRAPHICS_GraphicsBody_H
+#ifndef _CONSOLE_GRAPHICS_GraphicsCanvas_H
+#define _CONSOLE_GRAPHICS_GraphicsCanvas_H
 
 #include <QGraphicsView>
 #include <QWidget>
@@ -13,12 +13,12 @@
 /*!
  *
  */
-class GraphicsBody : public QGraphicsView {
+class GraphicsCanvas : public QGraphicsView {
     Q_OBJECT;
 
  public:
-    GraphicsBody(QWidget* parent = 0);
-    ~GraphicsBody();
+    GraphicsCanvas(QWidget* parent = 0);
+    ~GraphicsCanvas();
 
     GraphicsScene* scene();
 
@@ -27,6 +27,6 @@ class GraphicsBody : public QGraphicsView {
     GraphicsScene& debugPrintChildren();
 
  private:
-    Q_DISABLE_COPY(GraphicsBody);
+    Q_DISABLE_COPY(GraphicsCanvas);
 };
 #endif

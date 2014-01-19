@@ -8,44 +8,31 @@
 #include "System/SystemDeviceIdentifier.h"
 #include "XportConnection.h"
 
-XportConnection::XportConnection(QObject* parent)
-    : SystemDeviceConnection(parent), sendFlag(false), deviceIdentifier(0)
+XportConnection::XportConnection(SystemDevice* parent)
+    : SystemDeviceConnection(dynamic_cast<QObject*>(parent)), sendFlag(false), deviceIdentifier(parent->getSystemDeviceIdentifier())
 {
     this->sendMutex.unlock();
-    SystemDevice* device = this->getDevice();
-    if (device){
-
-        this->deviceIdentifier = const_cast<SystemDeviceIdentifier*>(device->getSystemDeviceIdentifier());
-    }
 }
 XportConnection::~XportConnection(){
 
     this->shutdown();
 
     this->wait(1000L);
-
-    if (this->deviceIdentifier){
-
-        delete this->deviceIdentifier;
-    }
 }
-SystemDevice* XportConnection::getDevice(){
+SystemDevice* XportConnection::getSystemDevice() const {
     return dynamic_cast<SystemDevice*>(this->parent());
 }
-SystemDeviceIdentifier* XportConnection::getDeviceIdentifier(){
+const SystemDeviceIdentifier& XportConnection::getSystemDeviceIdentifier() const {
     return deviceIdentifier;
 }
 void XportConnection::send(const TMTCMessage* m){
     if (m){
         const SystemDeviceIdentifier& sid = m->getIdentifier();
 
-        if (deviceIdentifier && 
+        if (sid.isNotValid() || sid == deviceIdentifier){
             /*
              * Permit broadcast style operation with an invalid 'sid'
              */
-            (sid.isNotValid() || sid == deviceIdentifier))
-        {
-
             this->sendMutex.lock();
 
             this->sendQ.push_back(new TMTCMessage(*m));
@@ -58,95 +45,87 @@ void XportConnection::send(const TMTCMessage* m){
 }
 void XportConnection::run(){
 
-    if (deviceIdentifier){
+    QTcpSocket socket;
 
-        QTcpSocket socket;
+    const QString& prefix = deviceIdentifier.getPrefix();
+    const quint16 suffix = deviceIdentifier.getSuffix();
 
-        const QString& prefix = deviceIdentifier->getPrefix();
-        const quint16 suffix = deviceIdentifier->getSuffix();
+    socket.connectToHost(prefix,suffix);
 
-        socket.connectToHost(prefix,suffix);
+    qDebug().nospace() << "XportConnection connecting to " << prefix.toAscii().data() << ":" << suffix;
 
-        qDebug().nospace() << "XportConnection connecting to " << prefix.toAscii().data() << ":" << suffix;
+    if (socket.waitForConnected()){
 
-        if (socket.waitForConnected()){
+        qDebug().nospace() << "XportConnection connection succeeded ";
 
-            qDebug().nospace() << "XportConnection connection succeeded ";
+        emit connectionSucceeded();
 
-            emit connectionSucceeded();
+        QByteArray linen;
 
-            QByteArray linen;
+        while (socket.isValid() && (!this->shutdown_flag)){
+            /*
+             * Output process
+             */
+            if (this->sendFlag){
 
-            while (socket.isValid() && (!this->shutdown_flag)){
-                /*
-                 * Output process
-                 */
-                if (this->sendFlag){
+                this->sendMutex.lock();
 
-                    this->sendMutex.lock();
+                TMTCMessage* m = this->sendQ.takeFirst();
 
-                    TMTCMessage* m = this->sendQ.takeFirst();
+                QByteArray* output = m->createOutput();
 
-                    QByteArray* output = m->createOutput();
+                output->append('\r');
+                output->append('\n');
 
-                    output->append('\r');
-                    output->append('\n');
+                socket.write(*output);
 
-                    socket.write(*output);
+                socket.flush();
 
-                    socket.flush();
+                delete output;
 
-                    delete output;
+                delete m;
 
-                    delete m;
+                this->sendFlag = (!this->sendQ.isEmpty());
 
-                    this->sendFlag = (!this->sendQ.isEmpty());
+                this->sendMutex.unlock();
+            }
+            /*
+             * Input process
+             *
+             * Thread polling rate throttle
+             */
+            if (socket.waitForReadyRead(200L)){
 
-                    this->sendMutex.unlock();
-                }
-                /*
-                 * Input process
-                 *
-                 * Thread polling rate throttle
-                 */
-                if (socket.waitForReadyRead(200L)){
+                while (socket.canReadLine()){
+                    linen = socket.readLine();
 
-                    while (socket.canReadLine()){
-                        linen = socket.readLine();
+                    QByteArray linet = linen.trimmed();
 
-                        QByteArray linet = linen.trimmed();
+                    if ( ! linet.isEmpty()){
 
-                        if ( ! linet.isEmpty()){
+                        TMTCMessage* msg = new TMTCMessage(deviceIdentifier,linet);
 
-                            TMTCMessage* msg = new TMTCMessage(deviceIdentifier,linet);
+                        if ( ! msg->isEmpty()){
 
-                            if ( ! msg->isEmpty()){
-
-                                emit received(msg);
-                            }
-
-                            msg->deleteLater();
+                            emit received(msg);
                         }
+
+                        msg->deleteLater();
                     }
                 }
             }
-
-            socket.close();
-
-            qDebug() << "XportConnection connection terminated";
-
-            emit connectionTerminated();
         }
-        else {
 
-            qDebug() << "XportConnection connection failed";
+        socket.close();
 
-            emit connectionFailed();
-        }
+        qDebug() << "XportConnection connection terminated";
+
+        emit connectionTerminated();
     }
     else {
-        qDebug() << "XportConnection configuration failed (device identifier)";
 
-        emit configurationFailed();
+        qDebug() << "XportConnection connection failed";
+
+        emit connectionFailed();
     }
 }

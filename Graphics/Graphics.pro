@@ -6,11 +6,11 @@ CONFIG  += staticlib
 INCLUDEPATH += ../
 
 SOURCES += GraphicsBranch.cpp \
-           GraphicsBody.cpp \
+           GraphicsCanvas.cpp \
            GraphicsScene.cpp
 
 HEADERS += GraphicsLeaf.h \
            GraphicsBranch.h \
-           GraphicsBody.h \
+           GraphicsCanvas.h \
            GraphicsScene.h
 

@@ -17,9 +17,10 @@
 #define IsOpen 0 != data
 #define IsClosed 0 == data
 
-MultiplexTable::MultiplexTable(const SystemDeviceIdentifier& id)
-    : id(id), index(id), file(id.toString("table")), data(0)
+MultiplexTable::MultiplexTable(const SystemDeviceIdentifier& id, QObject* parent)
+    : QObject(parent), id(id), index(id), file(id.toString("table")), data(0)
 {
+    setObjectName(file.fileName());
 }
 MultiplexTable::~MultiplexTable(){
 
@@ -29,6 +30,10 @@ MultiplexTable::~MultiplexTable(){
 
         data = 0;
     }
+}
+const SystemDeviceIdentifier& MultiplexTable::getSystemDeviceIdentifier() const {
+
+    return id;
 }
 void MultiplexTable::close(){
 
@@ -270,7 +275,7 @@ TMTCMessage* MultiplexTable::query(const TMTCMessage& m){
 
     QReadLocker read(&lock);
 
-    TMTCMessage* re = new TMTCMessage();
+    TMTCMessage* re = new TMTCMessage(id);
 
     MultiplexRecord* r = recordLast();
     if (r){

@@ -20,8 +20,6 @@
 
 #include "Script.h"
 #include "Scripts.h"
-#include "Configuration.h"
-#include "ConfigurationError.h"
 #include "CodeEditor/CodeEditor.h"
 
 
@@ -33,31 +31,13 @@ void scriptFromScriptValue(const QScriptValue &object, Script* &out){
     out = qobject_cast<Script*>(object.toQObject());
 }
 
+void Script::InitScriptMetaType(QScriptEngine* engine){
+    qScriptRegisterMetaType(engine, scriptToScriptValue, scriptFromScriptValue);
+}
 
 Script::Script(QObject* parent)
-    : StorageListItem(parent), linkSource(0), linkTarget(0), file(0), content(0)
+    : ObjectTreeNode(parent), linkSource(0), linkTarget(0), file(0), content(0)
 {
-    SystemScriptSymbol::Init();
-
-    qScriptRegisterMetaType(Configuration::Instance()->getScriptEngine(), scriptToScriptValue, scriptFromScriptValue);
-}
-Script::Script(QSqlQuery& query, int start, QObject* parent)
-    : StorageListItem(parent), linkSource(0), linkTarget(0), file(0), content(0)
-{
-    SystemScriptSymbol::Init();
-
-    this->read(query,start);
-
-    qScriptRegisterMetaType(Configuration::Instance()->getScriptEngine(), scriptToScriptValue, scriptFromScriptValue);
-}
-Script::Script(QSqlQuery& query, QObject* parent)
-    : StorageListItem(parent), linkSource(0), linkTarget(0), file(0), content(0)
-{
-    SystemScriptSymbol::Init();
-
-    this->read(query);
-
-    qScriptRegisterMetaType(Configuration::Instance()->getScriptEngine(), scriptToScriptValue, scriptFromScriptValue);
 }
 Script::~Script(){
 
@@ -80,71 +60,6 @@ Script::~Script(){
 
         delete content;
     }
-}
-void Script::read(QSqlQuery& select, int start){
-
-    SystemScriptSymbol s0(select.value(start++).toString());
-
-    qDebug() << "Script read symbol source " << s0.toString();
-
-    this->setLinkSource(s0);
-
-    SystemScriptSymbol s1(select.value(start++).toString());
-
-    qDebug() << "Script read symbol target " << s1.toString();
-
-    this->setLinkTarget(s1);
-
-    QString s2 = select.value(start++).toString();
-
-    this->setFile(s2);
-
-    QString s3 = select.value(start++).toString();
-
-    this->setContent(s3);
-
-}
-void Script::write(QSqlQuery& insert, int start){
-
-
-    if (linkSource){
-
-        qDebug() << "Script write symbol source " << linkSource->toString();
-
-        insert.bindValue(start++,linkSource->toString());
-    }
-    else
-        insert.bindValue(start++,QVariant(QVariant::String));
-
-
-    if (linkTarget){
-
-        qDebug() << "Script write symbol target " << linkTarget->toString();
-
-        insert.bindValue(start++,linkTarget->toString());
-    }
-    else
-        insert.bindValue(start++,QVariant(QVariant::String));
-
-
-    if (file)
-        insert.bindValue(start++,*file);
-    else
-        insert.bindValue(start++,QVariant(QVariant::String));
-
-
-    if (content)
-        insert.bindValue(start++,*content);
-    else
-        insert.bindValue(start++,QVariant(QVariant::String));
-
-
-}
-const QString* Script::getHostUuid() const {
-
-    Scripts* parent = qobject_cast<Scripts*>(this->parent());
-
-    return parent->getHostUuid();
 }
 const SystemScriptSymbol* Script::getLinkSource() const {
 

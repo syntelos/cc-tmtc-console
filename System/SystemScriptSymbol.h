@@ -21,6 +21,8 @@
 class SystemScriptSymbol
     : public QByteArray
 {
+    static const int InitMetaTypeId;
+
     mutable QString prefix;
     mutable QString suffix;
     mutable bool parsed;
@@ -29,17 +31,28 @@ class SystemScriptSymbol
 
  public:
     SystemScriptSymbol();
-    SystemScriptSymbol(const char* string);
-    SystemScriptSymbol(const QByteArray& string);
-    SystemScriptSymbol(const QString& string);
+    SystemScriptSymbol(const SystemScriptSymbol&);
+    SystemScriptSymbol(const char*);
+    SystemScriptSymbol(const char*, int);
+    SystemScriptSymbol(const QByteArray&);
+    SystemScriptSymbol(const QString&);
     SystemScriptSymbol(const QString& className, const QString& identifier);
     ~SystemScriptSymbol();
     /*!
-     * Indempotent meta type registration is called by constructors
-     * and may be called before any other use of this type for stream
-     * input.
      */
-    static void Init();
+    void clear();
+    /*!
+     */
+    void set(const QString& string);
+    /*!
+     */
+    void set(const QByteArray& string);
+    /*!
+     */
+    void set(const char *string);
+    /*!
+     */
+    void set(const char *string, int len);
     /*!
      * Equivalent to "is empty" from \class QByteArray
      */
@@ -98,6 +111,8 @@ class SystemScriptSymbol
      * method signature returned from \class QMetaMethod.
      */
     const char* signal(const QMetaObject* type) const;
+
+    const char* slot(const QMetaObject* type) const;
 
     QString toString() const;
 };

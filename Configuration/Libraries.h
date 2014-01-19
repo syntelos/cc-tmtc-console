@@ -6,33 +6,30 @@
 
 #include <QMetaProperty>
 #include <QObject>
-#include <QSqlDatabase>
+#include <QScriptEngine>
 #include <QUuid>
 #include <QWidget>
 
-#include "Storage/StorageList.h"
+#include "ObjectTree/ObjectTreeNode.h"
+#include "ObjectTree/ObjectTreeList.h"
+#include "System/SystemCatalogNode.h"
 #include "Library.h"
 
-class Libraries : public StorageList<Library*> {
+class Libraries : public ObjectTreeNode,
+    public ObjectTreeList,
+    public SystemCatalogNode
+{
     Q_OBJECT;
-    Q_PROPERTY(QString hostUuid READ getHostUuid USER false FINAL);
 
-    QSqlDatabase* hcdb;
-    /*!
-     * Create table and populate with default values
-     */
-    void init();
 
  public:
+    static void InitScriptMetaType(QScriptEngine* engine);
     /*!
      */
-    Libraries(QSqlDatabase* db, QObject* parent = 0);
+    Libraries(QObject* parent);
     /*!
      */
     ~Libraries();
-    /*!
-     */
-    const QString* getHostUuid() const;
     /*!
      * Edit node, appending a new child: return success.
      */
@@ -42,37 +39,22 @@ class Libraries : public StorageList<Library*> {
      */
     virtual bool removeObjectTreeList(int idx);
 
- signals:
-    /*!
-     */
-    void readSuccess();
-    /*!
-     */
-    void readFailure();
-    /*!
-     */
-    void writeSuccess();
-    /*!
-     */
-    void writeFailure();
-
  public slots:
     /*!
-     * Clear values
      */
-    virtual void clear();
+    void clear();
     /*!
-     * Read table values
      */
-    virtual bool read();
+    virtual void start();
     /*!
-     * Write table values
      */
-    virtual bool write();
+    virtual void stop();
     /*!
-     * Write for argument zero, otherwise ignore
      */
-    virtual bool done(int write);
+    virtual void read(const SystemCatalogInput&, const QDomElement&);
+    /*!
+     */
+    virtual void write(SystemCatalogOutput&, QDomElement&);
 
 
  private:

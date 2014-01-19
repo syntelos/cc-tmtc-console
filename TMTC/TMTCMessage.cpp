@@ -7,53 +7,21 @@
 
 /*!
  */
-TMTCMessage::TMTCMessage()
-    : QObject(), QList(), time(QDateTime::currentMSecsSinceEpoch()), sid(0)
+TMTCMessage::TMTCMessage(const SystemDeviceIdentifier& sid)
+    : QObject(), QList(), time(QDateTime::currentMSecsSinceEpoch()), identifier(sid)
 {
 }
 /*!
  */
-TMTCMessage::TMTCMessage(SystemDeviceIdentifier* sid)
-    : QObject(), QList(), time(QDateTime::currentMSecsSinceEpoch()), sid(sid)
-{
-}
-/*!
- */
-TMTCMessage::TMTCMessage(qint64 time)
-    : QObject(), QList(), time(time), sid(0)
-{
-}
-/*!
- */
-TMTCMessage::TMTCMessage(SystemDeviceIdentifier* sid, qint64 time)
-    : QObject(), QList(), time(time), sid(sid)
+TMTCMessage::TMTCMessage(const SystemDeviceIdentifier& sid, qint64 time)
+    : QObject(), QList(), time(time), identifier(sid)
 {
 }
 /*!
  * Parse "NV( NV)*" as {NV,(NV)*}
  */
-TMTCMessage::TMTCMessage(const QByteArray& in)
-    : QObject(), QList(), time(QDateTime::currentMSecsSinceEpoch()), sid(0)
-{
-    QList<QByteArray> string = in.split(' ');
-    int cc, cz = string.size();
-    for (cc = 0; cc < cz; cc++){
-        const QByteArray& substring = string.at(cc);
-
-        TMTCNameValue* nvp = new TMTCNameValue(substring);
-
-        if (nvp->hasName())
-
-            this->append(nvp);
-        else 
-            delete nvp;
-    }
-}
-/*!
- * Parse "NV( NV)*" as {NV,(NV)*}
- */
-TMTCMessage::TMTCMessage(SystemDeviceIdentifier* sid, const QByteArray& in)
-    : QObject(), QList(), time(QDateTime::currentMSecsSinceEpoch()), sid(sid)
+TMTCMessage::TMTCMessage(const SystemDeviceIdentifier& sid, const QByteArray& in)
+    : QObject(), QList(), time(QDateTime::currentMSecsSinceEpoch()), identifier(sid)
 {
     QList<QByteArray> string = in.split(' ');
     int cc, cz = string.size();
@@ -70,7 +38,7 @@ TMTCMessage::TMTCMessage(SystemDeviceIdentifier* sid, const QByteArray& in)
     }
 }
 TMTCMessage::TMTCMessage(const TMTCMessage& in)
-    : QObject(), QList(), time(in.time), sid(in.sid)
+    : QObject(), QList(), time(in.time), identifier(in.identifier)
 {
     const int count = in.size();
 
@@ -91,8 +59,6 @@ TMTCMessage::~TMTCMessage(){
 
         delete nvp;
     }
-
-    sid = 0;
 }
 /*!
  */
@@ -128,29 +94,7 @@ bool TMTCMessage::isSpecial() const {
     }
     return (0 < count);
 }
-bool TMTCMessage::hasIdentifier() const {
-
-    return (0 != sid);
-}
-bool TMTCMessage::hasNotIdentifier() const {
-
-    return (0 == sid);
-}
 const SystemDeviceIdentifier& TMTCMessage::getIdentifier() const {
-    if (0 != sid)
-        return *sid;
-    else
-        return *SystemDeviceIdentifier::BroadcastIdentifier;
-}
-bool TMTCMessage::setIdentifier(SystemDeviceIdentifier* sid){
-    if (0 == this->sid){
-        this->sid = sid;
-        return true;
-    }
-    else if (0 == sid){
-        this->sid = 0;
-        return true;
-    }
-    else
-        return false;
+
+    return identifier;
 }

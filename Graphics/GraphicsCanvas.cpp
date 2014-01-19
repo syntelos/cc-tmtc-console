@@ -2,28 +2,28 @@
  * Copyright 2013 John Pritchard, Syntelos.  All rights reserved.
  */
 
-#include "GraphicsBody.h"
+#include "GraphicsCanvas.h"
 
-GraphicsBody::GraphicsBody(QWidget* parent)
+GraphicsCanvas::GraphicsCanvas(QWidget* parent)
     : QGraphicsView(new GraphicsScene(), parent)
 {
 }
-GraphicsBody::~GraphicsBody(){
+GraphicsCanvas::~GraphicsCanvas(){
 
     GraphicsScene* scene = this->scene();
     if (scene){
         delete scene;
     }
 }
-inline GraphicsScene* GraphicsBody::scene(){
+inline GraphicsScene* GraphicsCanvas::scene(){
 
     return static_cast<GraphicsScene*>(QGraphicsView::scene());
 }
-GraphicsScene& GraphicsBody::add(GraphicsBranch* item){
+GraphicsScene& GraphicsCanvas::add(GraphicsBranch* item){
 
     return this->scene()->add(item);
 }
-GraphicsScene& GraphicsBody::debugPrintChildren(){
+GraphicsScene& GraphicsCanvas::debugPrintChildren(){
 
     return this->scene()->debugPrintChildren();
 }

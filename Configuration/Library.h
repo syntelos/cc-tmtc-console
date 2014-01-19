@@ -6,18 +6,17 @@
 
 #include <QMetaProperty>
 #include <QObject>
-#include <QSqlQuery>
+#include <QScriptEngine>
 #include <QUuid>
 #include <QWidget>
 
-#include "Storage/StorageListItem.h"
+#include "ObjectTree/ObjectTreeNode.h"
 
 /*!
  * Child of \class Libraries.
  */
-class Library : public StorageListItem {
+class Library : public ObjectTreeNode {
     Q_OBJECT;
-    Q_PROPERTY(QString hostUuid READ getHostUuid USER false FINAL);
     Q_PROPERTY(QString libraryUuid READ getLibraryUuid USER false FINAL);
     Q_PROPERTY(QString fileIdentifier READ getFileIdentifier WRITE setFileIdentifier USER true FINAL);
     Q_PROPERTY(QString languageClassName READ getLanguageClassName USER true FINAL);
@@ -31,6 +30,7 @@ class Library : public StorageListItem {
     QString* connectionClassName;
 
  public:
+    static void InitScriptMetaType(QScriptEngine* engine);
     /*!
      * TODO (QLibrary&,QObject*)
      * 
@@ -40,35 +40,11 @@ class Library : public StorageListItem {
      */
     Library(QObject* parent);
     /*!
-     * Database read constructor.
-     * 
-     * The parent argument is always \class Libraries.
-     */
-    Library(QSqlQuery& query, int start, QObject* parent);
-    /*!
-     * Database read constructor.
-     * 
-     * The parent argument is always \class Libraries.
-     */
-    Library(QSqlQuery& query, QObject* parent);
-    /*!
      */
     ~Library();
     /*!
      */
-    virtual bool isInert();
-    /*!
-     * Retrieve bindings by index as for declared user properties.
-     */
-    virtual void read(QSqlQuery& query, int start = 0);
-    /*!
-     * Store bindings by index as for declared user properties.
-     */
-    virtual void write(QSqlQuery& query, int start = 0);
-    /*!
-     * Ref(Host UUID)
-     */
-    const QString* getHostUuid() const;
+    bool isInert();
     /*!
      * Read-only library UUID
      */

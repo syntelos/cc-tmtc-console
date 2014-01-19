@@ -24,10 +24,6 @@ class MultiplexIndex {
 
     quintptr storage;
 
-    /*!
-     * Disable Copy
-     */
-    MultiplexIndex(const MultiplexIndex& copy);
 
     MultiplexIndexRecord* getStorage() const;
 
@@ -140,5 +136,7 @@ class MultiplexIndex {
      */
     void print();
 
+ private:
+    Q_DISABLE_COPY(MultiplexIndex);
 };
 #endif

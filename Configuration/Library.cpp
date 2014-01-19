@@ -2,14 +2,10 @@
  * Copyright 2013 John Pritchard, Syntelos.  All rights reserved.
  */
 #include <QLabel>
-#include <QScriptEngine>
-#include <QSqlQuery>
 #include <QString>
 
 #include "Library.h"
 #include "Libraries.h"
-#include "Configuration.h"
-#include "ConfigurationError.h"
 
 
 QScriptValue libraryToScriptValue(QScriptEngine *engine, Library* const &in){
@@ -20,25 +16,12 @@ void libraryFromScriptValue(const QScriptValue &object, Library* &out){
     out = qobject_cast<Library*>(object.toQObject());
 }
 
-
+void Library::InitScriptMetaType(QScriptEngine* engine){
+    qScriptRegisterMetaType(engine, libraryToScriptValue, libraryFromScriptValue);
+}
 Library::Library(QObject* parent)
-    : StorageListItem(parent), libraryUuid(0), fileIdentifier(0), languageClassName(0), connectionClassName(0)
+    : ObjectTreeNode(parent), libraryUuid(0), fileIdentifier(0), languageClassName(0), connectionClassName(0)
 {
-    qScriptRegisterMetaType(Configuration::Instance()->getScriptEngine(), libraryToScriptValue, libraryFromScriptValue);
-}
-Library::Library(QSqlQuery& query, int start, QObject* parent)
-    : StorageListItem(parent), fileIdentifier(0)
-{
-    this->read(query,start);
-
-    qScriptRegisterMetaType(Configuration::Instance()->getScriptEngine(), libraryToScriptValue, libraryFromScriptValue);
-}
-Library::Library(QSqlQuery& query, QObject* parent)
-    : StorageListItem(parent), fileIdentifier(0)
-{
-    this->read(query);
-
-    qScriptRegisterMetaType(Configuration::Instance()->getScriptEngine(), libraryToScriptValue, libraryFromScriptValue);
 }
 Library::~Library(){
 
@@ -62,55 +45,6 @@ Library::~Library(){
         delete connectionClassName;
     }
 
-}
-void Library::read(QSqlQuery& select, int start){
-
-    QString s = select.value(start++).toString();
-
-    this->setLibraryUuid(s);
-
-    s = select.value(start++).toString();
-
-    this->setFileIdentifier(s);
-
-    s = select.value(start++).toString();
-
-    this->setLanguageClassName(s);
-
-    s = select.value(start++).toString();
-
-    this->setConnectionClassName(s);
-
-}
-void Library::write(QSqlQuery& update, int start){
-
-
-    if (this->libraryUuid)
-        update.bindValue(start++,*this->libraryUuid);
-    else
-        update.bindValue(start++,QVariant(QVariant::String));
-
-    if (this->fileIdentifier)
-        update.bindValue(start++,*this->fileIdentifier);
-    else
-        update.bindValue(start++,QVariant(QVariant::String));
-
-    if (this->languageClassName)
-        update.bindValue(start++,*this->languageClassName);
-    else
-        update.bindValue(start++,QVariant(QVariant::String));
-
-    if (this->connectionClassName)
-        update.bindValue(start++,*this->connectionClassName);
-    else
-        update.bindValue(start++,QVariant(QVariant::String));
-
-}
-const QString* Library::getHostUuid() const {
-
-    Libraries* parent = qobject_cast<Libraries*>(this->parent());
-
-    return parent->getHostUuid();
 }
 const QString* Library::getLibraryUuid() const {
 

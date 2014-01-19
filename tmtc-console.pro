@@ -16,4 +16,4 @@ SUBDIRS = \
     Multiplex \
     Plot \
     XPORT \
-    Main
+    Window

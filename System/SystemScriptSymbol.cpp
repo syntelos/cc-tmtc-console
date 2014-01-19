@@ -6,48 +6,72 @@
 
 #include "SystemScriptSymbol.h"
 
-void SystemScriptSymbol::Init()
-{
-    static bool registered = false;
-    if (!registered){
-        registered = true;
-        qRegisterMetaType<SystemScriptSymbol>("SystemScriptSymbol");
-    }
-}
+const int SystemScriptSymbol::InitMetaTypeId = qRegisterMetaType<SystemScriptSymbol>("SystemScriptSymbol");
+
 SystemScriptSymbol::SystemScriptSymbol()
-    : parsed(false)
+    : QByteArray(), prefix(), suffix(), parsed(false)
 {
-    SystemScriptSymbol::Init();
+}
+SystemScriptSymbol::SystemScriptSymbol(const SystemScriptSymbol& copy)
+    : QByteArray(copy), prefix(copy.prefix), suffix(copy.suffix), parsed(copy.parsed)
+{
 }
 SystemScriptSymbol::SystemScriptSymbol(const char* string)
-    : QByteArray(string), parsed(false)
+    : QByteArray(string), prefix(), suffix(), parsed(false)
 {
-    SystemScriptSymbol::Init();
-
-    qDebug() << "new SystemScriptSymbol(" << string << ")";
+}
+SystemScriptSymbol::SystemScriptSymbol(const char* string, int len)
+    : QByteArray(string,len), prefix(), suffix(), parsed(false)
+{
 }
 SystemScriptSymbol::SystemScriptSymbol(const QByteArray& string)
-    : QByteArray(string), parsed(false)
+    : QByteArray(string), prefix(), suffix(), parsed(false)
 {
-    SystemScriptSymbol::Init();
-
-    qDebug() << "new SystemScriptSymbol(" << string << ")";
 }
 SystemScriptSymbol::SystemScriptSymbol(const QString& string)
-    : QByteArray(string.toUtf8()), parsed(false)
+    : QByteArray(string.toUtf8().data()), prefix(), suffix(), parsed(false)
 {
-    SystemScriptSymbol::Init();
-
-    qDebug() << "new SystemScriptSymbol(" << string << ")";
 }
 SystemScriptSymbol::SystemScriptSymbol(const QString& className, const QString& identifier)
-    : QByteArray((className+"::"+identifier).toUtf8().data()), parsed(false)
+    : QByteArray((className+"::"+identifier).toUtf8().data()), prefix(), suffix(), parsed(false)
 {
-    SystemScriptSymbol::Init();
-
-    qDebug() << "new SystemScriptSymbol(" << this << ")";
 }
 SystemScriptSymbol::~SystemScriptSymbol(){
+}
+void SystemScriptSymbol::clear(){
+
+    QByteArray::clear();
+    parsed = false;
+    prefix.clear();
+    suffix.clear();
+}
+void SystemScriptSymbol::set(const QString& string){
+
+    clear();
+
+    QByteArray::append(string);
+
+}
+void SystemScriptSymbol::set(const QByteArray& string){
+
+    clear();
+
+    QByteArray::append(string);
+
+}
+void SystemScriptSymbol::set(const char *string){
+
+    clear();
+
+    QByteArray::append(string);
+
+}
+void SystemScriptSymbol::set(const char *string, int len){
+
+    clear();
+
+    QByteArray::append(string,len);
+
 }
 bool SystemScriptSymbol::isInert() const {
 
@@ -257,6 +281,39 @@ const char* SystemScriptSymbol::signal(const QMetaObject* type) const {
                 QString signal = QString("%1%2").arg(signum).arg(signature);
 
                 return signal.toUtf8().constData();
+            }
+            else {
+                signum += 1;
+            }
+        }
+    }
+    return NULL;
+}
+const char* SystemScriptSymbol::slot(const QMetaObject* type) const {
+
+    const char* name = this->getSuffixSymbolic();
+    const uint namelen = qstrlen(name);
+
+    const int size = type->methodCount();
+    const int mofs = type->methodOffset();
+
+    int cc, signum = 0;
+
+    for (cc = mofs; cc < size; cc++){
+
+        QMetaMethod method = type->method(cc);
+
+        if (QMetaMethod::Slot == method.methodType()){
+
+            const char* signature = method.signature();
+
+            const uint test = strspn(signature,name);
+
+            if (namelen <= test){
+
+                QString slot = QString("%1%2").arg(signum).arg(signature);
+
+                return slot.toUtf8().constData();
             }
             else {
                 signum += 1;

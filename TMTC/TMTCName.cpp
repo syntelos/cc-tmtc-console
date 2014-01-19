@@ -7,7 +7,7 @@
 #include "TMTCName.h"
 
 
-int TMTCName::InitMetaTypeId = qRegisterMetaType<TMTCName>("TMTCName");
+const int TMTCName::InitMetaTypeId = qRegisterMetaType<TMTCName>("TMTCName");
 
 TMTCName::TMTCName()
     : QVariant(), parsed(true)

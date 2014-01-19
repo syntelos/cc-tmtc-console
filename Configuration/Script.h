@@ -8,18 +8,17 @@
 #include <QFileInfo>
 #include <QMetaProperty>
 #include <QObject>
+#include <QScriptEngine>
 #include <QString>
-#include <QSqlQuery>
 #include <QUuid>
 #include <QWidget>
 
 #include "System/SystemScriptSymbol.h"
-#include "Storage/StorageListItem.h"
+#include "ObjectTree/ObjectTreeNode.h"
 #include "ObjectTree/ObjectTreeImportExport.h"
 
-class Script : public StorageListItem, public ObjectTreeImportExport {
+class Script : public ObjectTreeNode, public ObjectTreeImportExport {
     Q_OBJECT;
-    Q_PROPERTY(QString hostUuid READ getHostUuid USER false FINAL);
     Q_PROPERTY(SystemScriptSymbol linkSource READ getLinkSource WRITE setLinkSource USER true FINAL);
     Q_PROPERTY(SystemScriptSymbol linkTarget READ getLinkTarget WRITE setLinkTarget USER true FINAL);
     Q_PROPERTY(QString file READ getFile WRITE setFile USER true FINAL);
@@ -46,38 +45,20 @@ class Script : public StorageListItem, public ObjectTreeImportExport {
      * Script source text
      */
     QString* content;
-    /*!
-     * Create table and populate with default values
-     */
-    void init();
+
 
  public:
+    static void InitScriptMetaType(QScriptEngine* engine);
     /*!
      * User constructor for emitting new values via database write.
      */
     Script(QObject* parent);
     /*!
-     * Database read constructor
-     */
-    Script(QSqlQuery& query, int start, QObject* parent);
-    /*!
-     * Database read constructor
-     */
-    Script(QSqlQuery& query, QObject* parent);
-    /*!
      */
     ~Script();
     /*!
      */
-    virtual bool isInert();
-    /*!
-     * Retrieve bindings by index as for declared user properties.
-     */
-    virtual void read(QSqlQuery& query, int start = 0);
-    /*!
-     * Store bindings by index as for declared user properties.
-     */
-    virtual void write(QSqlQuery& query, int start = 0);
+    bool isInert();
     /*!
      * Read-only host UUID
      */

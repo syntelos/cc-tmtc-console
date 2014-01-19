@@ -23,23 +23,27 @@ class XportConnection : public SystemDeviceConnection {
     QMutex sendMutex;
     QList<TMTCMessage*> sendQ;
     volatile bool sendFlag;
-    SystemDeviceIdentifier* deviceIdentifier;
+    const SystemDeviceIdentifier& deviceIdentifier;
 
  public:
     /*!
      * The argument \a parent is a member of \class QObject and \class
      * SystemDevice
      */
-    XportConnection(QObject* parent);
+    XportConnection(SystemDevice* parent);
+    /*!
+     */
     ~XportConnection();
-
-    void run();
+    /*!
+     */
+    virtual void run();
     /*!
      * Cast parent to required \class SystemDevice
      */
-    SystemDevice* getDevice();
-
-    SystemDeviceIdentifier* getDeviceIdentifier();
+    SystemDevice* getSystemDevice() const;
+    /*!
+     */
+    const SystemDeviceIdentifier& getSystemDeviceIdentifier() const;
 
  public slots:
     /*!

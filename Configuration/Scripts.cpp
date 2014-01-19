@@ -10,8 +10,6 @@
 
 #include "Scripts.h"
 #include "Configuration.h"
-#include "ConfigurationError.h"
-
 
 
 QScriptValue scriptsToScriptValue(QScriptEngine *engine, Scripts* const &in){
@@ -22,60 +20,17 @@ void scriptsFromScriptValue(const QScriptValue &object, Scripts* &out){
     out = qobject_cast<Scripts*>(object.toQObject());
 }
 
+void Scripts::InitScriptMetaType(QScriptEngine* engine){
+    qScriptRegisterMetaType(engine, scriptsToScriptValue, scriptsFromScriptValue);
+}
 
-Scripts::Scripts(QSqlDatabase* db, QObject* parent)
-    : StorageList(parent), hcdb(db)
+Scripts::Scripts(QObject* parent)
+    : ObjectTreeNode(parent)
 {
-    SystemScriptSymbol::Init();
-
-    if (hcdb->isValid()){
-
-        if (!read()){
-
-            init();
-        }
-    }
-    else {
-        throw ConfigurationError::DatabaseDriver("HCDB/Scripts");
-    }
-    qScriptRegisterMetaType(Configuration::Instance()->getScriptEngine(), scriptsToScriptValue, scriptsFromScriptValue);
 }
 Scripts::~Scripts(){
 
     this->clear();
-
-    hcdb = 0;
-
-}
-void Scripts::init(){
-
-    this->clear();
-    /*
-     * DROP
-     */
-    QString dsql("DROP TABLE ");
-    dsql += HcdbScriptTableName;
-    dsql += ";";
-
-    QSqlQuery drop(dsql,*hcdb);
-
-    bool dropExec = drop.exec();
-    /*
-     * CREATE
-     */
-    QString csql("CREATE TABLE ");
-    csql += HcdbScriptTableName;
-    /*
-     * There's many script records per host in this table, so the
-     * HOST_UUID is not UNIQUE.
-     */
-    csql += " ( HOST_UUID CHARACTER(38), SOURCE VARCHAR(127), TARGET VARCHAR(127), FILE VARCHAR(255), CONTENT VARCHAR, PRIMARY KEY ( HOST_UUID, SOURCE ) );";
-
-    QSqlQuery create(csql,*hcdb);
-
-    bool createExec = create.exec();/* This returns false even when it's functionally
-                                     * operating.
-                                     */
 }
 void Scripts::clear(){
 
@@ -101,112 +56,6 @@ void Scripts::clear(){
         endRemoveNode();
     }
 }
-bool Scripts::read(){
-
-    this->clear();
-
-    const QString* hostUuid = this->getHostUuid();
-    /*
-     * Many script records per host
-     */
-    QString sql = "SELECT SOURCE, TARGET, FILE, CONTENT FROM ";
-    sql += HcdbScriptTableName;
-    sql += " WHERE HOST_UUID = '";
-    sql += *hostUuid;
-    sql += "';";
-
-    QSqlQuery select(sql,*hcdb);
-
-    if (select.exec()){
-
-        const int count = select.size();
-
-        qDebug() << "Scripts read [exec true] [count " << count << "]";
-
-        beginInsertNode(0,(count-1));
-
-        while (select.next()){
-
-            new Script(select,this);
-        }
-
-        endInsertNode();
-
-        qDebug() << "Scripts read success";
-
-        emit readSuccess();
-
-        return true;
-    }
-    else {
-        qDebug() << "Scripts read failure";
-
-        emit readFailure();
-
-        return false;
-    }
-}
-bool Scripts::write(){
-
-    const QString* hostUuid = this->getHostUuid();
-
-    QSqlQuery op(*hcdb);
-    /*
-     * Delete everything
-     */
-    QString dsql("DELETE FROM ");
-    dsql += HcdbScriptTableName;
-    dsql += " WHERE HOST_UUID = '";
-    dsql += *hostUuid;
-    dsql += "';";
-
-    if (op.prepare(dsql) && op.exec()){
-        /*
-         * Insert what we have
-         */
-        QString isql("INSERT INTO ");
-        isql += HcdbScriptTableName;
-        isql += " ( HOST_UUID, SOURCE, TARGET, FILE, CONTENT ) VALUES ( '";
-        isql += *hostUuid;
-        isql += "',  ?, ?, ?, ? );";
-
-
-        if (op.prepare(isql)){
-
-            const QObjectList& children = this->children();
-
-            const int sz = children.size();
-
-            if (0 < sz){
-
-                //beginStoreNode
-
-                int cc;
-                for (cc = 0; cc < sz; cc++){
-
-                    Script* child = qobject_cast<Script*>(children.at(cc));
-
-                    if (child){
-
-                        child->write(op);
-
-                        bool insertExec = op.exec();
-                    }
-                }
-
-                //endStoreNode
-            }
-
-            emit writeSuccess();
-
-            return true;
-        }
-    }
-
-    emit readFailure();
-
-    return false;
-}
 bool Scripts::drop(Script* script){
     if (script){
 
@@ -216,24 +65,8 @@ bool Scripts::drop(Script* script){
              */
             script->setParent(0);
             script->deleteLater();
-            /*
-             */
-            const QString* hostUuid = this->getHostUuid();
-            /*
-             */
-            QSqlQuery op(*hcdb);
-            /*
-             * Delete everything
-             */
-            QString dsql("DELETE FROM ");
-            dsql += HcdbScriptTableName;
-            dsql += " WHERE HOST_UUID = '";
-            dsql += *hostUuid;
-            dsql += "' AND SOURCE = '";
-            dsql += linkSource->toString();
-            dsql += "';";
 
-            return (op.prepare(dsql) && op.exec());
+            return true;
         }
     }
     return false;
@@ -246,44 +79,56 @@ bool Scripts::deconfigure(Script* script){
             /*
              */
             script->setLinkTarget(0);
-            /*
-             */
-            const QString* hostUuid = this->getHostUuid();
 
-            QSqlQuery op(*hcdb);
-            /*
-             * Delete everything
-             */
-            QString dsql("UPDATE ");
-            dsql += HcdbScriptTableName;
-            dsql += " SET TARGET = NULL";
-            dsql += " WHERE HOST_UUID = '";
-            dsql += *hostUuid;
-            dsql += "' AND SOURCE = '";
-            dsql += linkSource->toString();
-            dsql += "';";
-
-            return (op.prepare(dsql) && op.exec());
+            return true;
         }
     }
     return false;
 }
-bool Scripts::done(int write){
-
-    if (0 == write){
-
-        return Scripts::write();
-    }
-    else {
-
-        return false;
-    }
+void Scripts::start(){
 }
-const QString* Scripts::getHostUuid() const {
+void Scripts::stop(){
+}
+void Scripts::read(const SystemCatalogInput& properties, const QDomElement& parent){
 
-    HCDB* parent = qobject_cast<HCDB*>(this->parent());
+    this->clear();
 
-    return parent->getHostUuid();
+
+    // beginInsertNode(0,(count-1));
+
+    // while (select.next()){
+
+    //     new Script(this);
+    // }
+
+    // endInsertNode();
+
+}
+void Scripts::write(SystemCatalogOutput& properties, QDomElement& parent){
+
+
+    const QObjectList& children = this->children();
+
+    const int sz = children.size();
+
+    if (0 < sz){
+
+        //beginStoreNode
+
+        int cc;
+        for (cc = 0; cc < sz; cc++){
+
+            Script* child = qobject_cast<Script*>(children.at(cc));
+
+            if (child){
+
+                //child->write();
+
+            }
+        }
+
+        //endStoreNode
+    }
 }
 bool Scripts::insertObjectTreeList(){
     const QObjectList& children = this->children();

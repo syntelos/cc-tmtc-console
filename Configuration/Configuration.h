@@ -1,95 +1,39 @@
 /*
- * Copyright 2013 John Pritchard, Syntelos.  All rights reserved.
+ * Copyright 2014 John Pritchard, Syntelos.  All rights reserved.
  */
-#ifndef _CONSOLE_Configuration_H
-#define _CONSOLE_Configuration_H
+#ifndef _CONSOLE_CONFIGURATION_Configuration_H
+#define _CONSOLE_CONFIGURATION_Configuration_H
 
-#include <QList>
-#include <QModelIndex>
-#include <QObject>
-#include <QScriptable>
+#include <QNetworkAccessManager>
 #include <QScriptEngine>
-#include <QUuid>
-#include <QVariant>
 
-#include "CCDB.h"
-#include "HCDB.h"
 #include "Devices.h"
 #include "Libraries.h"
-#include "ObjectTree/ObjectTreeModel.h"
-#include "Storage/StorageTreeEditor.h"
-#include "System/SystemScriptable.h"
-#include "Multiplex/Multiplex.h"
+#include "Scripts.h"
 
 /*!
- * Root of the configuration tree, scriptable "configuration".
+ * Software system tree root.
  * 
- * The \class QObject tree parent of the primary instance of this type
- * is defined to one unique view that the \class ObjectTreeModel
- * depends on.  This idea would need to be revised for multiple views
- * on this object, but that's not a planned use case.
+ * \sa Window
  */
-class Configuration : public ObjectTreeModel,
-    public SystemScriptable
-{
-    Q_OBJECT;
-    Q_PROPERTY(CCDB* ccdb READ getCCDB USER false FINAL);
-    Q_PROPERTY(HCDB* hcdb READ getHCDB USER false FINAL);
-
-    /*!
-     */
-    QScriptEngine* engine;
-    /*!
-     */
-    CCDB* ccdb;
-    /*!
-     */
-    HCDB* hcdb;
-    /*!
-     */
-    Configuration(QScriptEngine* engine);
-    ~Configuration();
+class Configuration {
 
  public:
     /*!
-     * Typical access
      */
-    static Configuration* Instance();
-    /*!
-     * Special access for Main/Window.
-     */
-    static Configuration* Init(QScriptEngine* engine);
+    virtual QNetworkAccessManager* getNetworkManager() = 0;
     /*!
      */
-    CCDB* getCCDB() const;
+    virtual QScriptEngine* getScriptEngine() const = 0;
     /*!
      */
-    HCDB* getHCDB() const;
-    /*!
-     * When true, devices have been configured by the Main/Init
-     * program.
-     */
-    bool hasMultiplex() const;
-    /*!
-     * Returns null when not found.
-     */
-    Multiplex* getMultiplex() const;
+    virtual Libraries* getLibraries() const = 0;
     /*!
      */
-    QScriptEngine* getScriptEngine() const;
+    virtual Devices* getDevices() const = 0;
+    /*!
+     */
+    virtual Scripts* getScripts() const = 0;
 
- public slots:
-    /*!
-     */
-    void configureWindowInit();
-    /*!
-     */
-    void deconfigureWindowInit();
-
-
- private:
-    Q_DISABLE_COPY(Configuration)
 };
-
-Q_DECLARE_METATYPE(Configuration*)
 #endif

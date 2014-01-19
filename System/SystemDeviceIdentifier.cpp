@@ -152,19 +152,24 @@ QString SystemDeviceIdentifier::toString() const {
         return prefix;
 }
 QString SystemDeviceIdentifier::toString(const QString& fext) const {
-    QString prefix(this->prefix);
-    {
-        prefix.replace(".","_");
-    }
 
-    if (0 < fext.length()){
-        if (0 != suffix)
-            return QString("%1_%2.%3").arg(prefix).arg(suffix).arg(fext);
-        else 
-            return QString("%1.%2").arg(prefix,fext);
+    if (isSpecial())
+        return fext;
+    else {
+        QString prefix(this->prefix);
+        {
+            prefix.replace(".","_");
+        }
+
+        if (0 < fext.length()){
+            if (0 != suffix)
+                return QString("%1_%2.%3").arg(prefix).arg(suffix).arg(fext);
+            else 
+                return QString("%1.%2").arg(prefix,fext);
+        }
+        else
+            return prefix;
     }
-    else
-        return prefix;
 }
 QStringList SystemDeviceIdentifier::toStringList() const {
     return toString().split(':',QString::SkipEmptyParts);
