@@ -16,34 +16,44 @@ SystemCatalogInput::SystemCatalogInput(SystemCatalog::Property n, QVariant v)
 SystemCatalogInput::~SystemCatalogInput()
 {
 }
-const QMap<QString,SystemConnector*>& SystemCatalogInput::getSenders(){
+const QList<SystemConnector*>& SystemCatalogInput::getSenders() const {
 
     return senders;
 }
-const QMap<QString,QObject*>& SystemCatalogInput::getReceivers(){
+const QMap<QString,QObject*>& SystemCatalogInput::getReceivers() const {
 
     return receivers;
 }
-void SystemCatalogInput::sender(QString id, QObject* sender, QString signal, QString slot){
+void SystemCatalogInput::sender(const QString& senderId, QObject* sender, 
+                                const QString& receiverId,
+                                const QString& signal, const QString& slot) const
+{
 
-    if (sender && !id.isEmpty() && !senders.contains(id)){
+    if (sender && !senderId.isEmpty()){
 
-        SystemConnector* connector = new SystemConnector(id,sender,signal,slot);
+        SystemConnector* connector = new SystemConnector(senderId,sender,
+                                                         signal,slot, 
+                                                         receiverId);
 
         if (connector->isValidInputSender()){
 
-            senders.insert(id,connector);
+            senders.append(connector);
+        }
+
+        if (!receivers.contains(senderId)){
+
+            receivers.insert(senderId,sender);
         }
     }
 }
-void SystemCatalogInput::receiver(QString id, QObject* receiver){
+void SystemCatalogInput::receiver(QString id, QObject* receiver) const {
 
     if (!receivers.contains(id)){
 
         receivers.insert(id,receiver);
     }
 }
-void SystemCatalogInput::postprocessing(){
+void SystemCatalogInput::postprocessing() const {
 
     foreach (SystemConnector* connector, senders){
 

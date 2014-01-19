@@ -33,8 +33,8 @@
  */
 class SystemCatalogInput : public SystemCatalogProperties {
 
-    QMap<QString,SystemConnector*> senders;
-    QMap<QString,QObject*> receivers;
+    mutable QList<SystemConnector*> senders;
+    mutable QMap<QString,QObject*> receivers;
 
  public:
     /*!
@@ -48,25 +48,27 @@ class SystemCatalogInput : public SystemCatalogProperties {
     ~SystemCatalogInput();
     /*!
      */
-    const QMap<QString,SystemConnector*>& getSenders();
+    const QList<SystemConnector*>& getSenders() const;
     /*!
      */
-    const QMap<QString,QObject*>& getReceivers();
+    const QMap<QString,QObject*>& getReceivers() const;
     /*!
      * An implementor of \class SystemCatalogNode calls this method
      * once for each child element named "connect".
      * 
      * \sa SystemConnector
      */
-    void sender(QString id, QObject* sender, QString signal, QString slot);
+    void sender(const QString& senderId, QObject* sender, 
+                const QString& receiverId, 
+                const QString& signal, const QString& slot) const;
     /*!
      * An implementor of \class SystemCatalogNode calls this method
      * once when it has no child element named "connect".
      */
-    void receiver(QString id, QObject* receiver);
+    void receiver(const QString id, QObject* receiver) const;
     /*!
      */
-    void postprocessing();
+    void postprocessing() const;
 
 };
 #endif

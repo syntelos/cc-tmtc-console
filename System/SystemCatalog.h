@@ -18,6 +18,10 @@ namespace SystemCatalog {
         static const char* URI = "http://www.syntelos.com/tmtc-console";
         static const char* PREFIX = "tmtc";
     }
+    namespace XML {
+
+        static const char* FILE_DEFAULT = "window.xml";
+    }
     /*!
      * Catalog I/O behavior types
      * 

@@ -37,6 +37,20 @@ class SystemCatalogNode {
      * Propagate stop event to children
      */
     void stop(QObject* subclass);
+    /*!
+     * Returns whether input sender was called (connect element
+     * complete).  
+     * 
+     * If the input sender method is not called during the processing
+     * of all of the child elements of the caller, then the caller
+     * must call input receiver.
+     * 
+     * The process implemented by this method assumes that the second
+     * element argument is an element named "connect", and is a child
+     * of the first element argument.
+     */
+    bool readConnect(QObject* subclass, const SystemCatalogInput&, 
+                     const QDomElement&, const QDomElement&);
 
  public slots:
     /*!

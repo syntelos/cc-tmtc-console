@@ -28,3 +28,28 @@ void SystemCatalogNode::stop(QObject* subclass){
         }
     }
 }
+bool SystemCatalogNode::readConnect(QObject* subclass,
+                                    const SystemCatalogInput& properties, 
+                                    const QDomElement& node, 
+                                    const QDomElement& connect)
+{
+    QString senderId = node.attribute("id");
+    if (!senderId.isEmpty()){
+        QString receiverId = connect.attribute("receiver");
+        if (!receiverId.isEmpty()){
+            QString signal = connect.attribute("signal");
+            if (!signal.isEmpty()){
+                QString slot = connect.attribute("slot");
+                if (!slot.isEmpty()){
+
+                    properties.sender(senderId,subclass,
+                                      receiverId,
+                                      signal,slot);
+
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}

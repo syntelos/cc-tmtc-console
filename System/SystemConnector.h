@@ -30,8 +30,8 @@
  * "connect" elements for their input process.
  * 
  * The "connect" element shall employ the attributes "receiver",
- * "signal" and "slot" for the receiver (catalog element "id"), signal
- * and slot strings defined here.
+ * "signal" and "slot" for the receiver (element "id"), signal and
+ * slot strings defined here.
  * 
  * RUNTIME
  * 
@@ -83,7 +83,7 @@ class SystemConnector {
     SystemConnector(const QString& id, QObject* sender, const QString& signal, const QString& slot);
     SystemConnector(const QString& senderId, QObject* sender, 
                     const QString& signal, const QString& slot,
-                    const QString& receiverId, QObject* receiver);
+                    const QString& receiverId, QObject* receiver = 0);
     ~SystemConnector();
     /*!
      */

@@ -192,7 +192,7 @@ void Window::open(){
 
     dialog.setAcceptMode(QFileDialog::AcceptOpen);
     dialog.setFileMode(QFileDialog::ExistingFile);
-    dialog.selectFile("window.xml");
+    dialog.selectFile(SystemCatalog::XML::FILE_DEFAULT);
 
     if (dialog.exec()){
 
@@ -216,7 +216,7 @@ void Window::save(){
 
     dialog.setAcceptMode(QFileDialog::AcceptSave);
     dialog.setFileMode(QFileDialog::AnyFile);
-    dialog.selectFile("window.xml");
+    dialog.selectFile(SystemCatalog::XML::FILE_DEFAULT);
 
     if (dialog.exec()){
 
@@ -340,6 +340,7 @@ void Window::read(const SystemCatalogInput& properties, const QDomElement& node)
     if (node.localName() == "window"){
         QDomNodeList children = node.childNodes();
         const uint count = children.length();
+        bool inputReceiver = true;
         int cc;
         for (cc = 0; cc < count; cc++){
             QDomNode child = children.item(cc);
@@ -365,9 +366,23 @@ void Window::read(const SystemCatalogInput& properties, const QDomElement& node)
 
                     canvas->read(properties,cel);
                 }
+                else if (name == "connect"){
+
+                    if (readConnect(this,properties,node,cel)){
+
+                        inputReceiver = false;
+                    }
+                }
                 else {
                     qDebug() << "Window.read: skipping unrecognized element" << name ;
                 }
+            }
+        }
+
+        if (inputReceiver){
+            QString receiverId = node.attribute("id");
+            if (!receiverId.isEmpty()){
+                properties.receiver(receiverId,this);
             }
         }
     }
@@ -376,5 +391,29 @@ void Window::read(const SystemCatalogInput& properties, const QDomElement& node)
     }
 }
 void Window::write(SystemCatalogOutput& properties, QDomElement& node){
+
+    node.setAttribute("id","window");
+
+    QDomDocument doc = node.ownerDocument();
+
+    QDomElement devices = doc.createElementNS(SystemCatalog::XMLNS::URI,"tmtc:devices");
+    node.appendChild(devices);
+    devices.setAttribute("id","devices");
+    this->devices->write(properties,devices);
+
+    QDomElement libraries = doc.createElementNS(SystemCatalog::XMLNS::URI,"tmtc:libraries");
+    node.appendChild(libraries);
+    libraries.setAttribute("id","libraries");
+    this->libraries->write(properties,libraries);
+
+    QDomElement scripts = doc.createElementNS(SystemCatalog::XMLNS::URI,"tmtc:scripts");
+    node.appendChild(scripts);
+    scripts.setAttribute("id","scripts");
+    this->scripts->write(properties,scripts);
+
+    QDomElement canvas = doc.createElementNS(SystemCatalog::XMLNS::URI,"tmtc:canvas");
+    node.appendChild(canvas);
+    canvas.setAttribute("id","canvas");
+    this->canvas->write(properties,canvas);
 
 }
