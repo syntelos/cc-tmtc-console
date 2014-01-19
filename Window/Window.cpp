@@ -341,7 +341,7 @@ void Window::read(const SystemCatalogInput& properties, const QDomElement& node)
         QDomNodeList children = node.childNodes();
         const uint count = children.length();
         bool inputReceiver = true;
-        int cc;
+        uint cc;
         for (cc = 0; cc < count; cc++){
             QDomNode child = children.item(cc);
             if (child.isElement()){

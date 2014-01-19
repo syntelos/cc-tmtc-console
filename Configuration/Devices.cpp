@@ -61,10 +61,50 @@ void Devices::start(){
 void Devices::stop(){
     SystemCatalogNode::stop(this);
 }
-void Devices::read(const SystemCatalogInput& properties, const QDomElement& parent){
+void Devices::read(const SystemCatalogInput& properties, const QDomElement& node){
 
     this->clear();
 
+    if (node.localName() == "devices"){
+        QDomNodeList children = node.childNodes();
+        const uint count = children.length();
+        bool inputReceiver = true;
+        uint cc;
+        for (cc = 0; cc < count; cc++){
+            QDomNode child = children.item(cc);
+            if (child.isElement()){
+
+                QString name = child.localName();
+
+                QDomElement cel = child.toElement();
+
+                if (name == "device"){
+
+
+                }
+                else if (name == "connect"){
+
+                    if (readConnect(this,properties,node,cel)){
+
+                        inputReceiver = false;
+                    }
+                }
+                else {
+                    qDebug() << "Devices.read: skipping unrecognized element" << name ;
+                }
+            }
+        }
+
+        if (inputReceiver){
+            QString receiverId = node.attribute("id");
+            if (!receiverId.isEmpty()){
+                properties.receiver(receiverId,this);
+            }
+        }
+    }
+    else {
+        qDebug() << "Devices.read: Unrecognized node element" << node.localName();
+    }
 
     // beginInsertNode(0,(count-1));
 
@@ -86,7 +126,7 @@ void Devices::read(const SystemCatalogInput& properties, const QDomElement& pare
     // endInsertNode();
 
 }
-void Devices::write(SystemCatalogOutput& properties, QDomElement& parent){
+void Devices::write(SystemCatalogOutput& properties, QDomElement& node){
 
 
     const QObjectList& children = this->children();
