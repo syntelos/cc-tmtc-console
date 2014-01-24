@@ -9,7 +9,9 @@
 
 const int SystemDeviceIdentifier::InitMetaTypeId = qRegisterMetaType<SystemDeviceIdentifier>("SystemDeviceIdentifier");
 
-const SystemDeviceIdentifier* SystemDeviceIdentifier::BroadcastIdentifier = new SystemDeviceIdentifier();
+QHash<QString,SystemDeviceIdentifier*> SystemDeviceIdentifier::Heap;
+
+const SystemDeviceIdentifier SystemDeviceIdentifier::BroadcastIdentifier;
 
 QString SystemDeviceIdentifier::Cat(const QString& id, const quint16 defaultSuffix){
     if (0 < id.indexOf(':'))
@@ -20,155 +22,263 @@ QString SystemDeviceIdentifier::Cat(const QString& id, const quint16 defaultSuff
         return re;
     }
 }
-SystemDeviceIdentifier::SystemDeviceIdentifier()
-    : QVariant(), suffix(0)
-{
-}
-SystemDeviceIdentifier::SystemDeviceIdentifier(const QString& id, const quint16 defaultSuffix)
-    : QVariant(Cat(id,defaultSuffix)), suffix(0)
-{
-    QStringList idlist = id.split(':',QString::SkipEmptyParts);
-    if (2 == idlist.length()){
+const SystemDeviceIdentifier& SystemDeviceIdentifier::intern(const QString& id){
+    /*
+     * Accumulate the knowledge of unique non zero suffix values with
+     * the following map structures.
+     * 
+     * An argument having no suffix or a zero valued suffix is handled
+     * as a prefix query.
+     * 
+     * For one "prefix:suffix" pair:
+     *
+     *   map(prefix) -> (sid)
+     *   map(prefix:suffix) -> (sid)
+     * 
+     * For multiple pairs sharing a prefix with unique non zero suffix
+     * values:
+     *
+     *   map(prefix) -> {sid0,...,sidN}
+     *   map(prefix:suffix) -> (sid)
+     * 
+     * A prefix query into a multiple mapped prefix returns any member
+     * of the mapped set.
+     */
+    SystemDeviceIdentifier* test = new SystemDeviceIdentifier(id);
+    quint16 testSuffix = test->getSuffix();
 
-        this->prefix += idlist.at(0);
+    const QString& prefix = test->getPrefix();
+    QString key = test->toString();
 
-        bool ok;
-        ushort test = idlist.at(1).toUShort(&ok);
+    if (Heap.contains(prefix)){
+        SystemDeviceIdentifier* mapped = Heap.value(prefix);
+        quint16 mappedSuffix = mapped->getSuffix();
 
-        if (ok && 0 < test)
-            this->suffix = test;
-        else
-            this->suffix = defaultSuffix;
-    }
-    else {
-        this->prefix += id;
-        this->suffix = defaultSuffix;
-    }
-}
-SystemDeviceIdentifier::SystemDeviceIdentifier(const QString& id)
-    : QVariant(id), suffix(0)
-{
-    QStringList idlist = id.split(':',QString::SkipEmptyParts);
-    if (2 == idlist.length()){
+        if (mappedSuffix == testSuffix){
+            /*
+             * Query
+             */
+            delete test;
 
-        this->prefix += idlist.at(0);
+            return *mapped;
+        }
+        else if (0 == mappedSuffix){
+            /*
+             * Refine SID
+             */
+            mapped->swap(*test);
+            /*
+             * Remap SID
+             */
+            Heap.insert(key,mapped);
 
-        bool ok;
-        ushort test = idlist.at(1).toUShort(&ok);
+            delete test;
 
-        if (ok && 0 < test){
+            return *mapped;
+        }
+        else if (0 == testSuffix){
+            /*
+             * Query
+             */
+            delete test;
 
-            this->suffix = test;
+            return *mapped;
+        }
+        else {
+            /*
+             * map(prefix) -> {sid0,...,sidN}
+             */
+            Heap.insertMulti(prefix,test);
+            /*
+             * map(prefix:suffix) -> (sid)
+             */
+            Heap.insert(key,test);
+
+            return *test;
         }
     }
     else {
-        this->prefix += id;
+        /*
+         * map(prefix) -> (sid)
+         */
+        Heap.insert(prefix,test);
+
+        if (0 != testSuffix){
+            /*
+             * map(prefix:suffix) -> (sid)
+             */
+            Heap.insert(key,test);
+        }
+        return *test;
+    }
+}
+const SystemDeviceIdentifier& SystemDeviceIdentifier::intern(const QString& id, 
+                                                             const quint16 defaultSuffix)
+{
+    return SystemDeviceIdentifier::intern(Cat(id,defaultSuffix));
+}
+const SystemDeviceIdentifier& SystemDeviceIdentifier::intern(const QByteArray& id)
+{
+    return SystemDeviceIdentifier::intern(QString(id));
+}
+const SystemDeviceIdentifier& SystemDeviceIdentifier::intern()
+{
+    return BroadcastIdentifier;
+}
+SystemDeviceIdentifier::SystemDeviceIdentifier()
+    : internal()
+{
+}
+SystemDeviceIdentifier::SystemDeviceIdentifier(const QString& id, const quint16 defaultSuffix)
+    : internal()
+{
+    QStringList idlist = id.split(':',QString::SkipEmptyParts);
+    if (2 == idlist.length()){
+
+        QString p = idlist.at(0);
+
+        bool ok;
+        ushort s = idlist.at(1).toUShort(&ok);
+
+        if (ok && 0 < s){
+            internal = new SystemDeviceIdentifierInternal(p,s);
+        }
+        else {
+            internal = new SystemDeviceIdentifierInternal(p,defaultSuffix);
+        }
+    }
+    else {
+        internal = new SystemDeviceIdentifierInternal(id,defaultSuffix);
+    }
+}
+SystemDeviceIdentifier::SystemDeviceIdentifier(const QString& id)
+    : internal()
+{
+    QStringList idlist = id.split(':',QString::SkipEmptyParts);
+    if (2 == idlist.length()){
+
+        QString p = idlist.at(0);
+
+        bool ok;
+        ushort s = idlist.at(1).toUShort(&ok);
+
+        if (ok && 0 < s){
+
+            internal = new SystemDeviceIdentifierInternal(p,s);
+        }
+        else {
+
+            internal = new SystemDeviceIdentifierInternal(p,0);
+        }
+    }
+    else {
+        internal = new SystemDeviceIdentifierInternal(id,0);
     }
 }
 SystemDeviceIdentifier::SystemDeviceIdentifier(const QByteArray& id)
-    : QVariant(id), suffix(0)
+    : internal()
 {
     QString idstring(id);
     QStringList idlist = idstring.split(':',QString::SkipEmptyParts);
     if (2 == idlist.length()){
 
-        this->prefix += idlist.at(0);
+        QString p = idlist.at(0);
 
         bool ok;
-        ushort test = idlist.at(1).toUShort(&ok);
+        ushort s = idlist.at(1).toUShort(&ok);
 
-        if (ok && 0 < test){
+        if (ok && 0 < s){
 
-            this->suffix = test;
+            internal = new SystemDeviceIdentifierInternal(p,s);
+        }
+        else {
+
+            internal = new SystemDeviceIdentifierInternal(p,0);
         }
     }
     else {
-        this->prefix += id;
+        internal = new SystemDeviceIdentifierInternal(id,0);
     }
 }
 SystemDeviceIdentifier::SystemDeviceIdentifier(const SystemDeviceIdentifier& deviceIdentifier)
-    : QVariant(deviceIdentifier), suffix(0)
+    : internal(deviceIdentifier.internal)
 {
-    this->prefix += deviceIdentifier.prefix;
-    this->suffix = deviceIdentifier.suffix;
 }
 SystemDeviceIdentifier::~SystemDeviceIdentifier(){
+    /*
+     * delete internal (not)
+     */
 }
 bool SystemDeviceIdentifier::isSpecial() const {
-    return (0 == this->prefix.length() && 0 == this->suffix);
+    return (0 == internal->prefix.length() && 0 == internal->suffix);
 }
 bool SystemDeviceIdentifier::isValid() const {
-    return (0 < this->prefix.length());
+    return (0 < internal->prefix.length());
 }
 bool SystemDeviceIdentifier::isNotValid() const {
-    return (0 == this->prefix.length());
+    return (0 == internal->prefix.length());
+}
+void SystemDeviceIdentifier::swap(SystemDeviceIdentifier& that){
+
+    internal.swap(that.internal);
 }
 bool SystemDeviceIdentifier::operator==(const SystemDeviceIdentifier* that) const {
-    return (that && that->prefix == this->prefix && that->suffix == this->suffix);
+    return (that && that->internal->prefix == internal->prefix && that->internal->suffix == internal->suffix);
 }
 bool SystemDeviceIdentifier::operator==(const SystemDeviceIdentifier& that) const {
-    return (that.prefix == this->prefix && that.suffix == this->suffix);
+    return (that.internal->prefix == internal->prefix && that.internal->suffix == internal->suffix);
 }
 bool SystemDeviceIdentifier::operator!=(const SystemDeviceIdentifier* that) const {
-    return ((!that) || that->prefix != this->prefix || that->suffix != this->suffix);
+    return ((!that) || that->internal->prefix != internal->prefix || that->internal->suffix != internal->suffix);
 }
 bool SystemDeviceIdentifier::operator!=(const SystemDeviceIdentifier& that) const {
-    return (that.prefix != this->prefix || that.suffix != this->suffix);
+    return (that.internal->prefix != internal->prefix || that.internal->suffix != internal->suffix);
 }
 bool SystemDeviceIdentifier::operator<(const SystemDeviceIdentifier* that) const {
-    return (that && this->prefix < that->prefix && this->suffix < that->suffix);
+    return (that && internal->prefix < that->internal->prefix && internal->suffix < that->internal->suffix);
 }
 bool SystemDeviceIdentifier::operator<(const SystemDeviceIdentifier& that) const {
-    return (this->prefix < that.prefix && this->suffix < that.suffix);
+    return (internal->prefix < that.internal->prefix && internal->suffix < that.internal->suffix);
 }
 bool SystemDeviceIdentifier::operator<=(const SystemDeviceIdentifier* that) const {
-    return (that && this->prefix <= that->prefix && this->suffix <= that->suffix);
+    return (that && internal->prefix <= that->internal->prefix && internal->suffix <= that->internal->suffix);
 }
 bool SystemDeviceIdentifier::operator<=(const SystemDeviceIdentifier& that) const {
-    return (this->prefix <= that.prefix && this->suffix <= that.suffix);
+    return (internal->prefix <= that.internal->prefix && internal->suffix <= that.internal->suffix);
 }
 bool SystemDeviceIdentifier::operator>(const SystemDeviceIdentifier* that) const {
-    return (that && this->prefix > that->prefix && this->suffix > that->suffix);
+    return (that && internal->prefix > that->internal->prefix && internal->suffix > that->internal->suffix);
 }
 bool SystemDeviceIdentifier::operator>(const SystemDeviceIdentifier& that) const {
-    return (this->prefix > that.prefix && this->suffix > that.suffix);
+    return (internal->prefix > that.internal->prefix && internal->suffix > that.internal->suffix);
 }
 bool SystemDeviceIdentifier::operator>=(const SystemDeviceIdentifier* that) const {
-    return (that && this->prefix >= that->prefix && this->suffix >= that->suffix);
+    return (that && internal->prefix >= that->internal->prefix && internal->suffix >= that->internal->suffix);
 }
 bool SystemDeviceIdentifier::operator>=(const SystemDeviceIdentifier& that) const {
-    return (this->prefix >= that.prefix && this->suffix >= that.suffix);
+    return (internal->prefix >= that.internal->prefix && internal->suffix >= that.internal->suffix);
 }
 const QString& SystemDeviceIdentifier::getPrefix() const {
-    return this->prefix;
+    return internal->prefix;
 }
 quint16 SystemDeviceIdentifier::getSuffix() const {
-    return this->suffix;
+    return internal->suffix;
 }
 QString SystemDeviceIdentifier::toString() const {
-    if (0 != suffix)
-        return QString("%1:%2").arg(prefix).arg(suffix);
-    else
-        return prefix;
+    return internal->external;
 }
 QString SystemDeviceIdentifier::toString(const QString& fext) const {
 
-    if (isSpecial())
-        return fext;
-    else {
-        QString prefix(this->prefix);
-        {
-            prefix.replace(".","_");
-        }
+    if (isSpecial()){
 
-        if (0 < fext.length()){
-            if (0 != suffix)
-                return QString("%1_%2.%3").arg(prefix).arg(suffix).arg(fext);
-            else 
-                return QString("%1.%2").arg(prefix,fext);
-        }
-        else
-            return prefix;
+        return fext;
+    }
+    else if (fext.isEmpty()){
+
+        return internal->file;
+    }
+    else {
+        return QString("%1.%2").arg(internal->file,fext);
     }
 }
 QStringList SystemDeviceIdentifier::toStringList() const {

@@ -4,8 +4,9 @@
 #ifndef _SYSTEM_SystemDevice_H
 #define _SYSTEM_SystemDevice_H
 
-#include "SystemDeviceIdentifier.h"
+#include "SystemCatalogNode.h"
 #include "SystemDeviceConnection.h"
+#include "SystemDeviceIdentifier.h"
 
 /*!
  * This interface is implemented by a \class QObject in
@@ -13,9 +14,11 @@
  * SystemDeviceConnection constructor as a \class QObject parent
  * argument.
  */
-class SystemDevice {
+class SystemDevice : public SystemCatalogNode {
 
  public:
+    SystemDevice(QObject* p = 0);
+    ~SystemDevice();
     /*!
      * Connection identifier parsed for its components.
      */

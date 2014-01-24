@@ -11,9 +11,9 @@
 #include <QVariant>
 
 #include "System/SystemDeviceIdentifier.h"
-#include "TMTC/TMTCMessage.h"
-#include "TMTC/TMTCName.h"
-#include "TMTC/TMTCNameValue.h"
+#include "System/SystemMessage.h"
+#include "System/SystemName.h"
+#include "System/SystemNameValue.h"
 #include "MultiplexRecord.h"
 #include "MultiplexSelect.h"
 
@@ -145,20 +145,20 @@ class MultiplexTable : public QObject {
     void setRecordCount(quint32);
     /*!
      */
-    TMTCMessage* query(const TMTCMessage& m);
+    SystemMessage* query(const SystemMessage& m);
     /*!
      * If the returned value is not a "null qvariant", then the const
      * may be lowered.
      */
-    QVariant query(const TMTCName&);
+    QVariant query(const SystemName&);
     /*!
      * Create a new record.  If the cache is not open, the operation
      * of the multiplex will populate the index.
      */
-    void update(const TMTCMessage& m);
+    void update(const SystemMessage& m);
     /*!
      */
-    void update(const TMTCNameValue& nvp);
+    void update(const SystemNameValue& nvp);
 
     void select(MultiplexSelect& select);
 

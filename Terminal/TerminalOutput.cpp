@@ -77,7 +77,7 @@ void TerminalOutput::setColumns(int cols){
         }
     }
 }
-void TerminalOutput::received(const TMTCMessage* m){
+void TerminalOutput::received(const SystemMessage* m){
     if (m){
         QByteArray* bytes = m->createOutput();
         QString text(*bytes);

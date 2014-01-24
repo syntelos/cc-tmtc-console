@@ -10,14 +10,10 @@
 #include <QUuid>
 #include <QWidget>
 
-#include "ObjectTree/ObjectTreeNode.h"
-#include "ObjectTree/ObjectTreeList.h"
 #include "System/SystemCatalogNode.h"
 #include "Library.h"
 
-class Libraries : public ObjectTreeNode,
-    public ObjectTreeList,
-    public SystemCatalogNode
+class Libraries : public SystemCatalogNode
 {
     Q_OBJECT;
 
@@ -30,14 +26,6 @@ class Libraries : public ObjectTreeNode,
     /*!
      */
     ~Libraries();
-    /*!
-     * Edit node, appending a new child: return success.
-     */
-    virtual bool insertObjectTreeList();
-    /*!
-     * Edit node, removing the indexed child: return success.
-     */
-    virtual bool removeObjectTreeList(int idx);
 
  public slots:
     /*!

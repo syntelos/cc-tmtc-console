@@ -26,7 +26,7 @@ void Scripts::InitScriptMetaType(QScriptEngine* engine){
 }
 
 Scripts::Scripts(QObject* parent)
-    : ObjectTreeNode(parent)
+    : SystemCatalogNode(parent)
 {
 }
 Scripts::~Scripts(){
@@ -41,8 +41,6 @@ void Scripts::clear(){
 
     if (0 < sz){
 
-        beginRemoveNode(0,(sz-1));
-
         int cc;
         for (cc = 0; cc < sz; cc++){
 
@@ -53,8 +51,6 @@ void Scripts::clear(){
                 child->deleteLater(); // (could be in a view)
             }
         }
-
-        endRemoveNode();
     }
 }
 bool Scripts::drop(Script* script){
@@ -145,53 +141,6 @@ void Scripts::write(SystemCatalogOutput& properties, QDomElement& parent){
             }
         }
     }
-}
-bool Scripts::insertObjectTreeList(){
-    const QObjectList& children = this->children();
-    const int index = children.size();
-    if (0 == index){
-
-        beginInsertNode(index,index);
-
-        (new Script(this));
-
-        endInsertNode();
-
-        return true;
-    }
-    else {
-        Script* last = static_cast<Script*>(children.last());
-
-        if (last->isInert()){
-
-            return false;
-        }
-        else {
-            beginInsertNode(index,index);
-
-            (new Script(this));
-
-            endInsertNode();
-
-            return true;
-        }
-    }
-}
-bool Scripts::removeObjectTreeList(int idx){
-    if (-1 < idx){
-        QObjectList& children = const_cast<QObjectList&>(this->children());
-        if (idx < children.size()){
-
-            beginInsertNode(idx,idx);
-
-            delete children.takeAt(idx);
-
-            endInsertNode();
-
-            return true;
-        }
-    }
-    return false;
 }
 Script* Scripts::find(const SystemScriptSymbol& source){
     const QObjectList& children = this->children();

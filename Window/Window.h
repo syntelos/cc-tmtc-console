@@ -16,6 +16,7 @@
 #include <QWidget>
 
 #include "System/SystemCatalog.h"
+#include "System/SystemCatalogIO.h"
 #include "System/SystemScriptable.h"
 #include "Graphics/GraphicsCanvas.h"
 #include "Configuration/Configuration.h"
@@ -29,7 +30,7 @@
  */
 class Window : public QMainWindow,
     public Configuration,
-    public SystemCatalogNode,
+    public SystemCatalogIO,
     public ConfigurationScriptable
 {
     Q_OBJECT;
@@ -46,6 +47,11 @@ class Window : public QMainWindow,
     GraphicsCanvas* canvas;
 
     static Window* instance; //< For alert and status script global functions
+
+ protected:
+    bool readConnect(QObject* subclass, const SystemCatalogInput&, 
+                     const QDomElement&, const QDomElement&);
+
 
  public:
     /*!

@@ -96,8 +96,8 @@ Window::Window(QScriptEngine* script)
 
         canvas->add(terminal);
 
-        if (QObject::connect(terminal,SIGNAL(send(const TMTCMessage*)),devices,SLOT(receivedFromUser(const TMTCMessage*))) &&
-            QObject::connect(devices,SIGNAL(sendToUser(const TMTCMessage*)),terminal,SLOT(received(const TMTCMessage*)))
+        if (QObject::connect(terminal,SIGNAL(send(const SystemMessage*)),devices,SLOT(receivedFromUser(const SystemMessage*))) &&
+            QObject::connect(devices,SIGNAL(sendToUser(const SystemMessage*)),terminal,SLOT(received(const SystemMessage*)))
             )
         {
             qDebug() << "Window/Terminal: terminal & devices configured (duplex)";
@@ -276,10 +276,53 @@ QScriptValue Window::status(QScriptContext* cx, QScriptEngine* se){
         return QScriptValue(false);
 }
 void Window::start(){
-    SystemCatalogNode::start(this);
+    const QObjectList& children = QObject::children();
+    const int count = children.count();
+    int cc;
+    for (cc = 0; cc < count; cc++){
+        QObject* child = children.at(cc);
+        SystemCatalogIO* node = dynamic_cast<SystemCatalogIO*>(child);
+        if (node){
+            node->start();
+        }
+    }
 }
 void Window::stop(){
-    SystemCatalogNode::stop(this);
+    const QObjectList& children = QObject::children();
+    const int count = children.count();
+    int cc;
+    for (cc = 0; cc < count; cc++){
+        QObject* child = children.at(cc);
+        SystemCatalogIO* node = dynamic_cast<SystemCatalogIO*>(child);
+        if (node){
+            node->stop();
+        }
+    }
+}
+bool Window::readConnect(QObject* subclass,
+                         const SystemCatalogInput& properties, 
+                         const QDomElement& node, 
+                         const QDomElement& connect)
+{
+    QString senderId = node.attribute("id");
+    if (!senderId.isEmpty()){
+        QString receiverId = connect.attribute("receiver");
+        if (!receiverId.isEmpty()){
+            QString signal = connect.attribute("signal");
+            if (!signal.isEmpty()){
+                QString slot = connect.attribute("slot");
+                if (!slot.isEmpty()){
+
+                    properties.sender(senderId,subclass,
+                                      receiverId,
+                                      signal,slot);
+
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
 }
 void Window::read(QFile& src){
     if (src.open(QIODevice::ReadOnly)){

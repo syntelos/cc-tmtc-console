@@ -7,33 +7,40 @@
 #include <QObject>
 #include <QRectF>
 
+#include "System/SystemCatalogNode.h"
 #include "System/SystemDeviceIdentifier.h"
-#include "TMTC/TMTCMessage.h"
-#include "TMTC/TMTCName.h"
+#include "System/SystemMessage.h"
+#include "System/SystemName.h"
 #include "MultiplexSelect.h"
 
 /*!
  * 
  */
-class Multiplex {
+class Multiplex : public SystemCatalogNode {
 
  public:
+    /*!
+     */
+    Multiplex(QObject* p = 0);
+    /*!
+     */
+    ~Multiplex();
     /*!
      * Update the time series data set.  The caller is responsible for
      * the heap allocation of the arguments, which are copied by this
      * method.
      */
-    virtual bool update(const TMTCMessage*) = 0;
+    virtual bool update(const SystemMessage*) = 0;
     /*!
      * Query the time series data set.  The caller is responsible for
      * the returned heap allocation.
      */
-    virtual TMTCMessage* query(const TMTCMessage*) = 0;
+    virtual SystemMessage* query(const SystemMessage*) = 0;
     /*!
      * If the returned value is not a "null qvariant", then the const
      * may be lowered.
      */
-    virtual QVariant query(const SystemDeviceIdentifier&, const TMTCName&) = 0;
+    virtual QVariant query(const SystemDeviceIdentifier&, const SystemName&) = 0;
     /*!
      * Plot selector builds the requested set of path structures with
      * visualization into the requested window.
@@ -45,19 +52,19 @@ class Multiplex {
      * The database emits this signal to transmit to a device
      * connection.
      */
-    void sendToDevice(const TMTCMessage*);
+    void sendToDevice(const SystemMessage*);
     /*!
      * The database emits this signal to transmit to a user interface
      * (e.g. Terminal Output)
      */
-    void sendToUser(const TMTCMessage*);
+    void sendToUser(const SystemMessage*);
 
  public slots:
     /*!
      * The database receives this signal from a device connection to
      * update the time series.
      */
-    virtual void receivedFromDevice(const TMTCMessage*) = 0;
+    virtual void receivedFromDevice(const SystemMessage*) = 0;
     /*!
      * The database receives this signal from a user interface
      * (e.g. Terminal Input) to query the time series.  
@@ -65,7 +72,7 @@ class Multiplex {
      * The identifier is assumed to have persistent allocation, and
      * will be employed in the response signal sent to users.
      */
-    virtual void receivedFromUser(const TMTCMessage*) = 0;
+    virtual void receivedFromUser(const SystemMessage*) = 0;
 
 };
 

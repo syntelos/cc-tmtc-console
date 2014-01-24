@@ -17,7 +17,7 @@
 
 #include "Graphics/GraphicsBranch.h"
 #include "System/SystemDeviceIdentifier.h"
-#include "TMTC/TMTCMessage.h"
+#include "System/SystemMessage.h"
 #include "TerminalText.h"
 
 /*!
@@ -56,7 +56,7 @@ class TerminalOutput : public GraphicsBranch
 
  public slots:
 
-    void received(const TMTCMessage* m);
+    void received(const SystemMessage* m);
 
  private:
     Q_DISABLE_COPY(TerminalOutput)

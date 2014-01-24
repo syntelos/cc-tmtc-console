@@ -4,14 +4,11 @@
 #include <QLabel>
 #include <QList>
 #include <QString>
-#include <QUuid>
 
 #include "Device.h"
 #include "Devices.h"
-#include "XPORT/XportConnection.h"
-
-#define XPORT_SUFFIX 10001
-
+#include "System/SystemDeviceConnectionConstructorDiscovery.h"
+#include "System/SystemConnectionTCP.h"
 
 QScriptValue deviceToScriptValue(QScriptEngine *engine, Device* const &in){
     return engine->newQObject(in);
@@ -26,68 +23,90 @@ void Device::InitScriptMetaType(QScriptEngine* engine){
 }
 
 Device::Device(const SystemDeviceIdentifier& sid, QObject* parent)
-    : ObjectTreeNode(parent), libraryUuid(0), identifier(sid)
+    : SystemDevice(parent), library(0), identifier(sid)
 {
     setObjectName(sid.toString("device"));
 }
 Device::~Device(){
 
-    if (libraryUuid){
+    if (library){
 
-        delete libraryUuid;
+        delete library;
     }
-
-    delete &identifier;
 }
-QString* Device::getLibraryUuid() const {
+QString* Device::getLibrary() const {
 
-    return this->libraryUuid;
+    return this->library;
 }
-void Device::setLibraryUuid(QString* libraryUuid){
+void Device::setLibrary(QString* library){
 
-    if (this->libraryUuid){
+    if (this->library){
 
-        if (libraryUuid != this->libraryUuid)
-            delete this->libraryUuid;
+        if (library != this->library)
+            delete this->library;
         else
             return;
     }
 
-    if (libraryUuid){
+    if (library){
 
-        if (0 < libraryUuid->length()){
+        if (0 < library->length()){
 
-            this->libraryUuid = libraryUuid;
+            this->library = library;
         }
         else {
-            delete libraryUuid;
+            delete library;
 
-            this->libraryUuid = 0;
+            this->library = 0;
         }
     }
     else {
 
-        this->libraryUuid = 0;
+        this->library = 0;
     }
 }
-void Device::setLibraryUuid(QString& libraryUuid){
+void Device::setLibrary(QString& library){
 
-    if (this->libraryUuid){
+    if (this->library){
 
-        if (&libraryUuid != this->libraryUuid)
-            delete this->libraryUuid;
+        if (&library != this->library)
+            delete this->library;
         else
             return;
     }
 
-    if (0 < libraryUuid.length()){
+    if (0 < library.length()){
 
-        this->libraryUuid = new QString(libraryUuid);
+        this->library = new QString(library);
     }
     else {
 
-        this->libraryUuid = 0;
+        this->library = 0;
     }
+}
+void Device::clear(){
+
+    QObjectList& children = const_cast<QObjectList&>(this->children());
+
+    const int sz = children.size();
+
+    if (0 < sz){
+
+        int cc;
+        for (cc = 0; cc < sz; cc++){
+
+            QObject* child = children.takeAt(cc);
+
+            if (child){
+
+                child->deleteLater(); // (could be in a view)
+            }
+        }
+    }
+}
+Multiplex* Device::getMultiplex() const {
+
+    return dynamic_cast<Multiplex*>(parent());
 }
 MultiplexTable* Device::createMultiplexTable(){
 
@@ -139,49 +158,98 @@ const SystemDeviceConnection* Device::getSystemDeviceConnection() const {
     }
     return 0;
 }
-const SystemDeviceConnection* Device::createSystemDeviceConnection(){
-    const SystemDeviceConnection* test = this->getSystemDeviceConnection();
-    if (test)
-        return test;
+void Device::start(){
+
+    SystemCatalogNode::start(this); // prop
+}
+void Device::stop(){
+
+    SystemCatalogNode::stop(this); // prop
+}
+void Device::read(const SystemCatalogInput& properties, const QDomElement& node){
+
+    this->clear();
+
+    QString nodeName = node.localName();
+    if (nodeName == "device"){
+
+        QString nodeId = node.attribute("id");
+
+        QDomNodeList children = node.childNodes();
+        const uint count = children.length();
+        bool inputReceiver = true;
+
+        Multiplex* multiplex = getMultiplex();
+
+        uint cc;
+        for (cc = 0; cc < count; cc++){
+            QDomNode child = children.item(cc);
+            if (child.isElement()){
+
+                QString name = child.localName();
+
+                QDomElement cel = child.toElement();
+
+                if (name == "connection"){
+
+                    SystemDeviceConnection* connection = 0;
+                    /*
+                     * Connection binding: static and dynamic
+                     */
+                    QString connectionClass = node.attribute("class");
+                    if (!connectionClass.isEmpty()){
+                        QString cclc = connectionClass.toLower();
+                        if (cclc == "tcp"){
+
+                            connection = new SystemConnectionTCP(identifier,this);
+                        }
+                        else {
+
+                            SystemDeviceConnectionConstructorDiscovery ctor(connectionClass);
+
+                            connection = ctor.construct(identifier,this);
+                        }
+                    }
+                    else {
+                        connection = new SystemConnectionTCP(identifier,this);
+                    }
+
+                    if (connection){
+                        /*
+                         * Required connection
+                         */
+                        QObject::connect(connection,SIGNAL(received(const SystemMessage*)),multiplex,SLOT(receivedFromDevice(const SystemMessage*)));
+
+                        QObject::connect(multiplex,SIGNAL(sendToDevice(const SystemMessage*)),connection,SLOT(send(const SystemMessage*)));
+                    }
+                    else {
+                        qDebug() << "Device.read: skipping connection for" << nodeId;
+                    }
+
+                }
+                else if (name == "connect"){
+
+                    if (readConnect(this,properties,node,cel)){
+
+                        inputReceiver = false;
+                    }
+                }
+                else {
+                    qDebug() << "Device.read: skipping unrecognized element" << name ;
+                }
+            }
+        }
+
+        if (inputReceiver){
+
+            if (!nodeId.isEmpty()){
+                properties.receiver(nodeId,this);
+            }
+        }
+    }
     else {
-        /*
-         * [TODO] re/arch connection {tcp,fsdev,http,xmpp}
-         */
-        return new XportConnection(this);
+        qDebug() << "Device.read: Unrecognized node element" << nodeName;
     }
 }
-void Device::shutdownSystemDeviceConnection(){
-    SystemDeviceConnection* test = const_cast<SystemDeviceConnection*>(this->getSystemDeviceConnection());
-    if (test){
-        test->shutdown();
-    }
-}
-QWidget* Device::createPropertyFormEditor(int index, const QMetaProperty& property){
-    /*
-     * Accept default
-     */
-    return 0;
-}
-QWidget* Device::createPropertyFormLabel(int index, const QMetaProperty& property){
-
-    const char* propName = property.name();
-
-    if ( 0 == strcmp("libraryUuid",propName)){
-
-        return new QLabel("Library UUID");
-    }
-    else if ( 0 == strcmp("systemDeviceIdentifier",propName)){
-
-        return new QLabel("Connected to");
-    }
-    else {
-        /*
-         * Accept default
-         */
-        return 0;
-    }
-}
-bool Device::setPropertyForEditor(int index, const QMetaProperty& property, const QWidget& editor){
-
-    return false;
+void Device::write(SystemCatalogOutput& properties, QDomElement& node){
 }

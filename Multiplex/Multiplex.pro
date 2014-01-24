@@ -3,13 +3,15 @@ TEMPLATE = lib
 
 QT      += network
 QT      += script
+QT      += xml
 
 CONFIG  += staticlib
 
 INCLUDEPATH += ../
 
 
-SOURCES += MultiplexIndex.cpp \
+SOURCES += Multiplex.cpp \
+           MultiplexIndex.cpp \
            MultiplexObject.cpp \
            MultiplexRecord.cpp \
            MultiplexSelect.cpp \

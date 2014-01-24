@@ -13,10 +13,7 @@
 #include "System/SystemCatalogNode.h"
 #include "Device.h"
 
-class Devices : public ObjectTreeNode,
-    public ObjectTreeList,
-    public SystemCatalogNode,
-    public Multiplex
+class Devices : public Multiplex
 {
     Q_OBJECT;
 
@@ -30,29 +27,21 @@ class Devices : public ObjectTreeNode,
      */
     ~Devices();
     /*!
-     * Edit node, appending a new child: return success.
-     */
-    virtual bool insertObjectTreeList();
-    /*!
-     * Edit node, removing the indexed child: return success.
-     */
-    virtual bool removeObjectTreeList(int idx);
-    /*!
      * Update the time series data set.  The caller is responsible for
      * the heap allocation of the arguments, which are copied by this
      * method.
      */
-    virtual bool update(const TMTCMessage*);
+    virtual bool update(const SystemMessage*);
     /*!
      * Query the time series data set.  The caller is responsible for
      * the returned heap allocation.
      */
-    virtual TMTCMessage* query(const TMTCMessage*);
+    virtual SystemMessage* query(const SystemMessage*);
     /*!
      * If the returned value is not a "null qvariant", then the const
      * may be lowered.
      */
-    virtual QVariant query(const SystemDeviceIdentifier&, const TMTCName&);
+    virtual QVariant query(const SystemDeviceIdentifier&, const SystemName&);
     /*!
      * Plot selector builds the requested set of path structures with
      * visualization into the requested window.
@@ -74,12 +63,12 @@ class Devices : public ObjectTreeNode,
      * The database emits this signal to transmit to a device
      * connection.
      */
-    void sendToDevice(const TMTCMessage*);
+    void sendToDevice(const SystemMessage*);
     /*!
      * The database emits this signal to transmit to a user interface
      * (e.g. Terminal Output)
      */
-    void sendToUser(const TMTCMessage*);
+    void sendToUser(const SystemMessage*);
 
  public slots:
     /*!
@@ -101,7 +90,7 @@ class Devices : public ObjectTreeNode,
      * The database receives this signal from a device connection to
      * update the time series.
      */
-    virtual void receivedFromDevice(const TMTCMessage*);
+    virtual void receivedFromDevice(const SystemMessage*);
     /*!
      * The database receives this signal from a user interface
      * (e.g. Terminal Input) to query the time series.  
@@ -109,7 +98,7 @@ class Devices : public ObjectTreeNode,
      * The identifier is assumed to have persistent allocation, and
      * will be employed in the response signal sent to users.
      */
-    virtual void receivedFromUser(const TMTCMessage*);
+    virtual void receivedFromUser(const SystemMessage*);
 
  private:
     Q_DISABLE_COPY(Devices)

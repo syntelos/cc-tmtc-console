@@ -224,7 +224,7 @@ quintptr MultiplexIndex::end(quintptr start) const {
 
     return adr;
 }
-int MultiplexIndex::query(const TMTCName & n) const {
+int MultiplexIndex::query(const SystemName & n) const {
     MultiplexIndexRecord* storage = getStorage();
 
     if (storage){
@@ -248,7 +248,7 @@ int MultiplexIndex::query(const TMTCName & n) const {
     }
     return -1;
 }
-int MultiplexIndex::index(const TMTCName & n) const {
+int MultiplexIndex::index(const SystemName & n) const {
     MultiplexIndexRecord* storage = getStorage();
 
     if (storage){
@@ -308,9 +308,9 @@ int MultiplexIndex::index(const TMTCName & n) const {
     }
     return -1;
 }
-QList<TMTCName> MultiplexIndex::list() const {
+QList<SystemName> MultiplexIndex::list() const {
 
-    QList<TMTCName> re;
+    QList<SystemName> re;
 
     MultiplexIndexRecord* storage = getStorage();
 
@@ -323,7 +323,7 @@ QList<TMTCName> MultiplexIndex::list() const {
 
             QVariant qv = fv.getValue();
 
-            TMTCName field(qv);
+            SystemName field(qv);
 
             re += field;
         }
@@ -371,12 +371,12 @@ void MultiplexIndex::print(){
     strbuf.clear();
 
 
-    QList<TMTCName> list = this->list();
+    QList<SystemName> list = this->list();
     const int count = list.count();
     int cc;
     for (cc = 0; cc < count; cc++){
 
-        TMTCName name = list.at(cc);
+        SystemName name = list.at(cc);
 
         strbuf.dec() << "MultiplexIndex [" << cc << "]: " << name.toString();
         qDebug() << strbuf.data();

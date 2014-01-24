@@ -24,7 +24,7 @@ void Libraries::InitScriptMetaType(QScriptEngine* engine){
 }
 
 Libraries::Libraries(QObject* parent)
-    : ObjectTreeNode(parent)
+    : SystemCatalogNode(parent)
 {
 }
 Libraries::~Libraries(){
@@ -38,7 +38,6 @@ void Libraries::clear(){
     const int sz = children.size();
 
     if (0 < sz){
-        beginRemoveNode(0,(sz-1));
 
         int cc;
         for (cc = 0; cc < sz; cc++){
@@ -50,7 +49,6 @@ void Libraries::clear(){
                 child->deleteLater(); // (could be in a view)
             }
         }
-        endRemoveNode();
     }
 }
 void Libraries::start(){
@@ -99,52 +97,4 @@ void Libraries::write(SystemCatalogOutput& properties, QDomElement& parent){
 
         //endStoreNode
     }
-}
-bool Libraries::insertObjectTreeList(){
-    const QObjectList& children = this->children();
-    const int index = children.size();
-
-    if (0 == index){
-
-        beginInsertNode(index,index);
-
-        (new Library(this));
-
-        endInsertNode();
-
-        return true;
-    }
-    else {
-        Library* last = static_cast<Library*>(children.last());
-
-        if (last->isInert()){
-
-            return false;
-        }
-        else {
-            beginInsertNode(index,index);
-
-            (new Library(this));
-
-            endInsertNode();
-
-            return true;
-        }
-    }
-}
-bool Libraries::removeObjectTreeList(int idx){
-    if (-1 < idx){
-        QObjectList& children = const_cast<QObjectList&>(this->children());
-        if (idx < children.size()){
-
-            beginRemoveNode(idx,idx);
-
-            delete children.takeAt(idx);
-
-            endRemoveNode();
-
-            return true;
-        }
-    }
-    return false;
 }

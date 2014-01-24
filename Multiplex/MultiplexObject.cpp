@@ -50,7 +50,7 @@ qint64 MultiplexObject::getTime(){
 
     return mrecord.getTime();
 }
-bool MultiplexObject::contains(const TMTCName& n) const {
+bool MultiplexObject::contains(const SystemName& n) const {
 
     const int field = mindex.query(n);
 
@@ -65,7 +65,7 @@ bool MultiplexObject::contains(const TMTCName& n) const {
     }
     return false;
 }
-QVariant MultiplexObject::getValue(const TMTCName& n) const {
+QVariant MultiplexObject::getValue(const SystemName& n) const {
 
     const int field = mindex.query(n);
 
@@ -80,7 +80,7 @@ QVariant MultiplexObject::getValue(const TMTCName& n) const {
     }
     return QVariant();
 }
-bool MultiplexObject::setValue(const TMTCName& n, const QVariant& v){
+bool MultiplexObject::setValue(const SystemName& n, const QVariant& v){
 
     const int field = mindex.index(n);
 
@@ -105,7 +105,7 @@ bool MultiplexObject::setValue(const TMTCName& n, const QVariant& v){
         return re;
     }
 }
-quint8 MultiplexObject::alloc(const TMTCName& n) const {
+quint8 MultiplexObject::alloc(const SystemName& n) const {
 
     const int field = mindex.query(n);
 
@@ -118,7 +118,7 @@ quint8 MultiplexObject::alloc(const TMTCName& n) const {
     else
         return 0;
 }
-quint8 MultiplexObject::storage(const TMTCName& n) const {
+quint8 MultiplexObject::storage(const SystemName& n) const {
 
     const int field = mindex.query(n);
 
@@ -131,7 +131,7 @@ quint8 MultiplexObject::storage(const TMTCName& n) const {
     else 
         return 0;
 }
-qptrdiff MultiplexObject::length(const TMTCName& n) const {
+qptrdiff MultiplexObject::length(const SystemName& n) const {
 
     const int field = mindex.query(n);
 

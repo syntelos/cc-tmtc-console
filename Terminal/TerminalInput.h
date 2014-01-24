@@ -22,7 +22,7 @@
 
 #include "Graphics/GraphicsBranch.h"
 #include "System/SystemDeviceIdentifier.h"
-#include "TMTC/TMTCMessage.h"
+#include "System/SystemMessage.h"
 #include "TerminalText.h"
 
 /*!
@@ -57,7 +57,7 @@ class TerminalInput : public GraphicsBranch
     virtual const char* describeClassName(QGraphicsItem* item);
 
  signals:
-    void send(const TMTCMessage*);
+    void send(const SystemMessage*);
 
  public slots:
     void contentsChanged();

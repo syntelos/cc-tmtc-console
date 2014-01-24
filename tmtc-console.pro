@@ -12,8 +12,6 @@ SUBDIRS = \
     Terminal \
     Storage \
     Configuration \
-    TMTC \
     Multiplex \
     Plot \
-    XPORT \
     Window

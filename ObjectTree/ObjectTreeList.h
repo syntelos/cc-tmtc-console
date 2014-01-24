@@ -20,6 +20,47 @@ class ObjectTreeList {
      */
     virtual bool removeObjectTreeList(int idx) = 0;
 
+    // bool Devices::insertObjectTreeList(){
+    //     const QObjectList& children = this->children();
+    //     const int index = children.size();
+    //     if (0 == index){
+    // 
+    //         beginInsertNode(index,index);
+    // 
+    //         //(new Device(this));
+    // 
+    //         endInsertNode();
+    // 
+    //         return true;
+    //     }
+    //     else {
+    // 
+    //         beginInsertNode(index,index);
+    // 
+    //         //(new Device(this));
+    // 
+    //         endInsertNode();
+    // 
+    //         return true;
+    //     }
+    // }
+    // bool Devices::removeObjectTreeList(int idx){
+    //     if (-1 < idx){
+    //         QObjectList& children = const_cast<QObjectList&>(this->children());
+    //         if (idx < children.size()){
+    // 
+    //             beginInsertNode(idx,idx);
+    // 
+    //             delete children.takeAt(idx);
+    // 
+    //             endInsertNode();
+    // 
+    //             return true;
+    //         }
+    //     }
+    //     return false;
+    // }
+
 };
 
 #endif

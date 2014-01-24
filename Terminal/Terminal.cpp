@@ -18,7 +18,7 @@ Terminal::Terminal(QGraphicsItem *parent)
     qreal y = output.height()+2;
     this->input.setPos(x,y);
 
-    QObject::connect(&this->input,SIGNAL(send(const TMTCMessage*)),this,SIGNAL(send(const TMTCMessage*)));
+    QObject::connect(&this->input,SIGNAL(send(const SystemMessage*)),this,SIGNAL(send(const SystemMessage*)));
 }
 Terminal::~Terminal()
 {
@@ -72,7 +72,7 @@ const char* Terminal::describeClassName(QGraphicsItem* item){
         }
     }
 }
-void Terminal::received(const TMTCMessage* m){
+void Terminal::received(const SystemMessage* m){
 
     this->output.received(m);
 }

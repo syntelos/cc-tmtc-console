@@ -7,6 +7,7 @@
 
 #include "Devices.h"
 #include "Configuration.h"
+#include "System/SystemDeviceConstructorDiscovery.h"
 
 
 QScriptValue devicesToScriptValue(QScriptEngine *engine, Devices* const &in){
@@ -24,7 +25,7 @@ void Devices::InitScriptMetaType(QScriptEngine* engine){
 }
 
 Devices::Devices(QObject* parent)
-    : ObjectTreeNode(parent)
+    : Multiplex(parent)
 {
 }
 Devices::~Devices(){
@@ -39,8 +40,6 @@ void Devices::clear(){
 
     if (0 < sz){
 
-        beginRemoveNode(0,(sz-1));
-
         int cc;
         for (cc = 0; cc < sz; cc++){
 
@@ -51,8 +50,6 @@ void Devices::clear(){
                 child->deleteLater(); // (could be in a view)
             }
         }
-
-        endRemoveNode();
     }
 }
 void Devices::start(){
@@ -79,8 +76,45 @@ void Devices::read(const SystemCatalogInput& properties, const QDomElement& node
                 QDomElement cel = child.toElement();
 
                 if (name == "device"){
+                    /*
+                     * http://www.w3.org/TR/xml-id/ (SystemDeviceIdentifier == "<ip_addr>:<ip_port>")
+                     */
+                    QString deviceId = node.attribute("id");
+                    if (!deviceId.isEmpty()){
+                        const SystemDeviceIdentifier& sid = SystemDeviceIdentifier::intern(deviceId);
 
+                        Device* device = 0;
+                        /*
+                         * Device binding: static and dynamic
+                         */
+                        QString deviceClass = node.attribute("class");
+                        if (!deviceClass.isEmpty() && deviceClass != "Device"){
 
+                            SystemDeviceConstructorDiscovery ctor(deviceClass);
+                            SystemDevice* sys = ctor.construct(sid,this);
+                            if (sys){
+                                device = static_cast<Device*>(sys);
+                            }
+                            else {
+                                qDebug() << "Devices.read: unable to construct an instance of class" << deviceClass << "for" << deviceId;
+                            }
+                        }
+                        else {
+                            device = new Device(sid,this);
+                        }
+                        /*
+                         * Device configuration
+                         */
+                        if (device){
+                            device->read(properties,cel);
+                        }
+                        else {
+                            qDebug() << "Devices.read: skipping device" << deviceId;
+                        }
+                    }
+                    else {
+                        qDebug() << "Devices.read: skipping device missing attribute 'id'.";
+                    }
                 }
                 else if (name == "connect"){
 
@@ -105,25 +139,6 @@ void Devices::read(const SystemCatalogInput& properties, const QDomElement& node
     else {
         qDebug() << "Devices.read: Unrecognized node element" << node.localName();
     }
-
-    // beginInsertNode(0,(count-1));
-
-    // while (select.next()){
-
-    //     new Device(this);
-    // }
-
-    // Device* device = static_cast<Device*>(children.at(cc));
-
-    // SystemDeviceConnection* connection = const_cast<SystemDeviceConnection*>(device->createSystemDeviceConnection());
-
-    // if (connection &&
-    //     QObject::connect(connection,SIGNAL(received(const TMTCMessage*)),multiplex,SLOT(receivedFromDevice(const TMTCMessage*))) &&
-    //     QObject::connect(multiplex,SIGNAL(sendToDevice(const TMTCMessage*)),connection,SLOT(send(const TMTCMessage*)))
-    //     )
-
-
-    // endInsertNode();
 
 }
 void Devices::write(SystemCatalogOutput& properties, QDomElement& node){
@@ -152,47 +167,6 @@ void Devices::write(SystemCatalogOutput& properties, QDomElement& node){
         //endStoreNode
     }
 }
-bool Devices::insertObjectTreeList(){
-    const QObjectList& children = this->children();
-    const int index = children.size();
-    if (0 == index){
-
-        beginInsertNode(index,index);
-
-        //(new Device(this));
-
-        endInsertNode();
-
-        return true;
-    }
-    else {
-
-        beginInsertNode(index,index);
-
-        //(new Device(this));
-
-        endInsertNode();
-
-        return true;
-    }
-}
-bool Devices::removeObjectTreeList(int idx){
-    if (-1 < idx){
-        QObjectList& children = const_cast<QObjectList&>(this->children());
-        if (idx < children.size()){
-
-            beginInsertNode(idx,idx);
-
-            delete children.takeAt(idx);
-
-            endInsertNode();
-
-            return true;
-        }
-    }
-    return false;
-}
-
 Device* Devices::findDevice(const SystemDeviceIdentifier& sid) const {
 
     const Device* device = findChild<Device*>(sid.getPrefix());
@@ -245,7 +219,7 @@ QList<SystemDeviceIdentifier> Devices::findMultiplexTableIdentifiers(){
     }
     return re;
 }
-bool Devices::update(const TMTCMessage* m){
+bool Devices::update(const SystemMessage* m){
     if (m){
 
         const SystemDeviceIdentifier& sid = m->getIdentifier();
@@ -266,7 +240,7 @@ bool Devices::update(const TMTCMessage* m){
     }
     return false;
 }
-TMTCMessage* Devices::query(const TMTCMessage* m){
+SystemMessage* Devices::query(const SystemMessage* m){
     if (m){
 
         const SystemDeviceIdentifier& sid = m->getIdentifier();
@@ -282,7 +256,7 @@ TMTCMessage* Devices::query(const TMTCMessage* m){
         }
         else if (sid.isSpecial()){
 
-            TMTCMessage* re = new TMTCMessage(sid);
+            SystemMessage* re = new SystemMessage(sid);
 
             if (m->isSpecial()){
                 /*
@@ -290,9 +264,9 @@ TMTCMessage* Devices::query(const TMTCMessage* m){
                  */
                 MultiplexTable* special = createMultiplexTable(sid);
 
-                QList<TMTCNameValue*>::const_iterator p, z;
+                QList<SystemNameValue*>::const_iterator p, z;
                 for (p = m->constBegin(), z = m->constEnd(); p != z; ++p){
-                    const TMTCNameValue* nvp = *p;
+                    const SystemNameValue* nvp = *p;
 
                     if (nvp->hasValue()){
                         /*
@@ -303,14 +277,14 @@ TMTCMessage* Devices::query(const TMTCMessage* m){
                     /*
                      * Query
                      */
-                    const TMTCName& n = nvp->getName();
+                    const SystemName& n = nvp->getName();
                     QVariant v = special->query(n);
 
                     if (v.isValid()){
                         /*
                          * Query response
                          */
-                        re->append(new TMTCNameValue(n,v));
+                        re->append(new SystemNameValue(n,v));
                     }
                 }
             }
@@ -326,18 +300,18 @@ TMTCMessage* Devices::query(const TMTCMessage* m){
 
                     if (history){
 
-                        QList<TMTCNameValue*>::const_iterator p, z;
+                        QList<SystemNameValue*>::const_iterator p, z;
                         for (p = m->constBegin(), z = m->constEnd(); p != z; ++p){
-                            const TMTCNameValue* nvp = *p;
+                            const SystemNameValue* nvp = *p;
 
                             if (nvp->hasNotValue()){
 
-                                const TMTCName& n = nvp->getName();
+                                const SystemName& n = nvp->getName();
                                 QVariant v = history->query(n);
 
                                 if (v.isValid()){
 
-                                    re->append(new TMTCNameValue(n,v));
+                                    re->append(new SystemNameValue(n,v));
                                 }
                             }
                         }
@@ -350,7 +324,7 @@ TMTCMessage* Devices::query(const TMTCMessage* m){
     }
     return 0;
 }
-QVariant Devices::query(const SystemDeviceIdentifier& sid, const TMTCName& n){
+QVariant Devices::query(const SystemDeviceIdentifier& sid, const SystemName& n){
 
     if (sid.isValid()){
 
@@ -429,16 +403,16 @@ void Devices::select(int count, MultiplexSelect** query, const QRectF& window){
         }
     }
 }
-void Devices::receivedFromDevice(const TMTCMessage* m){
+void Devices::receivedFromDevice(const SystemMessage* m){
 
     if (m && this->update(m)){
 
         emit sendToUser(m);
     }
 }
-void Devices::receivedFromUser(const TMTCMessage* m){
+void Devices::receivedFromUser(const SystemMessage* m){
 
-    TMTCMessage* re = this->query(m);
+    SystemMessage* re = this->query(m);
     if (re){
 
         emit sendToUser(re);

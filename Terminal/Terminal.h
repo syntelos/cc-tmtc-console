@@ -8,7 +8,7 @@
 
 #include "Graphics/GraphicsBranch.h"
 #include "System/SystemDeviceIdentifier.h"
-#include "TMTC/TMTCMessage.h"
+#include "System/SystemMessage.h"
 #include "TerminalOutput.h"
 #include "TerminalInput.h"
 
@@ -45,11 +45,11 @@ class Terminal : public GraphicsBranch
     /*!
      * The terminal emits a send for user input
      */
-    void send(const TMTCMessage*);
+    void send(const SystemMessage*);
 
  public slots:
 
-    void received(const TMTCMessage*);
+    void received(const SystemMessage*);
 
  private:
     Q_DISABLE_COPY(Terminal)

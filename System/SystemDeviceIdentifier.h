@@ -6,6 +6,8 @@
 
 #include <QByteArray>
 #include <QHash>
+#include <QSharedData>
+#include <QSharedPointer>
 #include <QString>
 #include <QStringList>
 #include <QVariant>
@@ -15,21 +17,65 @@
  * suffix -- separated by a single colon (':').  A default suffix
  * value is required by the constructor.
  */
-class SystemDeviceIdentifier : public QVariant {
+class SystemDeviceIdentifier {
+    /*!
+     */
+    struct SystemDeviceIdentifierInternal : public QSharedData {
+        QString prefix;
+        quint16 suffix;
+        QString external;
+        QString file;
+
+        SystemDeviceIdentifierInternal()
+            : QSharedData()
+        {
+        }
+        SystemDeviceIdentifierInternal(const QString& p, const quint16 s)
+            : QSharedData(), prefix(p), suffix(s), external(), file()
+        {
+            if (!p.isEmpty()){
+
+                QString fp(p);
+                fp.replace(".","_");
+
+                if (0 != s){
+
+                    external += "%1:%2";
+                    file += "%1_%2";
+
+                    external.arg(p).arg(s);
+
+                    file.arg(fp).arg(s);
+                }
+                else {
+
+                    external += p;
+
+                    file += fp;
+                }
+            }
+        }
+        SystemDeviceIdentifierInternal(const SystemDeviceIdentifierInternal& copy)
+            : QSharedData(copy), prefix(copy.prefix), suffix(copy.suffix), external(copy.external), file(copy.file)
+        {
+        }
+    };
 
     static const int InitMetaTypeId;
 
-    QString prefix;
-    quint16 suffix;
+    static QHash<QString,SystemDeviceIdentifier*> Heap;
+    static QString Cat(const QString&, const quint16);
+
+    QSharedDataPointer<SystemDeviceIdentifierInternal> internal;
 
  public:
+    static const SystemDeviceIdentifier BroadcastIdentifier;
     /*!
-     * An invalid identifier may be employed for broadcast semantics
-     * in some cases.
      */
-    static const SystemDeviceIdentifier* BroadcastIdentifier;
-
-    static QString Cat(const QString&, const quint16);
+    static const SystemDeviceIdentifier& intern(const QString&);
+    static const SystemDeviceIdentifier& intern(const QString&, const quint16);
+    static const SystemDeviceIdentifier& intern(const QByteArray&);
+    static const SystemDeviceIdentifier& intern();
     /*!
      * Construct an invalid identifier
      */
@@ -81,6 +127,9 @@ class SystemDeviceIdentifier : public QVariant {
     QString toString(const QString& fext) const ;
 
     QStringList toStringList() const;
+    /*!
+     */
+    void swap(SystemDeviceIdentifier&);
     /*!
      */
     bool operator==(const SystemDeviceIdentifier*) const;

@@ -8,7 +8,7 @@ const qreal MultiplexSelect::InitMin = +1e127;
 const qreal MultiplexSelect::InitMax = -1e127;
 
 MultiplexSelect::MultiplexSelect(const qint64 start, const qint64 end, 
-                                 const SystemDeviceIdentifier& id, const TMTCName& n)
+                                 const SystemDeviceIdentifier& id, const SystemName& n)
     : QPainterPath(), window(), start(start), end(end), id(id), name(n), 
       local_min_x(InitMin), local_min_y(InitMin), local_max_x(InitMax), local_max_y(InitMax), 
       global_min_x(InitMin), global_min_y(InitMin), global_max_x(InitMax), global_max_y(InitMax)

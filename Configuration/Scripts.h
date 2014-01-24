@@ -10,8 +10,6 @@
 #include <QUuid>
 #include <QWidget>
 
-#include "ObjectTree/ObjectTreeNode.h"
-#include "ObjectTree/ObjectTreeList.h"
 #include "System/SystemCatalogNode.h"
 #include "System/SystemScriptSymbol.h"
 #include "Script.h"
@@ -19,9 +17,7 @@
 /*!
  * 
  */
-class Scripts : public ObjectTreeNode,
-    public ObjectTreeList,
-    public SystemCatalogNode
+class Scripts : public SystemCatalogNode
 {
     Q_OBJECT;
 
@@ -63,14 +59,6 @@ class Scripts : public ObjectTreeNode,
     bool deconfigure(const char* source);
 
     void import(SystemScriptSymbol* source, SystemScriptSymbol* target);
-    /*!
-     * Edit node, appending a new child: return success.
-     */
-    virtual bool insertObjectTreeList();
-    /*!
-     * Edit node, removing the indexed child: return success.
-     */
-    virtual bool removeObjectTreeList(int idx);
 
  public slots:
     /*!

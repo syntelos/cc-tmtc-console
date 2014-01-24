@@ -245,11 +245,11 @@ QWidget* Library::createPropertyFormLabel(int index, const QMetaProperty& proper
     }
     else if ( 0 == strcmp("languageClassName",propName)){
 
-        return new QLabel("TMTC Language Class Name");
+        return new QLabel("System Language Class Name");
     }
     else if ( 0 == strcmp("connectionClassName",propName)){
 
-        return new QLabel("TMTC Connection Class Name");
+        return new QLabel("System Connection Class Name");
     }
     else {
         /*

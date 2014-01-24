@@ -7,6 +7,7 @@
 #include <QObject>
 #include <QDomElement>
 
+#include "SystemCatalogIO.h"
 #include "SystemCatalogInput.h"
 #include "SystemCatalogOutput.h"
 
@@ -26,7 +27,11 @@
  * \sa SystemCatalog
  * \sa SystemCatalogProperties
  */
-class SystemCatalogNode {
+class SystemCatalogNode : public QObject, public SystemCatalogIO {
+
+ public:
+    SystemCatalogNode(QObject* p = 0);
+    ~SystemCatalogNode();
 
  protected:
     /*!

@@ -10,7 +10,7 @@
 #include <QVariant>
 
 #include "System/SystemDeviceIdentifier.h"
-#include "TMTC/TMTCName.h"
+#include "System/SystemName.h"
 #include "MultiplexRecord.h"
 
 /*!
@@ -123,15 +123,15 @@ class MultiplexIndex {
     /*!
      * Return negative one for not found
      */
-    int query(const TMTCName& n) const;
+    int query(const SystemName& n) const;
     /*!
      * Return negative one for missing storage, or index record
      * capacity reached.
      */
-    int index(const TMTCName& n) const;
+    int index(const SystemName& n) const;
     /*!
      */
-    QList<TMTCName> list() const;
+    QList<SystemName> list() const;
     /*!
      */
     void print();

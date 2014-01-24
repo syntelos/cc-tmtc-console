@@ -7,22 +7,24 @@
 #include <QMetaProperty>
 #include <QObject>
 #include <QScriptEngine>
-#include <QUuid>
 #include <QWidget>
 
+#include "Multiplex/Multiplex.h"
 #include "Multiplex/MultiplexTable.h"
 #include "System/SystemDevice.h"
-#include "System/SystemDeviceConnection.h"
-#include "System/SystemDeviceIdentifier.h"
-#include "ObjectTree/ObjectTreeNode.h"
 
-class Device : public ObjectTreeNode, public SystemDevice {
+/*!
+ * This class may be extended via library or plugin.  The catalog DOM
+ * attribute named "class" specifies the library or plugin identifier
+ * (constructor argument) for \class SystemDeviceConstructorDiscovery.
+ */
+class Device : public SystemDevice {
     Q_OBJECT;
-    Q_PROPERTY(QString* libraryUuid READ getLibraryUuid WRITE setLibraryUuid USER true FINAL);
+    Q_PROPERTY(QString* library READ getLibrary WRITE setLibrary USER true FINAL);
     Q_PROPERTY(const SystemDeviceIdentifier& systemDeviceIdentifier READ getSystemDeviceIdentifier USER true FINAL);
     Q_CLASSINFO("Object Name", "systemDeviceIdentifier");
 
-    QString* libraryUuid;
+    QString* library;
 
  public:
     static void InitScriptMetaType(QScriptEngine* engine);
@@ -30,9 +32,6 @@ class Device : public ObjectTreeNode, public SystemDevice {
     const SystemDeviceIdentifier& identifier;
     /*!
      * User constructor for emitting new values via database write.
-     * 
-     * This instance takes responsibility for the heap allocation of
-     * the identifier (\a sid) instance object.
      */
     Device(const SystemDeviceIdentifier& sid, QObject* parent);
     /*!
@@ -42,19 +41,26 @@ class Device : public ObjectTreeNode, public SystemDevice {
      */
     bool isInert();
     /*!
-     * Reference to library by its own UUID.  A null value here
+     * Reference to library by its own .  A null value here
      * defaults to the builtin library.
      */
-    QString* getLibraryUuid() const;
+    QString* getLibrary() const;
     /*!
      * The instance object (of this class) will take responsibility
      * for the heap allocation of the argument.
      */
-    void setLibraryUuid(QString* libraryUuid);
+    void setLibrary(QString* library);
     /*!
      * Copy the argument.
      */
-    void setLibraryUuid(QString& libraryUuid);
+    void setLibrary(QString& library);
+    /*!
+     * Similar to stop, called from read.
+     */
+    void clear();
+    /*!
+     */
+    Multiplex* getMultiplex() const;
     /*!
      */
     MultiplexTable* createMultiplexTable();
@@ -68,21 +74,24 @@ class Device : public ObjectTreeNode, public SystemDevice {
      * Return an existing connection, may be null.
      */
     virtual const SystemDeviceConnection* getSystemDeviceConnection() const;
-    /*!
-     * Get or create a connection, may be null on a library failure.
-     */
-    const SystemDeviceConnection* createSystemDeviceConnection();
 
-    void shutdownSystemDeviceConnection();
+ public slots:
     /*!
+     * \sa SystemCatalogNode
      */
-    virtual QWidget* createPropertyFormEditor(int index, const QMetaProperty& property);
+    virtual void start();
     /*!
+     * \sa SystemCatalogNode
      */
-    virtual QWidget* createPropertyFormLabel(int index, const QMetaProperty& property);
+    virtual void stop();
     /*!
+     * \sa SystemCatalogNode
      */
-    virtual bool setPropertyForEditor(int index, const QMetaProperty& property, const QWidget& editor);
+    virtual void read(const SystemCatalogInput&, const QDomElement&);
+    /*!
+     * \sa SystemCatalogNode
+     */
+    virtual void write(SystemCatalogOutput&, QDomElement&);
 
  private:
     Q_DISABLE_COPY(Device)

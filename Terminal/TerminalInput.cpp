@@ -126,7 +126,7 @@ void TerminalInput::contentsChanged(){
         if (buffer){
             this->buffer = 0;
 
-            TMTCMessage* m = new TMTCMessage(buffer->toAscii());
+            SystemMessage* m = new SystemMessage(buffer->toAscii());
 
             delete buffer;
 

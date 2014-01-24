@@ -4,7 +4,7 @@
 #ifndef _CONSOLE_MULTIPLEX_MultiplexObject_H
 #define _CONSOLE_MULTIPLEX_MultiplexObject_H
 
-#include "TMTC/TMTCName.h"
+#include "System/SystemName.h"
 #include "MultiplexIndex.h"
 #include "MultiplexRecord.h"
 /*!
@@ -40,22 +40,22 @@ class MultiplexObject {
     qint64 getTime();
     /*!
      */
-    bool contains(const TMTCName& n) const;
+    bool contains(const SystemName& n) const;
     /*!
      */
-    QVariant getValue(const TMTCName& n) const;
+    QVariant getValue(const SystemName& n) const;
     /*!
      */
-    bool setValue(const TMTCName& n, const QVariant& V);
+    bool setValue(const SystemName& n, const QVariant& V);
     /*!
      */
-    quint8 alloc(const TMTCName& n) const;
+    quint8 alloc(const SystemName& n) const;
     /*!
      */
-    quint8 storage(const TMTCName& n) const;
+    quint8 storage(const SystemName& n) const;
     /*!
      */
-    qptrdiff length(const TMTCName& n) const;
+    qptrdiff length(const SystemName& n) const;
 
 };
 #endif

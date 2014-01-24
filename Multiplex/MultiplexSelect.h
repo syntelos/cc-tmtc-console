@@ -11,7 +11,7 @@
 #include <QVariant>
 
 #include "System/SystemDeviceIdentifier.h"
-#include "TMTC/TMTCName.h"
+#include "System/SystemName.h"
 #include "MultiplexObject.h"
 
 /*!
@@ -45,7 +45,7 @@ class MultiplexSelect : public QPainterPath {
     const SystemDeviceIdentifier& id;
     /*!
      */
-    const TMTCName& name;
+    const SystemName& name;
     /*!
      * In the construction phase of selection, these values are local
      * to this selection set.
@@ -66,7 +66,7 @@ class MultiplexSelect : public QPainterPath {
     /*!
      */
     MultiplexSelect(const qint64 start, const qint64 end,
-                    const SystemDeviceIdentifier& id, const TMTCName& n);
+                    const SystemDeviceIdentifier& id, const SystemName& n);
     /*!
      */
     ~MultiplexSelect();

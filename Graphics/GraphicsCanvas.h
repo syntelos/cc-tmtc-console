@@ -16,7 +16,7 @@
  *
  */
 class GraphicsCanvas : public QGraphicsView,
-    public SystemCatalogNode,
+    public SystemCatalogIO,
     public ConfigurationScriptable
 {
     Q_OBJECT;

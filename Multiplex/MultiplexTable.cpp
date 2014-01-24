@@ -7,7 +7,7 @@
 #include <QReadLocker>
 #include <QWriteLocker>
 
-#include "TMTC/TMTCNameValue.h"
+#include "System/SystemNameValue.h"
 #include "System/SystemTextBuffer.h"
 #include "MultiplexTable.h"
 #include "MultiplexTableIterator.h"
@@ -271,11 +271,11 @@ void MultiplexTable::setRecordCount(quint32 count){
 
     index.setCountUser(count);
 }
-TMTCMessage* MultiplexTable::query(const TMTCMessage& m){
+SystemMessage* MultiplexTable::query(const SystemMessage& m){
 
     QReadLocker read(&lock);
 
-    TMTCMessage* re = new TMTCMessage(id);
+    SystemMessage* re = new SystemMessage(id);
 
     MultiplexRecord* r = recordLast();
     if (r){
@@ -286,10 +286,10 @@ TMTCMessage* MultiplexTable::query(const TMTCMessage& m){
 
         int cc;
         for (cc = 0; cc < count; cc++){
-            TMTCNameValue* nvp = m.at(cc);
+            SystemNameValue* nvp = m.at(cc);
             if (nvp->hasName() && nvp->hasNotValue()){
 
-                const TMTCName& qn = nvp->getName();
+                const SystemName& qn = nvp->getName();
 
                 object.field = this->index.query(qn);
 
@@ -297,14 +297,14 @@ TMTCMessage* MultiplexTable::query(const TMTCMessage& m){
 
                     QVariant value = object.getValue();
 
-                    re->append(new TMTCNameValue(qn,value));
+                    re->append(new SystemNameValue(qn,value));
                 }
             }
         }
     }
     return re;
 }
-QVariant MultiplexTable::query(const TMTCName& name){
+QVariant MultiplexTable::query(const SystemName& name){
 
     QReadLocker read(&lock);
 
@@ -332,7 +332,7 @@ QVariant MultiplexTable::query(const TMTCName& name){
 /*
  * Create a new record.  If not open, populate index.
  */
-void MultiplexTable::update(const TMTCMessage& m){
+void MultiplexTable::update(const SystemMessage& m){
     {
         QByteArray* output = m.createOutput();
 
@@ -356,19 +356,19 @@ void MultiplexTable::update(const TMTCMessage& m){
             int cc;
             for (cc = 0; cc < count; cc++){
 
-                TMTCNameValue* nvp = m.at(cc);
+                SystemNameValue* nvp = m.at(cc);
 
                 if (nvp->hasName() && nvp->hasValue()){
 
-                    const TMTCName& name = nvp->getName();
+                    const SystemName& name = nvp->getName();
 
                     const QVariant& value = nvp->getValue();
 
                     if (object.setValue(name,value)){
-                        qDebug().nospace() << "MultiplexTable.update(TMTCMessage): updated (name: " << name.toString() << ", value: " << value.toString() << ")";
+                        qDebug().nospace() << "MultiplexTable.update(SystemMessage): updated (name: " << name.toString() << ", value: " << value.toString() << ")";
                     }
                     else {
-                        qDebug().nospace() << "MultiplexTable.update(TMTCMessage): dropped (name: " << name.toString() << ", value: " << value.toString() << ")";
+                        qDebug().nospace() << "MultiplexTable.update(SystemMessage): dropped (name: " << name.toString() << ", value: " << value.toString() << ")";
                     }
                 }
             }
@@ -380,7 +380,7 @@ void MultiplexTable::update(const TMTCMessage& m){
 /*
  * Modify the last record
  */
-void MultiplexTable::update(const TMTCNameValue& nvp){
+void MultiplexTable::update(const SystemNameValue& nvp){
 
     if (IsOpen && nvp.hasName() && nvp.hasValue()){
 
@@ -390,15 +390,15 @@ void MultiplexTable::update(const TMTCNameValue& nvp){
         if (r){
             MultiplexObject object(index,*r);
 
-            const TMTCName& name = nvp.getName();
+            const SystemName& name = nvp.getName();
 
             const QVariant& value = nvp.getValue();
 
             if (object.setValue(name,value)){
-                qDebug().nospace() << "MultiplexTable.update(TMTCNameValue): updated (name: " << name.toString() << ", value: " << value.toString() << ")";
+                qDebug().nospace() << "MultiplexTable.update(SystemNameValue): updated (name: " << name.toString() << ", value: " << value.toString() << ")";
             }
             else {
-                qDebug().nospace() << "MultiplexTable.update(TMTCNameValue): dropped (name: " << name.toString() << ", value: " << value.toString() << ")";
+                qDebug().nospace() << "MultiplexTable.update(SystemNameValue): dropped (name: " << name.toString() << ", value: " << value.toString() << ")";
             }
 
             reopen();
