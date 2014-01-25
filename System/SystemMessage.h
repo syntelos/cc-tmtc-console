@@ -9,6 +9,7 @@
 #include <QObject>
 
 #include "SystemDeviceIdentifier.h"
+#include "SystemMultiplexObject.h"
 #include "SystemNameValue.h"
 
 /*!
@@ -26,7 +27,10 @@
  * responsibility for heap allocation is implemented by calling
  * "deleteLater" after emitting the signal.
  */
-class SystemMessage : public QObject, public QList<SystemNameValue*> {
+class SystemMessage : public QObject, 
+    public QList<SystemNameValue*>,
+    public SystemMultiplexObject
+{
     Q_OBJECT;
 
  public:
@@ -56,6 +60,8 @@ class SystemMessage : public QObject, public QList<SystemNameValue*> {
      * immediate (spans multiple threads).
      */
     SystemMessage(const SystemMessage& in);
+
+    SystemMessage(const SystemMessage& in, qint64 t);
     /*!
      */
     ~SystemMessage();
@@ -71,13 +77,26 @@ class SystemMessage : public QObject, public QList<SystemNameValue*> {
      * Message object construction time is copied by the copy
      * constructor.
      */
-    qint64 getTime() const ;
+    virtual qint64 getTime() const ;
     /*!
      * Return a new byte array with the formatted contents of this
      * message.  The caller is responsible for deleting the returned
      * (heap) object.
      */
     QByteArray* createOutput() const ;
+    /*!
+     */
+    int indexOf(const SystemName&) const;
+    /*!
+     */
+    virtual bool contains(const SystemName& n) const;
+    /*!
+     */
+    virtual QVariant getValue(const SystemName& n) const;
+    /*!
+     */
+    virtual bool setValue(const SystemName& n, const QVariant& V);
+
 };
 
 #endif

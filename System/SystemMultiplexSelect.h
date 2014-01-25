@@ -90,7 +90,7 @@ class SystemMultiplexSelect : public QPainterPath {
      * coordinate into a normalized domain for the path.
      */
     void append(SystemMultiplexObject&);
-    /**
+    /*!
      * After the path result has been constructed, the application of
      * this proceedure is required to prepare the path result for
      * display.

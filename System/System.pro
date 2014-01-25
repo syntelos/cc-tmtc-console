@@ -30,6 +30,9 @@ HEADERS += SystemCatalog.h \
            SystemMultiplexObject.h \
            SystemMultiplexSelect.h \
            SystemMultiplexTable.h \
+           SystemMultiplexTableMem.h \
+           SystemMultiplexTableConstructorDiscovery.h \
+           SystemMultiplexTableConstructor.h \
            SystemName.h \
            SystemNameValue.h \
            SystemScriptable.h \
@@ -52,6 +55,8 @@ SOURCES += SystemCatalogInput.cpp \
            SystemMultiplex.cpp \
            SystemMultiplexSelect.cpp \
            SystemMultiplexTable.cpp \
+           SystemMultiplexTableMem.cpp \
+           SystemMultiplexTableConstructorDiscovery.cpp \
            SystemName.cpp \
            SystemNameValue.cpp \
            SystemScriptable.cpp \

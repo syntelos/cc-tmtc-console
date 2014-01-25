@@ -48,6 +48,17 @@ SystemMessage::SystemMessage(const SystemMessage& in)
         this->append(new SystemNameValue(in.at(cc)));
     }
 }
+SystemMessage::SystemMessage(const SystemMessage& in, qint64 t)
+    : QObject(), QList(), time(t), identifier(in.identifier)
+{
+    const int count = in.size();
+
+    int cc;
+    for (cc = 0; cc < count; cc++){
+
+        this->append(new SystemNameValue(in.at(cc)));
+    }
+}
 /*!
  */
 SystemMessage::~SystemMessage(){
@@ -97,4 +108,58 @@ bool SystemMessage::isSpecial() const {
 const SystemDeviceIdentifier& SystemMessage::getIdentifier() const {
 
     return identifier;
+}
+int SystemMessage::indexOf(const SystemName& n) const {
+    const int count = this->size();
+    
+    int cc;
+    for (cc = 0; cc < count; cc++){
+
+        SystemNameValue& nv = *this->at(cc);
+
+        if (nv == n){
+
+            return cc;
+        }
+    }
+    return -1;
+}
+bool SystemMessage::contains(const SystemName& n) const {
+
+    return (-1 < indexOf(n));
+}
+QVariant SystemMessage::getValue(const SystemName& n) const {
+    const int count = this->size();
+    
+    int cc;
+    for (cc = 0; cc < count; cc++){
+
+        SystemNameValue& nv = *this->at(cc);
+
+        if (nv == n){
+
+            QVariant value = QVariant(nv.getValue());
+            return value;
+        }
+    }
+    QVariant nil;
+    return nil;
+}
+bool SystemMessage::setValue(const SystemName& n, const QVariant& v){
+    const int count = this->size();
+    
+    int cc;
+    for (cc = 0; cc < count; cc++){
+
+        SystemNameValue& nv = *this->at(cc);
+
+        if (nv == n){
+
+            nv.setValue(v);
+            return true;
+        }
+    }
+    SystemNameValue* nvp = new SystemNameValue(n,v);
+    append(nvp);
+    return true;
 }

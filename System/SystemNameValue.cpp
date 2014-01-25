@@ -125,6 +125,21 @@ const SystemName& SystemNameValue::getName() const {
 const QVariant& SystemNameValue::getValue() const {
     return value;
 }
+bool SystemNameValue::setValue(const QVariant& v){
+    value.setValue(v);
+    QByteArray::clear();
+
+    QByteArray::append(name.toByteArray());
+    if (value.isNull()){
+
+        QByteArray::append('?');
+    }
+    else {
+        QByteArray::append('=');
+        QByteArray::append(value.toByteArray());
+    }
+    return true;
+}
 bool SystemNameValue::valueCanConvert(QVariant::Type type){
 
     return this->value.canConvert(type);
@@ -133,3 +148,52 @@ bool SystemNameValue::valueConvert(QVariant::Type type){
 
     return this->value.convert(type);
 }
+bool SystemNameValue::operator==(const SystemName* that) const {
+
+    return (name == that);
+}
+bool SystemNameValue::operator==(const SystemName& that) const {
+
+    return (name == that);
+}
+bool SystemNameValue::operator!=(const SystemName* that) const {
+
+    return (name != that);
+}
+bool SystemNameValue::operator!=(const SystemName& that) const {
+
+    return (name != that);
+}
+bool SystemNameValue::operator<(const SystemName* that) const {
+
+    return (name < that);
+}
+bool SystemNameValue::operator<(const SystemName& that) const {
+
+    return (name < that);
+}
+bool SystemNameValue::operator<=(const SystemName* that) const {
+
+    return (name <= that);
+}
+bool SystemNameValue::operator<=(const SystemName& that) const {
+
+    return (name <= that);
+}
+bool SystemNameValue::operator>(const SystemName* that) const {
+
+    return (name > that);
+}
+bool SystemNameValue::operator>(const SystemName& that) const {
+
+    return (name > that);
+}
+bool SystemNameValue::operator>=(const SystemName* that) const {
+
+    return (name >= that);
+}
+bool SystemNameValue::operator>=(const SystemName& that) const {
+
+    return (name >= that);
+}
+

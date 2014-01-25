@@ -65,9 +65,35 @@ class SystemNameValue : public QByteArray {
      */
     const QVariant& getValue() const;
 
+    bool setValue(const QVariant& v);
+
     bool valueCanConvert(QVariant::Type type);
 
     bool valueConvert(QVariant::Type type);
+    /*!
+     */
+    bool operator==(const SystemName*) const;
+    bool operator==(const SystemName&) const;
+    /*!
+     */
+    bool operator!=(const SystemName*) const;
+    bool operator!=(const SystemName&) const;
+    /*!
+     */
+    bool operator<(const SystemName* that) const;
+    bool operator<(const SystemName& that) const;
+    /*!
+     */
+    bool operator<=(const SystemName* that) const;
+    bool operator<=(const SystemName& that) const;
+    /*!
+     */
+    bool operator>(const SystemName* that) const;
+    bool operator>(const SystemName& that) const;
+    /*!
+     */
+    bool operator>=(const SystemName* that) const;
+    bool operator>=(const SystemName& that) const;
 
 };
 

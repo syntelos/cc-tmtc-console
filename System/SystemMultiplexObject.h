@@ -14,16 +14,17 @@ class SystemMultiplexObject {
  public:
     /*!
      */
-    virtual qint64 getTime() = 0;
+    virtual qint64 getTime() const = 0;
     /*!
      */
-    virtual bool contains(const SystemName& n) const = 0;
+    virtual bool contains(const SystemName&) const = 0;
     /*!
      */
-    virtual QVariant getValue(const SystemName& n) const = 0;
+    virtual QVariant getValue(const SystemName&) const = 0;
     /*!
+     * Return success (or failure)
      */
-    virtual bool setValue(const SystemName& n, const QVariant& V) = 0;
+    virtual bool setValue(const SystemName&, const QVariant&) = 0;
 
 };
 #endif

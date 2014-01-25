@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+<tmtc:window xmlns:tmtc="http://www.syntelos.com/tmtc-console" id="window">
+
+  <tmtc:devices id="multiplex">
+
+    <tmtc:device id="issl">
+
+      <tmtc:connection id="issl.connection" class="ISSL">
+
+        <tmtc:connect receiver="multiplex" signal="received" slot="receivedFromDevice"/>
+
+      </tmtc:connection>
+
+      <tmtc:table class="mem"/>
+
+    </tmtc:device>
+
+    <tmtc:connect receiver="terminal" signal="sendToUser" slot="received"/>
+
+    <tmtc:connect receiver="192_168_2_2_10001.connection" signal="sendToDevice" slot="send"/>
+
+  </tmtc:devices>
+
+  <tmtc:libraries id="libraries">
+  </tmtc:libraries>
+
+  <tmtc:scripts id="scripts">
+  </tmtc:scripts>
+
+  <tmtc:canvas id="canvas" w="1200" h="800">
+
+    <tmtc:terminal id="terminal" x="100" y="100" w="300" h="200">
+
+      <tmtc:connect receiver="192.168.2.2:10001" signal="send" slot="receivedFromUser"/>
+
+    </tmtc:terminal>
+  </tmtc:canvas>
+</tmtc:window>

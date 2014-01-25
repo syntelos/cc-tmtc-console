@@ -9,6 +9,8 @@
 #include "Devices.h"
 #include "System/SystemDeviceConnectionConstructorDiscovery.h"
 #include "System/SystemConnectionTCP.h"
+#include "System/SystemMultiplexTableMem.h"
+#include "System/SystemMultiplexTableConstructorDiscovery.h"
 
 QScriptValue deviceToScriptValue(QScriptEngine *engine, Device* const &in){
     return engine->newQObject(in);
@@ -194,11 +196,11 @@ void Device::read(const SystemCatalogInput& properties, const QDomElement& node)
                     else {
                         connection = new SystemConnectionTCP(identifier,this);
                     }
-
+                    /*
+                     * [TODO] connection->read (prevent duplication)
+                     */
                     if (connection){
-                        /*
-                         * Required connection
-                         */
+
                         QObject::connect(connection,SIGNAL(received(const SystemMessage*)),multiplex,SLOT(receivedFromDevice(const SystemMessage*)));
 
                         QObject::connect(multiplex,SIGNAL(sendToDevice(const SystemMessage*)),connection,SLOT(send(const SystemMessage*)));
@@ -206,7 +208,38 @@ void Device::read(const SystemCatalogInput& properties, const QDomElement& node)
                     else {
                         qDebug() << "Device.read: skipping connection for" << nodeId;
                     }
+                }
+                else if (name == "table"){
 
+                    SystemMultiplexTable* table = 0;
+                    /*
+                     * Table binding: static and dynamic
+                     */
+                    QString tableClass = node.attribute("class");
+                    if (tableClass.isEmpty()){
+
+                        table = new SystemMultiplexTableMem(identifier,this);
+                    }
+                    else {
+                        QString tclc = tableClass.toLower();
+                        if (tclc == "mem"){
+                            table = new SystemMultiplexTableMem(identifier,this);
+                        }
+                        else {
+                            SystemMultiplexTableConstructorDiscovery ctor(tableClass);
+
+                            table = ctor.construct(identifier,this);
+                        }
+                    }
+                    /*
+                     */
+                    if (table){
+
+                        table->read(properties,cel);
+                    }
+                    else {
+                        qDebug() << "Device.read: skipping table for" << nodeId;
+                    }
                 }
                 else if (name == "connect"){
 

@@ -6,7 +6,7 @@
 
 
 SystemMultiplexTable::SystemMultiplexTable(const SystemDeviceIdentifier& id, QObject* parent)
-    : QObject(parent), identifier(id)
+    : SystemCatalogNode(parent), identifier(id)
 {
     setObjectName(id.toString("table"));
 }
