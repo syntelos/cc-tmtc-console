@@ -12,6 +12,5 @@ SUBDIRS = \
     Terminal \
     Storage \
     Configuration \
-    Multiplex \
     Plot \
     Window

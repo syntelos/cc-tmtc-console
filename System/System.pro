@@ -26,6 +26,10 @@ HEADERS += SystemCatalog.h \
            SystemDevice.h \
            SystemDeviceIdentifier.h \
            SystemMessage.h \
+           SystemMultiplex.h \
+           SystemMultiplexObject.h \
+           SystemMultiplexSelect.h \
+           SystemMultiplexTable.h \
            SystemName.h \
            SystemNameValue.h \
            SystemScriptable.h \
@@ -45,6 +49,9 @@ SOURCES += SystemCatalogInput.cpp \
            SystemDeviceConstructorDiscovery.cpp \
            SystemDeviceIdentifier.cpp \
            SystemMessage.cpp \
+           SystemMultiplex.cpp \
+           SystemMultiplexSelect.cpp \
+           SystemMultiplexTable.cpp \
            SystemName.cpp \
            SystemNameValue.cpp \
            SystemScriptable.cpp \

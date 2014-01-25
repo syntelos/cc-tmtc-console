@@ -9,8 +9,8 @@
 #include <QScriptEngine>
 #include <QWidget>
 
-#include "Multiplex/Multiplex.h"
-#include "Multiplex/MultiplexTable.h"
+#include "System/SystemMultiplex.h"
+#include "System/SystemMultiplexTable.h"
 #include "System/SystemDevice.h"
 
 /*!
@@ -60,13 +60,10 @@ class Device : public SystemDevice {
     void clear();
     /*!
      */
-    Multiplex* getMultiplex() const;
+    SystemMultiplex* getSystemMultiplex() const;
     /*!
      */
-    MultiplexTable* createMultiplexTable();
-    /*!
-     */
-    MultiplexTable* findMultiplexTable() const;
+    SystemMultiplexTable* findSystemMultiplexTable() const;
     /*!
      */
     virtual const SystemDeviceIdentifier& getSystemDeviceIdentifier() const;

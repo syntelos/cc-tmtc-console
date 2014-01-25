@@ -25,7 +25,7 @@ void Devices::InitScriptMetaType(QScriptEngine* engine){
 }
 
 Devices::Devices(QObject* parent)
-    : Multiplex(parent)
+    : SystemMultiplex(parent)
 {
 }
 Devices::~Devices(){
@@ -173,21 +173,12 @@ Device* Devices::findDevice(const SystemDeviceIdentifier& sid) const {
 
     return const_cast<Device*>(device);
 }
-MultiplexTable* Devices::findMultiplexTable(const SystemDeviceIdentifier& sid) const {
+SystemMultiplexTable* Devices::findSystemMultiplexTable(const SystemDeviceIdentifier& sid) const {
 
     const Device* device = findDevice(sid);
 
     if (device)
-        return device->findMultiplexTable();
-    else
-        return 0;
-}
-MultiplexTable* Devices::createMultiplexTable(const SystemDeviceIdentifier& sid){
-
-    Device* device = findDevice(sid);
-
-    if (device)
-        return device->createMultiplexTable();
+        return device->findSystemMultiplexTable();
     else
         return 0;
 }
@@ -203,13 +194,13 @@ QList<Device*> Devices::listDevices(){
     }
     return re;
 }
-QList<SystemDeviceIdentifier> Devices::findMultiplexTableIdentifiers(){
+QList<SystemDeviceIdentifier> Devices::findSystemMultiplexTableIdentifiers(){
     QList<SystemDeviceIdentifier> re;
     const QObjectList& children = this->children();
     foreach(QObject* child, children){
         Device* device = dynamic_cast<Device*>(child);
         if (device){
-            MultiplexTable* table = device->findMultiplexTable();
+            SystemMultiplexTable* table = device->findSystemMultiplexTable();
 
             if (table){
 
@@ -226,16 +217,18 @@ bool Devices::update(const SystemMessage* m){
 
         if (sid.isValid() || sid.isSpecial()){
 
-            MultiplexTable* history = createMultiplexTable(sid);
-            /*
-             * An invalid (special) ID will deposit values into the
-             * referenced data set.  The values in the "special" data
-             * set have "desktop" semantics: they cannot be proxied to
-             * an Instrument Device (Connection).
-             */
-            history->update(*m);
+            SystemMultiplexTable* history = findSystemMultiplexTable(sid);
+            if (history){
+                /*
+                 * An invalid (special) ID will deposit values into the
+                 * referenced data set.  The values in the "special" data
+                 * set have "desktop" semantics: they cannot be proxied to
+                 * an Instrument Device (Connection).
+                 */
+                history->update(*m);
 
-            return true;
+                return true;
+            }
         }
     }
     return false;
@@ -247,7 +240,7 @@ SystemMessage* Devices::query(const SystemMessage* m){
 
         if (sid.isValid()){
 
-            MultiplexTable* history = findMultiplexTable(sid);
+            SystemMultiplexTable* history = findSystemMultiplexTable(sid);
 
             if (history)
                 return history->query(*m);
@@ -262,29 +255,31 @@ SystemMessage* Devices::query(const SystemMessage* m){
                 /*
                  * Use desktop semantics
                  */
-                MultiplexTable* special = createMultiplexTable(sid);
+                SystemMultiplexTable* special = findSystemMultiplexTable(sid);
+                if (special){
 
-                QList<SystemNameValue*>::const_iterator p, z;
-                for (p = m->constBegin(), z = m->constEnd(); p != z; ++p){
-                    const SystemNameValue* nvp = *p;
+                    QList<SystemNameValue*>::const_iterator p, z;
+                    for (p = m->constBegin(), z = m->constEnd(); p != z; ++p){
+                        const SystemNameValue* nvp = *p;
 
-                    if (nvp->hasValue()){
+                        if (nvp->hasValue()){
+                            /*
+                             * Update
+                             */
+                            special->update(*nvp);
+                        }
                         /*
-                         * Update
+                         * Query
                          */
-                        special->update(*nvp);
-                    }
-                    /*
-                     * Query
-                     */
-                    const SystemName& n = nvp->getName();
-                    QVariant v = special->query(n);
+                        const SystemName& n = nvp->getName();
+                        QVariant v = special->query(n);
 
-                    if (v.isValid()){
-                        /*
-                         * Query response
-                         */
-                        re->append(new SystemNameValue(n,v));
+                        if (v.isValid()){
+                            /*
+                             * Query response
+                             */
+                            re->append(new SystemNameValue(n,v));
+                        }
                     }
                 }
             }
@@ -296,7 +291,7 @@ SystemMessage* Devices::query(const SystemMessage* m){
                 QList<Device*>::const_iterator dp, dz;
                 for (dp = devices.constBegin(), dz = devices.constEnd(); dp != dz; ++dp){
 
-                    MultiplexTable* history = (*dp)->findMultiplexTable();
+                    SystemMultiplexTable* history = (*dp)->findSystemMultiplexTable();
 
                     if (history){
 
@@ -328,7 +323,7 @@ QVariant Devices::query(const SystemDeviceIdentifier& sid, const SystemName& n){
 
     if (sid.isValid()){
 
-        MultiplexTable* history = findMultiplexTable(sid);
+        SystemMultiplexTable* history = findSystemMultiplexTable(sid);
 
         if (history){
             return history->query(n);
@@ -337,19 +332,19 @@ QVariant Devices::query(const SystemDeviceIdentifier& sid, const SystemName& n){
     QVariant nil;
     return nil;
 }
-void Devices::select(int count, MultiplexSelect** query, const QRectF& window){
+void Devices::select(int count, SystemMultiplexSelect** query, const QRectF& window){
     if (0 < count){
 
         int cc;
         for (cc = 0; cc < count; cc++){
 
-            MultiplexSelect& select = *query[cc];
+            SystemMultiplexSelect& select = *query[cc];
 
             const SystemDeviceIdentifier& sid = select.id;
 
             if (sid.isValid()){
 
-                MultiplexTable* history = findMultiplexTable(sid);
+                SystemMultiplexTable* history = findSystemMultiplexTable(sid);
 
                 if (history){
                     history->select(select);
@@ -359,14 +354,14 @@ void Devices::select(int count, MultiplexSelect** query, const QRectF& window){
         /*
          * Determine boundaries of results
          */
-        qreal min_x = MultiplexSelect::InitMin;
-        qreal min_y = MultiplexSelect::InitMin;
-        qreal max_x = MultiplexSelect::InitMax;
-        qreal max_y = MultiplexSelect::InitMax;
+        qreal min_x = SystemMultiplexSelect::InitMin;
+        qreal min_y = SystemMultiplexSelect::InitMin;
+        qreal max_x = SystemMultiplexSelect::InitMax;
+        qreal max_y = SystemMultiplexSelect::InitMax;
 
         for (cc = 0; cc < count; cc++){
 
-            MultiplexSelect& select = *query[cc];
+            SystemMultiplexSelect& select = *query[cc];
 
             if (select.local_min_x < min_x)
                 min_x = select.local_min_x;
@@ -392,7 +387,7 @@ void Devices::select(int count, MultiplexSelect** query, const QRectF& window){
 
         for (cc = 0; cc < count; cc++){
 
-            MultiplexSelect& select = *query[cc];
+            SystemMultiplexSelect& select = *query[cc];
 
             select.global_min_x = min_x;
             select.global_max_x = max_x;

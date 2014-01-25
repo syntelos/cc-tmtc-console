@@ -104,35 +104,16 @@ void Device::clear(){
         }
     }
 }
-Multiplex* Device::getMultiplex() const {
+SystemMultiplex* Device::getSystemMultiplex() const {
 
-    return dynamic_cast<Multiplex*>(parent());
+    return dynamic_cast<SystemMultiplex*>(parent());
 }
-MultiplexTable* Device::createMultiplexTable(){
-
-    MultiplexTable* table = findMultiplexTable();
-
-    if (0 != table)
-        return table;
-    else {
-
-        table = new MultiplexTable(identifier,this);
-
-        if (table->open()){
-            qDebug().nospace() << "Device.createMultiplexTable [open] " << identifier.toString() << " OK";
-        }
-        else {
-            qDebug().nospace() << "Device.createMultiplexTable [open] " << identifier.toString() << " ERROR";
-        }
-        return table;
-    }
-}
-MultiplexTable* Device::findMultiplexTable() const {
+SystemMultiplexTable* Device::findSystemMultiplexTable() const {
 
     const QObjectList& children = this->children();
     foreach(QObject* child, children){
 
-        MultiplexTable* table = dynamic_cast<MultiplexTable*>(child);
+        SystemMultiplexTable* table = dynamic_cast<SystemMultiplexTable*>(child);
         if (table){
 
             return table;
@@ -179,7 +160,7 @@ void Device::read(const SystemCatalogInput& properties, const QDomElement& node)
         const uint count = children.length();
         bool inputReceiver = true;
 
-        Multiplex* multiplex = getMultiplex();
+        SystemMultiplex* multiplex = getSystemMultiplex();
 
         uint cc;
         for (cc = 0; cc < count; cc++){

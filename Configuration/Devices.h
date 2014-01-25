@@ -6,14 +6,14 @@
 
 #include <QObject>
 
-#include "Multiplex/Multiplex.h"
-#include "Multiplex/MultiplexTable.h"
+#include "System/SystemMultiplex.h"
+#include "System/SystemMultiplexTable.h"
 #include "ObjectTree/ObjectTreeNode.h"
 #include "ObjectTree/ObjectTreeList.h"
 #include "System/SystemCatalogNode.h"
 #include "Device.h"
 
-class Devices : public Multiplex
+class Devices : public SystemMultiplex
 {
     Q_OBJECT;
 
@@ -46,17 +46,15 @@ class Devices : public Multiplex
      * Plot selector builds the requested set of path structures with
      * visualization into the requested window.
      */
-    virtual void select(int count, MultiplexSelect** query, const QRectF& window);
+    virtual void select(int count, SystemMultiplexSelect** query, const QRectF& window);
 
     QList<Device*> listDevices();
 
     Device* findDevice(const SystemDeviceIdentifier& sid) const;
 
-    MultiplexTable* createMultiplexTable(const SystemDeviceIdentifier& sid);
+    SystemMultiplexTable* findSystemMultiplexTable(const SystemDeviceIdentifier& sid) const;
 
-    MultiplexTable* findMultiplexTable(const SystemDeviceIdentifier& sid) const;
-
-    QList<SystemDeviceIdentifier> findMultiplexTableIdentifiers();
+    QList<SystemDeviceIdentifier> findSystemMultiplexTableIdentifiers();
 
  signals:
     /*!

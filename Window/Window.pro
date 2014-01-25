@@ -21,8 +21,6 @@ unix {
     LIBS += -lConfiguration
     LIBS += -L../Storage
     LIBS += -lStorage
-    LIBS += -L../Multiplex
-    LIBS += -lMultiplex
     LIBS += -L../Terminal
     LIBS += -lTerminal
     LIBS += -L../Graphics
@@ -42,8 +40,6 @@ win32 {
         OTHER_FILES += ../Configuration/debug/libConfiguration.a
         LIBS += -L../Storage/debug
         OTHER_FILES += ../Storage/debug/libStorage.a
-        LIBS += -L../Multiplex/debug
-        OTHER_FILES += ../Multiplex/debug/libMultiplex.a
         LIBS += -L../Terminal/debug
         OTHER_FILES += ../Terminal/debug/libTerminal.a
         LIBS += -L../Graphics/debug
@@ -61,8 +57,6 @@ win32 {
         OTHER_FILES += ../Configuration/release/libConfiguration.a
         LIBS += -L../Storage/release
         OTHER_FILES += ../Storage/release/libStorage.a
-        LIBS += -L../Multiplex/release
-        OTHER_FILES += ../Multiplex/release/libMultiplex.a
         LIBS += -L../Terminal/release
         OTHER_FILES += ../Terminal/release/libTerminal.a
         LIBS += -L../Graphics/release
@@ -77,7 +71,6 @@ win32 {
 
     LIBS += -lConfiguration
     LIBS += -lStorage
-    LIBS += -lMultiplex
     LIBS += -lTerminal
     LIBS += -lGraphics
     LIBS += -lObjectTree
