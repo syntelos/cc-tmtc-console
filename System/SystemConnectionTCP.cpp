@@ -4,6 +4,7 @@
 #include <QByteArray>
 #include <QDebug>
 #include <QString>
+#include <QTcpSocket>
 
 #include "SystemDeviceIdentifier.h"
 #include "SystemConnectionTCP.h"

@@ -7,7 +7,6 @@
 #include <QObject>
 #include <QList>
 #include <QMutex>
-#include <QTcpSocket>
 
 #include "SystemDeviceConnection.h"
 #include "SystemDeviceIdentifier.h"
