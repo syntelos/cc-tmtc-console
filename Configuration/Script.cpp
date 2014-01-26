@@ -19,7 +19,6 @@
 
 #include "Script.h"
 #include "Scripts.h"
-#include "CodeEditor/CodeEditor.h"
 
 
 QScriptValue scriptToScriptValue(QScriptEngine *engine, Script* const &in){
@@ -324,16 +323,16 @@ QWidget* Script::createPropertyFormEditor(int index, const QMetaProperty& proper
         editor->setProperty("maxLength",40);
         return editor;
     }
-    else if ( 0 == strcmp("content",propName)){
+    // else if ( 0 == strcmp("content",propName)){
 
-        CodeEditor* editor = new CodeEditor();
+    //     CodeEditor* editor = new CodeEditor();
 
-        if (this->content){
+    //     if (this->content){
 
-            editor->setPlainText(*this->content);
-        }
-        return editor;
-    }
+    //         editor->setPlainText(*this->content);
+    //     }
+    //     return editor;
+    // }
     else {
         /*
          * Accept default
