@@ -20,6 +20,12 @@
 class SystemConnectionTCP : public SystemDeviceConnection {
     Q_OBJECT;
 
+ protected:
+    /*!
+     * Cast parent to required \class SystemDevice
+     */
+    SystemDevice* getSystemDevice() const;
+
  public:
     /*!
      * The argument \a parent is a member of \class QObject and \class
@@ -32,10 +38,6 @@ class SystemConnectionTCP : public SystemDeviceConnection {
     /*!
      */
     virtual void run();
-    /*!
-     * Cast parent to required \class SystemDevice
-     */
-    SystemDevice* getSystemDevice() const;
 
  private:
     Q_DISABLE_COPY(SystemConnectionTCP)

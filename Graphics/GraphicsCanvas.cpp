@@ -48,11 +48,13 @@ void GraphicsCanvas::stop(){
 }
 void GraphicsCanvas::read(const SystemCatalogInput& properties, const QDomElement& node){
 
-    if (node.localName() == "canvas"){
+    QString nodeName = node.localName();
+
+    if (nodeName == "canvas"){
 
     }
     else {
-        qDebug() << "GraphicsCanvas.read: Unrecognized catalog node" << node.localName();
+        qDebug() << "GraphicsCanvas.read: Unrecognized catalog read node" << nodeName;
     }
 }
 void GraphicsCanvas::write(SystemCatalogOutput& properties, QDomElement& node){

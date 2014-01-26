@@ -1,13 +1,18 @@
 /*
  * Copyright 2013 John Pritchard, Syntelos.  All rights reserved.
  */
-#ifndef _CONSOLE_TERMINAL_OUTPUT_H
-#define _CONSOLE_TERMINAL_OUTPUT_H
+#ifndef _CONSOLE_TERMINAL_INPUT_H
+#define _CONSOLE_TERMINAL_INPUT_H
 
 #include <QAbstractGraphicsShapeItem>
+#include <QEvent>
+#include <QFocusEvent>
 #include <QGraphicsItem>
 #include <QGraphicsObject>
+#include <QGraphicsSceneHoverEvent>
+#include <QGraphicsSceneMouseEvent>
 #include <QGraphicsTextItem>
+#include <QKeyEvent>
 #include <QObject>
 #include <QPainter>
 #include <QRectF>
@@ -18,31 +23,28 @@
 #include "Graphics/GraphicsBranch.h"
 #include "System/SystemDeviceIdentifier.h"
 #include "System/SystemMessage.h"
-#include "TerminalText.h"
+#include "GraphicsTerminalText.h"
 
 /*!
- * Terminal output is multiple rows.
+ * GraphicsTerminal input is always one row, editable.
  */
-class TerminalOutput : public GraphicsBranch
+class GraphicsTerminalInput : public GraphicsBranch
 {
     Q_OBJECT;
 
-    static const char* TerminalOutputClassName;
+    static const char* GraphicsTerminalInputClassName;
 
-    TerminalText text;
+    GraphicsTerminalText text;
     QAbstractGraphicsShapeItem* border;
-    int rows;
     int columns;
+    QString* buffer;
 
  public:
-    TerminalOutput(QGraphicsItem *parent = 0);
-    ~TerminalOutput();
+    GraphicsTerminalInput(QGraphicsItem *parent = 0);
+    ~GraphicsTerminalInput();
 
     int getFontSize();
     void setFontSize(int fontSize);
-
-    int getRows();
-    void setRows(int rows);
 
     int getColumns();
     void setColumns(int cols);
@@ -54,11 +56,13 @@ class TerminalOutput : public GraphicsBranch
 
     virtual const char* describeClassName(QGraphicsItem* item);
 
- public slots:
+ signals:
+    void send(const SystemMessage*);
 
-    void received(const SystemMessage* m);
+ public slots:
+    void contentsChanged();
 
  private:
-    Q_DISABLE_COPY(TerminalOutput)
+    Q_DISABLE_COPY(GraphicsTerminalInput)
 };
 #endif

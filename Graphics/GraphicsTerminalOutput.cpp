@@ -11,11 +11,11 @@
 #include <QTextDocument>
 
 #include "Graphics/GraphicsLeaf.h"
-#include "TerminalOutput.h"
+#include "GraphicsTerminalOutput.h"
 
-const char* TerminalOutput::TerminalOutputClassName = "TerminalOutput";
+const char* GraphicsTerminalOutput::GraphicsTerminalOutputClassName = "GraphicsTerminalOutput";
 
-TerminalOutput::TerminalOutput(QGraphicsItem *parent)
+GraphicsTerminalOutput::GraphicsTerminalOutput(QGraphicsItem *parent)
     : GraphicsBranch(parent), text(this), border(0)
 {
     this->text.setTextInteractionFlags(Qt::TextBrowserInteraction);
@@ -26,24 +26,24 @@ TerminalOutput::TerminalOutput(QGraphicsItem *parent)
     QGraphicsRectItem* border = new QGraphicsRectItem(this->text.boundingRect());
     this->setBorder(border);
 }
-TerminalOutput::~TerminalOutput()
+GraphicsTerminalOutput::~GraphicsTerminalOutput()
 {
 }
-int TerminalOutput::getFontSize(){
+int GraphicsTerminalOutput::getFontSize(){
 
     return this->text.font().pointSize();
 }
-void TerminalOutput::setFontSize(int fontSize){
+void GraphicsTerminalOutput::setFontSize(int fontSize){
     if (8 <= fontSize && fontSize < 100){
         QFont monospace("Courier",fontSize,QFont::Normal);
         this->text.setFont(monospace);
     }
 }
-int TerminalOutput::getRows(){
+int GraphicsTerminalOutput::getRows(){
 
     return this->rows;
 }
-void TerminalOutput::setRows(int rows){
+void GraphicsTerminalOutput::setRows(int rows){
     if (0 < rows){
         this->rows = rows;
 
@@ -62,11 +62,11 @@ void TerminalOutput::setRows(int rows){
         document->setPlainText(fill);
     }
 }
-int TerminalOutput::getColumns(){
+int GraphicsTerminalOutput::getColumns(){
 
     return this->columns;
 }
-void TerminalOutput::setColumns(int cols){
+void GraphicsTerminalOutput::setColumns(int cols){
     if (10 <= cols){
         this->columns = cols;
         {
@@ -77,7 +77,7 @@ void TerminalOutput::setColumns(int cols){
         }
     }
 }
-void TerminalOutput::received(const SystemMessage* m){
+void GraphicsTerminalOutput::received(const SystemMessage* m){
     if (m){
         QByteArray* bytes = m->createOutput();
         QString text(*bytes);
@@ -92,11 +92,11 @@ void TerminalOutput::received(const SystemMessage* m){
         delete bytes;
     }
 }
-QAbstractGraphicsShapeItem* TerminalOutput::getBorder(){
+QAbstractGraphicsShapeItem* GraphicsTerminalOutput::getBorder(){
 
     return this->border;
 }
-void TerminalOutput::setBorder(QAbstractGraphicsShapeItem* s){
+void GraphicsTerminalOutput::setBorder(QAbstractGraphicsShapeItem* s){
 
     if (this->border && s != this->border){
 
@@ -115,11 +115,11 @@ void TerminalOutput::setBorder(QAbstractGraphicsShapeItem* s){
         this->border = s;
     }
 }
-const char* TerminalOutput::graphicsClassName(){
+const char* GraphicsTerminalOutput::graphicsClassName(){
 
-    return TerminalOutputClassName;
+    return GraphicsTerminalOutputClassName;
 }
-const char* TerminalOutput::describeClassName(QGraphicsItem* item){
+const char* GraphicsTerminalOutput::describeClassName(QGraphicsItem* item){
     GraphicsLeaf* leaf = dynamic_cast<GraphicsLeaf*>(item);
     if (leaf){
         return leaf->graphicsClassName();

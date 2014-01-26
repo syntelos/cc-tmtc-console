@@ -162,8 +162,6 @@ void Device::read(const SystemCatalogInput& properties, const QDomElement& node)
         const uint count = children.length();
         bool inputReceiver = true;
 
-        SystemMultiplex* multiplex = getSystemMultiplex();
-
         uint cc;
         for (cc = 0; cc < count; cc++){
             QDomNode child = children.item(cc);
@@ -197,13 +195,17 @@ void Device::read(const SystemCatalogInput& properties, const QDomElement& node)
                         connection = new SystemConnectionTCP(identifier,this);
                     }
                     /*
-                     * [TODO] connection->read (prevent duplication)
                      */
                     if (connection){
-
-                        QObject::connect(connection,SIGNAL(received(const SystemMessage*)),multiplex,SLOT(receivedFromDevice(const SystemMessage*)));
-
-                        QObject::connect(multiplex,SIGNAL(sendToDevice(const SystemMessage*)),connection,SLOT(send(const SystemMessage*)));
+                        /*
+                         * Requires
+                         * 
+                         *  connect(connection,"received",multiplex,"receivedFromDevice")
+                         * and
+                         *
+                         *  connect(multiplex,"sendToDevice",connection,"send")
+                         */
+                        connection->read(properties,cel);
                     }
                     else {
                         qDebug() << "Device.read: skipping connection for" << nodeId;
@@ -249,7 +251,7 @@ void Device::read(const SystemCatalogInput& properties, const QDomElement& node)
                     }
                 }
                 else {
-                    qDebug() << "Device.read: skipping unrecognized element" << name ;
+                    qDebug() << "Device.read: skipping unrecognized child element" << name ;
                 }
             }
         }
@@ -262,7 +264,7 @@ void Device::read(const SystemCatalogInput& properties, const QDomElement& node)
         }
     }
     else {
-        qDebug() << "Device.read: Unrecognized node element" << nodeName;
+        qDebug() << "Device.read: Unrecognized catalog read node" << nodeName;
     }
 }
 void Device::write(SystemCatalogOutput& properties, QDomElement& node){

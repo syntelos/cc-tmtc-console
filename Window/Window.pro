@@ -2,7 +2,6 @@ TARGET = ../tmtc-console
 TEMPLATE = app
 
 QT      += network
-QT      += sql
 QT      += script
 QT      += xml
 
@@ -21,8 +20,6 @@ unix {
     LIBS += -lConfiguration
     LIBS += -L../Storage
     LIBS += -lStorage
-    LIBS += -L../Terminal
-    LIBS += -lTerminal
     LIBS += -L../Graphics
     LIBS += -lGraphics
     LIBS += -L../ObjectTree
@@ -40,8 +37,6 @@ win32 {
         OTHER_FILES += ../Configuration/debug/libConfiguration.a
         LIBS += -L../Storage/debug
         OTHER_FILES += ../Storage/debug/libStorage.a
-        LIBS += -L../Terminal/debug
-        OTHER_FILES += ../Terminal/debug/libTerminal.a
         LIBS += -L../Graphics/debug
         OTHER_FILES += ../Graphics/debug/libGraphics.a
         LIBS += -L../ObjectTree/debug
@@ -57,8 +52,6 @@ win32 {
         OTHER_FILES += ../Configuration/release/libConfiguration.a
         LIBS += -L../Storage/release
         OTHER_FILES += ../Storage/release/libStorage.a
-        LIBS += -L../Terminal/release
-        OTHER_FILES += ../Terminal/release/libTerminal.a
         LIBS += -L../Graphics/release
         OTHER_FILES += ../Graphics/release/libGraphics.a
         LIBS += -L../ObjectTree/release
@@ -71,7 +64,6 @@ win32 {
 
     LIBS += -lConfiguration
     LIBS += -lStorage
-    LIBS += -lTerminal
     LIBS += -lGraphics
     LIBS += -lObjectTree
     LIBS += -lCodeEditor

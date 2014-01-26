@@ -3,17 +3,17 @@
  */
 #include <QKeyEvent>
 
-#include "TerminalText.h"
+#include "GraphicsTerminalText.h"
 
-const char* TerminalText::TerminalTextClassName = "TerminalText";
+const char* GraphicsTerminalText::GraphicsTerminalTextClassName = "GraphicsTerminalText";
 
-TerminalText::TerminalText(QGraphicsItem* parent)
+GraphicsTerminalText::GraphicsTerminalText(QGraphicsItem* parent)
     : QGraphicsTextItem(parent)
 {
 }
-TerminalText::~TerminalText(){
+GraphicsTerminalText::~GraphicsTerminalText(){
 }
-bool TerminalText::sceneEvent(QEvent* event){
+bool GraphicsTerminalText::sceneEvent(QEvent* event){
 
     const QEvent::Type type = event->type();
 
@@ -38,8 +38,8 @@ bool TerminalText::sceneEvent(QEvent* event){
         return QGraphicsTextItem::sceneEvent(event);
     }
 }
-const char* TerminalText::graphicsClassName(){
+const char* GraphicsTerminalText::graphicsClassName(){
 
-    return TerminalTextClassName;
+    return GraphicsTerminalTextClassName;
 }
 

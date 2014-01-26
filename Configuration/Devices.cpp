@@ -83,29 +83,31 @@ void Devices::read(const SystemCatalogInput& properties, const QDomElement& node
                     if (!deviceId.isEmpty()){
                         const SystemDeviceIdentifier& sid = SystemDeviceIdentifier::intern(deviceId);
 
-                        Device* device = 0;
+                        SystemDevice* device = 0;
                         /*
                          * Device binding: static and dynamic
                          */
                         QString deviceClass = node.attribute("class");
-                        if (!deviceClass.isEmpty() && deviceClass != "Device"){
+                        if (!deviceClass.isEmpty()){
+                            QString dclc = deviceClass.toLower();
+                            if (dclc == "dev" || dclc == "device"){
 
-                            SystemDeviceConstructorDiscovery ctor(deviceClass);
-                            SystemDevice* sys = ctor.construct(sid,this);
-                            if (sys){
-                                device = static_cast<Device*>(sys);
+                                device = new Device(sid,this);
                             }
                             else {
-                                qDebug() << "Devices.read: unable to construct an instance of class" << deviceClass << "for" << deviceId;
+
+                                SystemDeviceConstructorDiscovery ctor(deviceClass);
+
+                                device = ctor.construct(sid,this);
                             }
                         }
                         else {
                             device = new Device(sid,this);
                         }
                         /*
-                         * Device configuration
                          */
                         if (device){
+
                             device->read(properties,cel);
                         }
                         else {
@@ -124,7 +126,7 @@ void Devices::read(const SystemCatalogInput& properties, const QDomElement& node
                     }
                 }
                 else {
-                    qDebug() << "Devices.read: skipping unrecognized element" << name ;
+                    qDebug() << "Devices.read: skipping unrecognized child element" << name ;
                 }
             }
         }
@@ -137,9 +139,8 @@ void Devices::read(const SystemCatalogInput& properties, const QDomElement& node
         }
     }
     else {
-        qDebug() << "Devices.read: Unrecognized node element" << node.localName();
+        qDebug() << "Devices.read: Unrecognized catalog read node" << node.localName();
     }
-
 }
 void Devices::write(SystemCatalogOutput& properties, QDomElement& node){
 

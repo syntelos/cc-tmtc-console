@@ -29,9 +29,12 @@
  * enable the implementors of \class SystemCatalogNode to produce
  * "connect" elements for their input process.
  * 
- * The "connect" element shall employ the attributes "receiver",
- * "signal" and "slot" for the receiver (element "id"), signal and
- * slot strings defined here.
+ * The "connect" element shall employ the attributes "src", "signal",
+ * "dst" and "slot" for the sender (element "id"), signal (method
+ * name), receiver (id), and slot (method) strings.  Source and
+ * Destination strings reference XML information, while Signal and
+ * Slot strings reference \class QMetaObject / \class QMetaMethod
+ * Names (and optionally Signatures).
  * 
  * RUNTIME
  * 

@@ -3,21 +3,25 @@
 
   <tmtc:devices id="multiplex">
 
-    <tmtc:device id="issl">
+    <tmtc:device id="issl" class="dev">
 
       <tmtc:connection id="issl.connection" class="ISSL">
 
-        <tmtc:connect receiver="multiplex" signal="received" slot="receivedFromDevice"/>
+        <tmtc:connect src="issl.connection" signal="received" dst="multiplex" slot="receivedFromDevice"/>
 
       </tmtc:connection>
 
-      <tmtc:table class="mem"/>
+      <tmtc:table id="issl.table" class="mem">
+
+        <tmtc:connect src="issl.table" signal="received" dst="multiplex" slot="received"/>
+
+      </tmtc:table>
 
     </tmtc:device>
 
-    <tmtc:connect receiver="terminal" signal="sendToUser" slot="received"/>
+    <tmtc:connect src="multiplex" signal="sendToUser" dst="terminal" slot="received"/>
 
-    <tmtc:connect receiver="192_168_2_2_10001.connection" signal="sendToDevice" slot="send"/>
+    <tmtc:connect src="multiplex" signal="sendToDevice" dst="issl.connection" slot="send"/>
 
   </tmtc:devices>
 
@@ -31,7 +35,7 @@
 
     <tmtc:terminal id="terminal" x="100" y="100" w="300" h="200">
 
-      <tmtc:connect receiver="192.168.2.2:10001" signal="send" slot="receivedFromUser"/>
+      <tmtc:connect src="terminal" signal="send" dst="multiplex" slot="receivedFromUser"/>
 
     </tmtc:terminal>
   </tmtc:canvas>

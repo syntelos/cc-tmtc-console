@@ -40,20 +40,21 @@ int main(int argc, char *argv[])
 
             QString arg(argv[ac]);
 
-            QUrl url(arg);
-            if (url.isValid()){
+            if (0 < arg.indexOf("://")){
+                QUrl url(arg);
+                if (url.isValid()){
 
-                window->read(url);
+                    window->read(url);
 
-                break;
+                    break;
+                }
+                else {
+                    std::cerr << argv[0] << ": Error: invalid url " << argv[ac] << std::endl;
+                    return 1;
+                }
             }
-            else if (arg.startsWith("http:/")){
+            else if (arg.endsWith(".xml")){
 
-                std::cerr << argv[0] << ": Error: Invalid url '" << argv[ac] << "'" << std::endl;
-
-                return 1;
-            }
-            else {
                 QFile file(arg);
                 if (file.exists()){
 
@@ -61,10 +62,8 @@ int main(int argc, char *argv[])
 
                     break;
                 }
-                else if (!arg.startsWith("-")){
-
-                    std::cerr << argv[0] << ": Error: Unrecognized argument '" << argv[ac] << "'" << std::endl;
-
+                else {
+                    std::cerr << argv[0] << ": Error: file not found " << argv[ac] << std::endl;
                     return 1;
                 }
             }

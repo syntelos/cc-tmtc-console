@@ -1,6 +1,7 @@
 /*
  * Copyright 2013 John Pritchard, Syntelos.  All rights reserved.
  */
+#include <QDebug>
 
 #include "SystemDeviceConnection.h"
 
@@ -38,4 +39,69 @@ void SystemDeviceConnection::send(const SystemMessage* m){
             this->sendMutex.unlock();
         }
     }
+}
+void SystemDeviceConnection::start(QObject* subclass){
+    _SYSTEM_CATALOG_IO_START(subclass);
+}
+void SystemDeviceConnection::stop(QObject* subclass){
+    _SYSTEM_CATALOG_IO_STOP(subclass);
+}
+bool SystemDeviceConnection::readConnect(QObject* subclass,
+                                    const SystemCatalogInput& properties, 
+                                    const QDomElement& node, 
+                                    const QDomElement& connect)
+{
+    _SYSTEM_CATALOG_IO_RC(subclass,properties,node,connect);
+}
+void SystemDeviceConnection::start(){
+    start(this);
+}
+void SystemDeviceConnection::stop(){
+    stop(this);
+}
+void SystemDeviceConnection::read(const SystemCatalogInput& properties, const QDomElement& node){
+    QString nodeName = node.localName();
+    if (nodeName == "connect"){
+
+        QString nodeId = node.attribute("id");
+
+        QDomNodeList children = node.childNodes();
+        const uint count = children.length();
+        bool inputReceiver = true;
+
+        uint cc;
+        for (cc = 0; cc < count; cc++){
+            QDomNode child = children.item(cc);
+            if (child.isElement()){
+
+                QString name = child.localName();
+
+                QDomElement cel = child.toElement();
+
+                if (name == "connect"){
+
+                    if (readConnect(this,properties,node,cel)){
+
+                        inputReceiver = false;
+                    }
+                }
+                else {
+                    qDebug() << "Device.read: skipping unrecognized element" << name ;
+                }
+            }
+        }
+
+        if (inputReceiver){
+
+            if (!nodeId.isEmpty()){
+                properties.receiver(nodeId,this);
+            }
+        }
+    }
+    else {
+        qDebug() << "Device.read: Unrecognized node element" << nodeName;
+    }
+
+}
+void SystemDeviceConnection::write(SystemCatalogOutput& properties, QDomElement& node){
 }

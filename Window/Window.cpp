@@ -276,53 +276,17 @@ QScriptValue Window::status(QScriptContext* cx, QScriptEngine* se){
         return QScriptValue(false);
 }
 void Window::start(){
-    const QObjectList& children = QObject::children();
-    const int count = children.count();
-    int cc;
-    for (cc = 0; cc < count; cc++){
-        QObject* child = children.at(cc);
-        SystemCatalogIO* node = dynamic_cast<SystemCatalogIO*>(child);
-        if (node){
-            node->start();
-        }
-    }
+    _SYSTEM_CATALOG_IO_START(this);
 }
 void Window::stop(){
-    const QObjectList& children = QObject::children();
-    const int count = children.count();
-    int cc;
-    for (cc = 0; cc < count; cc++){
-        QObject* child = children.at(cc);
-        SystemCatalogIO* node = dynamic_cast<SystemCatalogIO*>(child);
-        if (node){
-            node->stop();
-        }
-    }
+    _SYSTEM_CATALOG_IO_STOP(this);
 }
 bool Window::readConnect(QObject* subclass,
                          const SystemCatalogInput& properties, 
                          const QDomElement& node, 
                          const QDomElement& connect)
 {
-    QString senderId = node.attribute("id");
-    if (!senderId.isEmpty()){
-        QString receiverId = connect.attribute("receiver");
-        if (!receiverId.isEmpty()){
-            QString signal = connect.attribute("signal");
-            if (!signal.isEmpty()){
-                QString slot = connect.attribute("slot");
-                if (!slot.isEmpty()){
-
-                    properties.sender(senderId,subclass,
-                                      receiverId,
-                                      signal,slot);
-
-                    return true;
-                }
-            }
-        }
-    }
-    return false;
+    _SYSTEM_CATALOG_IO_RC(subclass,properties,node,connect);
 }
 void Window::read(QFile& src){
     if (src.open(QIODevice::ReadOnly)){

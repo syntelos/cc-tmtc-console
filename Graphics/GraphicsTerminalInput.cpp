@@ -12,11 +12,11 @@
 #include <QTextDocument>
 
 #include "Graphics/GraphicsLeaf.h"
-#include "TerminalInput.h"
+#include "GraphicsTerminalInput.h"
 
-const char* TerminalInput::TerminalInputClassName = "TerminalInput";
+const char* GraphicsTerminalInput::GraphicsTerminalInputClassName = "GraphicsTerminalInput";
 
-TerminalInput::TerminalInput(QGraphicsItem *parent)
+GraphicsTerminalInput::GraphicsTerminalInput(QGraphicsItem *parent)
     : GraphicsBranch(parent), text(this), border(0), buffer(0)
 {
     this->text.setTextInteractionFlags(Qt::TextEditorInteraction);
@@ -35,27 +35,27 @@ TerminalInput::TerminalInput(QGraphicsItem *parent)
     QGraphicsRectItem* border = new QGraphicsRectItem(this->text.boundingRect());
     this->setBorder(border);
 }
-TerminalInput::~TerminalInput()
+GraphicsTerminalInput::~GraphicsTerminalInput()
 {
     if (buffer){
         delete buffer;
     }
 }
-int TerminalInput::getFontSize(){
+int GraphicsTerminalInput::getFontSize(){
 
     return this->text.font().pointSize();
 }
-void TerminalInput::setFontSize(int fontSize){
+void GraphicsTerminalInput::setFontSize(int fontSize){
     if (8 <= fontSize && fontSize < 100){
         QFont monospace("Courier",fontSize,QFont::Normal);
         this->text.setFont(monospace);
     }
 }
-int TerminalInput::getColumns(){
+int GraphicsTerminalInput::getColumns(){
 
     return this->columns;
 }
-void TerminalInput::setColumns(int cols){
+void GraphicsTerminalInput::setColumns(int cols){
     if (10 <= cols){
         this->columns = cols;
         {
@@ -68,11 +68,11 @@ void TerminalInput::setColumns(int cols){
         }
     }
 }
-QAbstractGraphicsShapeItem* TerminalInput::getBorder(){
+QAbstractGraphicsShapeItem* GraphicsTerminalInput::getBorder(){
 
     return this->border;
 }
-void TerminalInput::setBorder(QAbstractGraphicsShapeItem* s){
+void GraphicsTerminalInput::setBorder(QAbstractGraphicsShapeItem* s){
 
     if (this->border && s != this->border){
 
@@ -91,11 +91,11 @@ void TerminalInput::setBorder(QAbstractGraphicsShapeItem* s){
         this->border = s;
     }
 }
-const char* TerminalInput::graphicsClassName(){
+const char* GraphicsTerminalInput::graphicsClassName(){
 
-    return TerminalInputClassName;
+    return GraphicsTerminalInputClassName;
 }
-const char* TerminalInput::describeClassName(QGraphicsItem* item){
+const char* GraphicsTerminalInput::describeClassName(QGraphicsItem* item){
     GraphicsLeaf* leaf = dynamic_cast<GraphicsLeaf*>(item);
     if (leaf){
         return leaf->graphicsClassName();
@@ -114,7 +114,7 @@ const char* TerminalInput::describeClassName(QGraphicsItem* item){
         }
     }
 }
-void TerminalInput::contentsChanged(){
+void GraphicsTerminalInput::contentsChanged(){
 
     QString plain = this->text.document()->toPlainText();
     

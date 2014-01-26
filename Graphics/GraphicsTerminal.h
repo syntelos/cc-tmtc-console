@@ -9,24 +9,24 @@
 #include "Graphics/GraphicsBranch.h"
 #include "System/SystemDeviceIdentifier.h"
 #include "System/SystemMessage.h"
-#include "TerminalOutput.h"
-#include "TerminalInput.h"
+#include "GraphicsTerminalOutput.h"
+#include "GraphicsTerminalInput.h"
 
 /*!
  * Combines terminal output and input into one component
  */
-class Terminal : public GraphicsBranch
+class GraphicsTerminal : public GraphicsBranch
 {
     Q_OBJECT;
 
-    static const char* TerminalClassName;
+    static const char* GraphicsTerminalClassName;
 
-    TerminalOutput output;
-    TerminalInput input;
+    GraphicsTerminalOutput output;
+    GraphicsTerminalInput input;
 
  public:
-    Terminal(QGraphicsItem *parent = 0);
-    ~Terminal();
+    GraphicsTerminal(QGraphicsItem *parent = 0);
+    ~GraphicsTerminal();
 
     int getFontSize();
     void setFontSize(int);
@@ -52,6 +52,6 @@ class Terminal : public GraphicsBranch
     void received(const SystemMessage*);
 
  private:
-    Q_DISABLE_COPY(Terminal)
+    Q_DISABLE_COPY(GraphicsTerminal)
 };
 #endif

@@ -12,14 +12,14 @@
 /*!
  *
  */
-class TerminalText : public QGraphicsTextItem,
+class GraphicsTerminalText : public QGraphicsTextItem,
     public GraphicsLeaf
 {
-    static const char* TerminalTextClassName;
+    static const char* GraphicsTerminalTextClassName;
 
  public:
-    TerminalText(QGraphicsItem* parent = 0);
-    ~TerminalText();
+    GraphicsTerminalText(QGraphicsItem* parent = 0);
+    ~GraphicsTerminalText();
 
     const char* graphicsClassName();
 
