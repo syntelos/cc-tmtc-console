@@ -15,23 +15,23 @@
  * You should have received a copy of the LGPL and GPL along with this
  * program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef _ISSL_HTTPStreamResponse_H
-#define _ISSL_HTTPStreamResponse_H
+#ifndef _CONSOLE_Network_NetworkHTTPStreamResponse_H
+#define _CONSOLE_Network_NetworkHTTPStreamResponse_H
 
 #include <QVariant>
 
-#include "HTTPStreamIO.h"
+#include "NetworkHTTPStreamIO.h"
 
 /*!
  * 
  */
-struct HTTPStreamResponse : public HTTPStreamIO {
+struct NetworkHTTPStreamResponse : public NetworkHTTPStreamIO {
 
     QVariant protocol;
     QVariant status;
     QVariant message;
 
-    HTTPStreamResponse();
+    NetworkHTTPStreamResponse();
 
     void clear();
 

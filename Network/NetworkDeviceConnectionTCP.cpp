@@ -7,15 +7,15 @@
 #include <QTcpSocket>
 
 #include "SystemDeviceIdentifier.h"
-#include "SystemConnectionTCP.h"
+#include "NetworkDeviceConnectionTCP.h"
 
-SystemConnectionTCP::SystemConnectionTCP(const SystemDeviceIdentifier& sid, QObject* parent)
+NetworkDeviceConnectionTCP::NetworkDeviceConnectionTCP(const SystemDeviceIdentifier& sid, QObject* parent)
     : SystemDeviceConnection(sid,parent)
 {
 }
-SystemConnectionTCP::~SystemConnectionTCP(){
+NetworkDeviceConnectionTCP::~NetworkDeviceConnectionTCP(){
 }
-void SystemConnectionTCP::run(){
+void NetworkDeviceConnectionTCP::run(){
 
     QTcpSocket socket;
 
@@ -24,11 +24,11 @@ void SystemConnectionTCP::run(){
 
     socket.connectToHost(prefix,suffix);
 
-    qDebug().nospace() << "SystemConnectionTCP connecting to " << prefix.toAscii().data() << ":" << suffix;
+    qDebug().nospace() << "NetworkDeviceConnectionTCP connecting to " << prefix.toAscii().data() << ":" << suffix;
 
     if (socket.waitForConnected()){
 
-        qDebug().nospace() << "SystemConnectionTCP connection succeeded ";
+        qDebug().nospace() << "NetworkDeviceConnectionTCP connection succeeded ";
 
         emit connectionSucceeded();
 
@@ -90,17 +90,17 @@ void SystemConnectionTCP::run(){
 
         socket.close();
 
-        qDebug() << "SystemConnectionTCP connection terminated";
+        qDebug() << "NetworkDeviceConnectionTCP connection terminated";
 
         emit connectionTerminated();
     }
     else {
 
-        qDebug() << "SystemConnectionTCP connection failed";
+        qDebug() << "NetworkDeviceConnectionTCP connection failed";
 
         emit connectionFailed();
     }
 }
-SystemDevice* SystemConnectionTCP::getSystemDevice() const {
+SystemDevice* NetworkDeviceConnectionTCP::getSystemDevice() const {
     return dynamic_cast<SystemDevice*>(this->parent());
 }

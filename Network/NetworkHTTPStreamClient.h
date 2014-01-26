@@ -15,24 +15,24 @@
  * You should have received a copy of the LGPL and GPL along with this
  * program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef _ISSL_HTTPStreamClient_H
-#define _ISSL_HTTPStreamClient_H
+#ifndef _CONSOLE_Network_NetworkHTTPStreamClient_H
+#define _CONSOLE_Network_NetworkHTTPStreamClient_H
 
 #include <QObject>
 #include <QTcpSocket>
 
-#include "HTTPStreamRequest.h"
-#include "HTTPStreamResponse.h"
+#include "NetworkHTTPStreamRequest.h"
+#include "NetworkHTTPStreamResponse.h"
 
 /*!
  * Socket primitive for streaming connections
  */
-class HTTPStreamClient : public QTcpSocket, public HTTP::Device {
+class NetworkHTTPStreamClient : public QTcpSocket, public HTTP::Device {
     Q_OBJECT;
 
  public:
-    HTTPStreamClient(QObject* p = 0);
-    ~HTTPStreamClient();
+    NetworkHTTPStreamClient(QObject* p = 0);
+    ~NetworkHTTPStreamClient();
 
     virtual bool isOpen();
 
@@ -54,14 +54,14 @@ class HTTPStreamClient : public QTcpSocket, public HTTP::Device {
      * Return a non null response when this socket is open and the
      * argument is a valid request.
      */
-    HTTPStreamResponse* send(HTTPStreamRequest&);
+    NetworkHTTPStreamResponse* send(NetworkHTTPStreamRequest&);
 
-    HTTPStreamResponse* send(HTTPStreamRequest*);
+    NetworkHTTPStreamResponse* send(NetworkHTTPStreamRequest*);
 
  public slots:
      void printSocketError(QAbstractSocket::SocketError);
 
  private:
-     Q_DISABLE_COPY(HTTPStreamClient);
+     Q_DISABLE_COPY(NetworkHTTPStreamClient);
 };
 #endif

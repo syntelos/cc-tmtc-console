@@ -16,22 +16,22 @@
  * program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "HTTPStreamResponse.h"
+#include "NetworkHTTPStreamResponse.h"
 
-HTTPStreamResponse::HTTPStreamResponse()
-    : HTTPStreamIO(), protocol(), status(), message()
+NetworkHTTPStreamResponse::NetworkHTTPStreamResponse()
+    : NetworkHTTPStreamIO(), protocol(), status(), message()
 {
 }
-bool HTTPStreamResponse::isValid(){
+bool NetworkHTTPStreamResponse::isValid(){
     return (protocol.isValid() && status.isValid() && message.isValid() && 0 < QList::size());
 }
-void HTTPStreamResponse::clear(){
+void NetworkHTTPStreamResponse::clear(){
     protocol.clear();
     status.clear();
     message.clear();
-    HTTPStreamIO::clear();
+    NetworkHTTPStreamIO::clear();
 }
-bool HTTPStreamResponse::isOk(){
+bool NetworkHTTPStreamResponse::isOk(){
     if (isValid()){
         bool ok;
         int sc = status.toInt(&ok);
@@ -40,9 +40,9 @@ bool HTTPStreamResponse::isOk(){
     else
         return false;
 }
-void HTTPStreamResponse::read(HTTP::Device* io){
+void NetworkHTTPStreamResponse::read(HTTP::Device* io){
 
-    HTTPStreamResponse::clear();
+    NetworkHTTPStreamResponse::clear();
 
     if (io->waitForReadyRead()){
         /*
@@ -72,9 +72,9 @@ void HTTPStreamResponse::read(HTTP::Device* io){
                  * Headers
                  */
                 while (true){
-                    HTTPStreamHeader h(io->readLine());
+                    NetworkHTTPStreamHeader h(io->readLine());
                     if (h.isValid())
-                        QList<HTTPStreamHeader>::append(h);
+                        QList<NetworkHTTPStreamHeader>::append(h);
                     else
                         break;
                 }
@@ -90,7 +90,7 @@ void HTTPStreamResponse::read(HTTP::Device* io){
         }
     }
 }
-void HTTPStreamResponse::write(HTTP::Device* io){
+void NetworkHTTPStreamResponse::write(HTTP::Device* io){
     if (isValid() && io->isOpen()){
         io->write(protocol.toByteArray());
         io->write(HTTP::SP);
@@ -106,9 +106,9 @@ void HTTPStreamResponse::write(HTTP::Device* io){
             setHeader("Content-Length", len);
         }
 
-        const QList<HTTPStreamHeader>& headers = *this;
+        const QList<NetworkHTTPStreamHeader>& headers = *this;
 
-        foreach (const HTTPStreamHeader& h, headers){
+        foreach (const NetworkHTTPStreamHeader& h, headers){
             io->write(h.toByteArray());
             io->write(HTTP::CRLF);
         }

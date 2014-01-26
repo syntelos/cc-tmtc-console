@@ -16,24 +16,24 @@
  * program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "HTTPStreamRequest.h"
+#include "NetworkHTTPStreamRequest.h"
 
-HTTPStreamRequest::HTTPStreamRequest()
-    : HTTPStreamIO(), method("POST"), path(), protocol("HTTP/1.1")
+NetworkHTTPStreamRequest::NetworkHTTPStreamRequest()
+    : NetworkHTTPStreamIO(), method("POST"), path(), protocol("HTTP/1.1")
 {
 }
-bool HTTPStreamRequest::isValid(){
+bool NetworkHTTPStreamRequest::isValid(){
     return (method.isValid() && path.isValid() && protocol.isValid() && 0 < QList::size());
 }
-void HTTPStreamRequest::clear(){
+void NetworkHTTPStreamRequest::clear(){
     method.clear();
     path.clear();
     protocol.clear();
-    HTTPStreamIO::clear();
+    NetworkHTTPStreamIO::clear();
 }
-void HTTPStreamRequest::read(HTTP::Device* io){
+void NetworkHTTPStreamRequest::read(HTTP::Device* io){
 
-    HTTPStreamRequest::clear();
+    NetworkHTTPStreamRequest::clear();
 
     if (io->waitForReadyRead()){
         /*
@@ -53,9 +53,9 @@ void HTTPStreamRequest::read(HTTP::Device* io){
                  * Headers
                  */
                 while (true){
-                    HTTPStreamHeader h(io->readLine());
+                    NetworkHTTPStreamHeader h(io->readLine());
                     if (h.isValid())
-                        QList<HTTPStreamHeader>::append(h);
+                        QList<NetworkHTTPStreamHeader>::append(h);
                     else
                         break;
                 }
@@ -71,7 +71,7 @@ void HTTPStreamRequest::read(HTTP::Device* io){
         }
     }
 }
-void HTTPStreamRequest::write(HTTP::Device* io){
+void NetworkHTTPStreamRequest::write(HTTP::Device* io){
     if (isValid() && io->isOpen()){
         io->write(method.toByteArray());
         io->write(HTTP::SP);
@@ -99,9 +99,9 @@ void HTTPStreamRequest::write(HTTP::Device* io){
             setHeader("Host", hostname);
         }
 
-        const QList<HTTPStreamHeader>& headers = *this;
+        const QList<NetworkHTTPStreamHeader>& headers = *this;
 
-        foreach (const HTTPStreamHeader& h, headers){
+        foreach (const NetworkHTTPStreamHeader& h, headers){
             io->write(h.toByteArray());
             io->write(HTTP::CRLF);
         }

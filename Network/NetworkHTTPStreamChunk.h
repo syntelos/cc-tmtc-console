@@ -15,18 +15,18 @@
  * You should have received a copy of the LGPL and GPL along with this
  * program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef _ISSL_HTTPStreamChunk_H
-#define _ISSL_HTTPStreamChunk_H
+#ifndef _CONSOLE_Network_NetworkHTTPStreamChunk_H
+#define _CONSOLE_Network_NetworkHTTPStreamChunk_H
 
-#include "HTTPStreamIO.h"
+#include "NetworkHTTPStreamIO.h"
 
 /*!
  * 
  */
-class HTTPStreamChunk : public HTTPStreamIO {
+class NetworkHTTPStreamChunk : public NetworkHTTPStreamIO {
 
  public:
-    HTTPStreamChunk();
+    NetworkHTTPStreamChunk();
 
     virtual bool isValid();
 

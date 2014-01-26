@@ -15,14 +15,14 @@
  * You should have received a copy of the LGPL and GPL along with this
  * program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef _ISSL_HTTPStreamIO_H
-#define _ISSL_HTTPStreamIO_H
+#ifndef _CONSOLE_Network_NetworkHTTPStreamIO_H
+#define _CONSOLE_Network_NetworkHTTPStreamIO_H
 
 #include <QBuffer>
 #include <QIODevice>
 #include <QList>
 
-#include "HTTPStreamHeader.h"
+#include "NetworkHTTPStreamHeader.h"
 
 namespace HTTP {
     static const char* SC = ";";
@@ -30,7 +30,7 @@ namespace HTTP {
     static const char* SP = " ";
     static const char* CRLF = "\r\n";
     /*!
-     * Argument to HTTPStreamIO read and write.
+     * Argument to NetworkHTTPStreamIO read and write.
      */
     struct Device {
 
@@ -55,8 +55,8 @@ namespace HTTP {
 /*!
  * 
  */
-struct HTTPStreamIO : public QList<HTTPStreamHeader>, public QBuffer {
-    HTTPStreamIO();
+struct NetworkHTTPStreamIO : public QList<NetworkHTTPStreamHeader>, public QBuffer {
+    NetworkHTTPStreamIO();
 
     void clear();
     void setHeader(const QVariant& name, const QVariant& value);

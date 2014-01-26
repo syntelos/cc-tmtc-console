@@ -1,8 +1,8 @@
 /*
  * Copyright 2013 John Pritchard, Syntelos.  All rights reserved.
  */
-#ifndef _CONSOLE_System_SystemConnectionTCP_H
-#define _CONSOLE_System_SystemConnectionTCP_H
+#ifndef _CONSOLE_Network_NetworkDeviceConnectionTCP_H
+#define _CONSOLE_Network_NetworkDeviceConnectionTCP_H
 
 #include <QObject>
 #include <QList>
@@ -16,7 +16,7 @@
 /*!
  * A system device connection for TM/TC over TCP/IP.
  */
-class SystemConnectionTCP : public SystemDeviceConnection {
+class NetworkDeviceConnectionTCP : public SystemDeviceConnection {
     Q_OBJECT;
 
  protected:
@@ -30,15 +30,15 @@ class SystemConnectionTCP : public SystemDeviceConnection {
      * The argument \a parent is a member of \class QObject and \class
      * SystemDevice
      */
-    SystemConnectionTCP(const SystemDeviceIdentifier&,QObject*);
+    NetworkDeviceConnectionTCP(const SystemDeviceIdentifier&,QObject*);
     /*!
      */
-    ~SystemConnectionTCP();
+    ~NetworkDeviceConnectionTCP();
     /*!
      */
     virtual void run();
 
  private:
-    Q_DISABLE_COPY(SystemConnectionTCP)
+    Q_DISABLE_COPY(NetworkDeviceConnectionTCP)
 };
 #endif

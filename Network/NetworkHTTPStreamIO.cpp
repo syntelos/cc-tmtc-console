@@ -16,42 +16,42 @@
  * program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "HTTPStreamIO.h"
+#include "NetworkHTTPStreamIO.h"
 
-HTTPStreamIO::HTTPStreamIO()
+NetworkHTTPStreamIO::NetworkHTTPStreamIO()
     : QList(), QBuffer()
 {
 }
-void HTTPStreamIO::clear(){
+void NetworkHTTPStreamIO::clear(){
     QList::clear();
     QByteArray empty;
     QBuffer::setData(empty);
 }
 /*!
  */
-void HTTPStreamIO::setHeader(const QVariant& name, const QVariant& value){
+void NetworkHTTPStreamIO::setHeader(const QVariant& name, const QVariant& value){
     const int count = QList::size();
     int cc;
     for (cc = 0; cc < count; cc++){
-        const HTTPStreamHeader& h = QList<HTTPStreamHeader>::at(cc);
+        const NetworkHTTPStreamHeader& h = QList<NetworkHTTPStreamHeader>::at(cc);
         if (h == name){
-            HTTPStreamHeader& hs = const_cast<HTTPStreamHeader&>(h);
+            NetworkHTTPStreamHeader& hs = const_cast<NetworkHTTPStreamHeader&>(h);
             hs.setValue(value);
             return;
         }
     }
-    HTTPStreamHeader h;
+    NetworkHTTPStreamHeader h;
     h.setName(name);
     h.setValue(value);
-    QList<HTTPStreamHeader>::append(h);
+    QList<NetworkHTTPStreamHeader>::append(h);
 }
 /*!
  */
-const QVariant& HTTPStreamIO::getHeader(const QVariant& name) const {
+const QVariant& NetworkHTTPStreamIO::getHeader(const QVariant& name) const {
     const int count = QList::size();
     int cc;
     for (cc = 0; cc < count; cc++){
-        const HTTPStreamHeader& h = QList<HTTPStreamHeader>::at(cc);
+        const NetworkHTTPStreamHeader& h = QList<NetworkHTTPStreamHeader>::at(cc);
         if (h == name){
 
             return h.value;
@@ -60,10 +60,10 @@ const QVariant& HTTPStreamIO::getHeader(const QVariant& name) const {
     QVariant nil;
     return nil;
 }
-void HTTPStreamIO::setContentLength(uint len){
+void NetworkHTTPStreamIO::setContentLength(uint len){
     setHeader("Content-Length",len);
 }
-uint HTTPStreamIO::getContentLength() const {
+uint NetworkHTTPStreamIO::getContentLength() const {
     const QVariant& contentLength = getHeader("Content-Length");
     if (contentLength.isValid()){
         bool ok;
@@ -74,10 +74,10 @@ uint HTTPStreamIO::getContentLength() const {
     }
     return 0;
 }
-void HTTPStreamIO::setContentType(const QVariant& string){
+void NetworkHTTPStreamIO::setContentType(const QVariant& string){
     setHeader("Content-Type",string);
 }
-QString HTTPStreamIO::getContentType() const {
+QString NetworkHTTPStreamIO::getContentType() const {
     const QVariant& contentType = getHeader("Content-Type");
     if (contentType.isValid()){
 

@@ -15,8 +15,8 @@
  * You should have received a copy of the LGPL and GPL along with this
  * program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef _ISSL_HTTPStreamHeader_H
-#define _ISSL_HTTPStreamHeader_H
+#ifndef _CONSOLE_Network_NetworkHTTPStreamHeader_H
+#define _CONSOLE_Network_NetworkHTTPStreamHeader_H
 
 #include <QByteArray>
 #include <QVariant>
@@ -24,20 +24,20 @@
 /*!
  * 
  */
-struct HTTPStreamHeader {
+struct NetworkHTTPStreamHeader {
 
     QVariant name;
     QVariant value;
 
-    HTTPStreamHeader()
+    NetworkHTTPStreamHeader()
         : name(), value()
     {
     }
-    HTTPStreamHeader(const HTTPStreamHeader& copy)
+    NetworkHTTPStreamHeader(const NetworkHTTPStreamHeader& copy)
         : name(copy.name), value(copy.value)
     {
     }
-    HTTPStreamHeader(const QByteArray& input){
+    NetworkHTTPStreamHeader(const QByteArray& input){
         int parse = input.indexOf(':');
         if (0 < parse){
             QByteArray n0 = input.mid(0,parse);

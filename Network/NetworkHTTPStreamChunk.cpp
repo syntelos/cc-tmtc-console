@@ -17,18 +17,18 @@
  */
 #include <QDebug>
 
-#include "HTTPStreamChunk.h"
+#include "NetworkHTTPStreamChunk.h"
 
-HTTPStreamChunk::HTTPStreamChunk()
-    : HTTPStreamIO()
+NetworkHTTPStreamChunk::NetworkHTTPStreamChunk()
+    : NetworkHTTPStreamIO()
 {
 }
-bool HTTPStreamChunk::isValid(){
+bool NetworkHTTPStreamChunk::isValid(){
     return (0 < QBuffer::size());
 }
-void HTTPStreamChunk::read(HTTP::Device* io){
+void NetworkHTTPStreamChunk::read(HTTP::Device* io){
 
-    HTTPStreamIO::clear();
+    NetworkHTTPStreamIO::clear();
 
     if (io->waitForReadyRead()){
         /*
@@ -62,11 +62,11 @@ void HTTPStreamChunk::read(HTTP::Device* io){
 
                     if (2 == extli.size()){
 
-                        HTTPStreamHeader h;
+                        NetworkHTTPStreamHeader h;
                         h.setName(extli.at(0));
                         h.setValue(extli.at(1));
                         if (h.isValid()){
-                            QList<HTTPStreamHeader>::append(h);
+                            QList<NetworkHTTPStreamHeader>::append(h);
                         }
                     }
                 }
@@ -98,25 +98,25 @@ void HTTPStreamChunk::read(HTTP::Device* io){
                         remaining -= inz;
                     }
 
-                    // qDebug() << "HTTPStreamChunk.read [success]: size" << len;
+                    // qDebug() << "NetworkHTTPStreamChunk.read [success]: size" << len;
                 }
                 else {
-                    // qDebug() << "HTTPStreamChunk.read [failure]: size" << len;
+                    // qDebug() << "NetworkHTTPStreamChunk.read [failure]: size" << len;
                 }
             }
             else {
-                // qDebug() << "HTTPStreamChunk.read [failure]: size ext" << chunk_llen;
+                // qDebug() << "NetworkHTTPStreamChunk.read [failure]: size ext" << chunk_llen;
             }
         }
         else {
-            // qDebug() << "HTTPStreamChunk.read [failure]: read size" << line.length();
+            // qDebug() << "NetworkHTTPStreamChunk.read [failure]: read size" << line.length();
         }
     }
     else {
-        // qDebug() << "HTTPStreamChunk.read [failure]: read ready";
+        // qDebug() << "NetworkHTTPStreamChunk.read [failure]: read ready";
     }
 }
-void HTTPStreamChunk::write(HTTP::Device* io){
+void NetworkHTTPStreamChunk::write(HTTP::Device* io){
     /*
      * chunk-size
      */
@@ -131,9 +131,9 @@ void HTTPStreamChunk::write(HTTP::Device* io){
      */
     if (0 < QList::size()){
 
-        const QList<HTTPStreamHeader>& extl = *this;
+        const QList<NetworkHTTPStreamHeader>& extl = *this;
 
-        foreach (const HTTPStreamHeader& h, extl){
+        foreach (const NetworkHTTPStreamHeader& h, extl){
             io->write(HTTP::SC);
             io->write(h.name.toByteArray());
             io->write(HTTP::EQ);
